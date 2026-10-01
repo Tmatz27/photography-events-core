@@ -1,0 +1,31 @@
+{
+  "repository": "https://github.com/Tmatz27/photography-events-core",
+  "head_sha": "f3aca3172220107e9308c73e2904511484fdad40",
+  "workflow_run": 36916376613,
+  "job_id": 110551250397,
+  "url": "https://github.com/Tmatz27/photography-events-core/actions/runs/36916376613",
+  "conclusion": "success",
+  "artifact": {
+    "id": 11190200515,
+    "name": "milestone-1-evidence",
+    "archive_sha256": "08c5cb12373e642e91c95e5ab700d6b8264b1bea14cb1a42631734110473e2e8"
+  },
+  "host_tests": {
+    "passed": 53,
+    "skipped": 18,
+    "failed": 0
+  },
+  "container_tests": {
+    "passed": 71,
+    "skipped": 0,
+    "failed": 0
+  },
+  "commands": [
+    "python -m compileall -q src migrations tools",
+    "python -m ruff check src migrations tools tests",
+    "python -m pytest -q",
+    "create_app().openapi()",
+    "python tools/acceptance.py"
+  ],
+  "notes": "Acceptance JSON, pytest log and JUnit XML copied from this run's artifact. Backup and database files were not downloaded or committed."
+}

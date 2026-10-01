@@ -5,6 +5,9 @@ The Home Assistant v0.16.1 local engine remains authoritative. Core is a
 foundation and deterministic Carrizo Plain Tule Elk parity slice, not a public
 release or a replacement for the existing integration.
 
+Read the [Milestone 1 implementation review](IMPLEMENTATION_REVIEW_MILESTONE_1.md)
+for the exact scope, deviations, provenance and verified acceptance results.
+
 HA repository: https://github.com/Tmatz27/Home-assistant-photography-events
 
 ```

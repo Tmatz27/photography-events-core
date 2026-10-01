@@ -1,0 +1,64 @@
+{
+  "recorded_at": "2026-10-01",
+  "repository": "https://github.com/Tmatz27/Home-assistant-photography-events",
+  "head_sha": "7a9d4c6bcf00ffe17b68190a10df4dc83d4db83c",
+  "workflow_run": 36915089698,
+  "url": "https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/36915089698",
+  "conclusion": "success",
+  "hacs": "success",
+  "python_portable": {
+    "command": "python -m unittest discover -s tests -q",
+    "run": 575,
+    "passed": 485,
+    "skipped": 90,
+    "failures": 0,
+    "errors": 0
+  },
+  "card": {
+    "command": "node --test tests/photography-events-card.test.mjs",
+    "tests": 127,
+    "passed": 127,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ha_contracts": [
+    {
+      "python": "3.12",
+      "homeassistant": "2024.11.3",
+      "job_id": 110546983253,
+      "command": "python -m unittest discover -s tests -p 'test_ha_*.py' -v",
+      "run": 90,
+      "passed": 90,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "python": "3.13",
+      "homeassistant": "2025.3.4",
+      "job_id": 110546983282,
+      "command": "python -m unittest discover -s tests -p 'test_ha_*.py' -v",
+      "run": 90,
+      "passed": 90,
+      "skipped": 0,
+      "failures": 0
+    }
+  ],
+  "log_excerpts": [
+    [
+      "2026-10-01T19:33:11.3662721Z # tests 127",
+      "2026-10-01T19:33:11.3674680Z # pass 127",
+      "2026-10-01T19:33:11.3674963Z # fail 0",
+      "2026-10-01T19:33:11.3675337Z # skipped 0",
+      "2026-10-01T19:33:41.2821300Z Ran 575 tests in 29.379s",
+      "2026-10-01T19:33:41.2821579Z OK (skipped=90)"
+    ],
+    [
+      "2026-10-01T19:41:37.4581790Z Ran 90 tests in 430.889s",
+      "2026-10-01T19:41:37.4582134Z OK"
+    ],
+    [
+      "2026-10-01T19:42:17.4188339Z Ran 90 tests in 454.578s",
+      "2026-10-01T19:42:17.4188795Z OK"
+    ]
+  ]
+}
