@@ -94,15 +94,14 @@ def main():
         wait_ready()
         assert check("/api/v1/opportunities/" + key)["occurrence_key"] == key
         results["database_restart"] = "ready and data preserved"
-        backup = EVIDENCE / "acceptance.dump"
-        with backup.open("wb") as out:
-            compose("exec", "-T", "photography-events-db", "pg_dump", "-U", "postgres", "-d", "photography_events", "-Fc", "--no-acl", stdout=out)
+        # Execute the operator scripts themselves, not merely equivalent commands.
+        backup_result = run("sh", "scripts/backup.sh", env={**os.environ, "BACKUP_DIR": str(EVIDENCE / "backups")},
+                            capture_output=True, text=True)
+        backup = Path(backup_result.stdout.strip())
         assert backup.read_bytes()[:5] == b"PGDMP"
         results["backup_bytes"] = backup.stat().st_size
-        compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_restore_test")
-        compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_restore_test", "-c", "CREATE EXTENSION postgis")
-        with backup.open("rb") as source:
-            compose("exec", "-T", "photography-events-db", "pg_restore", "-U", "postgres", "-d", "photography_events_restore_test", "--no-acl", "--exit-on-error", stdin=source)
+        run("sh", "scripts/restore.sh", str(backup), "photography_events_restore_test")
+        results["operator_scripts"] = "backup.sh and restore.sh executed successfully"
         owners = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_restore_test", "-Atc",
             "SELECT tableowner FROM pg_tables WHERE schemaname='public' AND tablename='opportunities'", capture_output=True, text=True).stdout.strip()
         assert owners == "photography_events", owners
