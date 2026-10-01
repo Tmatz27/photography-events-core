@@ -19,4 +19,6 @@ COPY requirements-dev.lock /app/requirements-dev.lock
 RUN pip install --no-cache-dir -r requirements-dev.lock
 COPY tests /app/tests
 COPY tools /app/tools
+COPY compose.yaml /app/compose.yaml
+COPY scripts /app/scripts
 USER 10001:10001
