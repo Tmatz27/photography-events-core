@@ -96,13 +96,17 @@ def main():
         results["database_restart"] = "ready and data preserved"
         backup = EVIDENCE / "acceptance.dump"
         with backup.open("wb") as out:
-            compose("exec", "-T", "photography-events-db", "pg_dump", "-U", "postgres", "-d", "photography_events", "-Fc", "--no-owner", "--no-acl", stdout=out)
+            compose("exec", "-T", "photography-events-db", "pg_dump", "-U", "postgres", "-d", "photography_events", "-Fc", "--no-acl", stdout=out)
         assert backup.read_bytes()[:5] == b"PGDMP"
         results["backup_bytes"] = backup.stat().st_size
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_restore_test")
         compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_restore_test", "-c", "CREATE EXTENSION postgis")
         with backup.open("rb") as source:
-            compose("exec", "-T", "photography-events-db", "pg_restore", "-U", "postgres", "--role=photography_events", "-d", "photography_events_restore_test", "--no-owner", "--no-acl", "--no-comments", "--exit-on-error", stdin=source)
+            compose("exec", "-T", "photography-events-db", "pg_restore", "-U", "postgres", "-d", "photography_events_restore_test", "--no-acl", "--exit-on-error", stdin=source)
+        owners = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_restore_test", "-Atc",
+            "SELECT tableowner FROM pg_tables WHERE schemaname='public' AND tablename='opportunities'", capture_output=True, text=True).stdout.strip()
+        assert owners == "photography_events", owners
+        results["restored_application_owner"] = owners
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         wait_ready(8100)

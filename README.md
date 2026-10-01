@@ -166,7 +166,7 @@ BACKUP_DIR=/path/to/mounted/synology sh scripts/backup.sh
 ```
 
 The command is `docker compose exec -T photography-events-db pg_dump -U postgres
--d photography_events -Fc --no-owner --no-acl`. The script writes a mode-restricted
+-d photography_events -Fc --no-acl`. The script writes a mode-restricted
 `.partial` file and renames it only after success. A backup contains potentially
 sensitive ingestion data; protect the NAS destination accordingly.
 
@@ -179,9 +179,11 @@ docker compose run --rm --no-deps -p 127.0.0.1:8100:8099 \
 ```
 
 The script creates the DB owned by the application role, enables PostGIS,
-restores with `pg_restore --no-owner --no-acl --no-comments --exit-on-error`, and
-runs migrations. `--no-comments` avoids assigning comments to the admin-owned
-PostGIS extension. Verify restored readiness and the occurrence API before
+restores as the DB administrator with `pg_restore --no-acl --exit-on-error`, and
+runs migrations. Preserve archive ownership: app tables remain owned by the
+non-superuser application role, while image-supplied extensions are recreated by
+the administrator. A compatible destination must have both configured roles.
+Verify restored readiness and the occurrence API before
 planning any cutover. The script refuses production/reserved names and existing
 destinations; it never drops or overwrites a database.
 
