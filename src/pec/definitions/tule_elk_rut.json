@@ -1,0 +1,45 @@
+{
+  "name": "Tule elk rut",
+  "category": "mammals",
+  "peak_start": [
+    9,
+    15
+  ],
+  "peak_end": [
+    10,
+    10
+  ],
+  "latitude": 35.1914,
+  "longitude": -119.7929,
+  "photo_tips": "Bugling, sparring and harem defence, and the whole thing runs on first light. Shoot from the vehicle where possible - it is a far better hide than standing, and keeps you the legal distance back. Backlit dust and breath in dawn light is the shot worth driving for.",
+  "best_time_of_day": "Dawn, 06:00-08:30",
+  "season_range": "August to October",
+  "verify_urls": [
+    "https://www.blm.gov/visit/carrizo-plain-national-monument",
+    "https://www.nps.gov/thingstodo/tule-elk-viewing-point-reyes.htm"
+  ],
+  "key": "tule_elk_rut",
+  "version": "legacy-0.16.1-1",
+  "location_key": "carrizo_plain_soda_lake",
+  "location_name": "Carrizo Plain, Soda Lake Road foothills",
+  "significance": 85,
+  "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+  "safety": "Carrizo roads are impassable clay when wet.",
+  "policy_reason": "NPS: the rut runs August-October, peaking late August-September, so behaviour is reliable in the peak window. Encounter at Carrizo is not - the herd is dispersed - so a recent elk report near the site is also required (product rule).",
+  "gear": {
+    "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+    "optional": [
+      "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+    ],
+    "skip": [
+      "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+    ],
+    "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+    "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+    "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+    "video": "DJI Osmo Pocket 3 for bugling audio",
+    "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+    "drone_status": "not_appropriate"
+  },
+  "median_effective_speed_kmh": 64.09692314845019
+}

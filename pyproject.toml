@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photography-events-core"
+version = "0.1.0.dev0"
+description = "LAN-only Photography Events foundation and parity vertical slice"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi==0.142.2", "sqlalchemy[asyncio]==2.1.1", "asyncpg==0.31.0",
+  "alembic==1.20.0", "pydantic==2.13.5", "uvicorn==0.54.0", "tzdata==2026.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pec = ["definitions/*.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["database: requires an isolated migrated PostGIS database"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+

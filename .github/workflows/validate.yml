@@ -1,0 +1,38 @@
+name: Milestone 1 validation
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-dev.lock
+      - name: Static checks and portable tests
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m compileall -q src migrations tools
+          python -m ruff check src migrations tools tests
+          python -m pytest -q
+          CORE_API_TOKEN=$(python -c 'import secrets; print(secrets.token_hex(32))') CORE_DATABASE_URL=postgresql+asyncpg://unused:unused@localhost/unused python -c 'import json; from pec.api import create_app; print(json.dumps(create_app().openapi()))' > /tmp/openapi.json
+      - name: Docker, PostGIS, migrations, failure injection and restore
+        env:
+          PYTHONPATH: src
+        run: python tools/acceptance.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: milestone-1-evidence
+          path: |
+            evidence/acceptance.json
+            evidence/pytest.log
+            evidence/tests.xml
+          if-no-files-found: warn

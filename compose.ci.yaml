@@ -1,0 +1,4 @@
+# Explicit disposable CI override; production compose.yaml publishes no DB port.
+services:
+  photography-events-db:
+    ports: ["127.0.0.1:54329:5432"]

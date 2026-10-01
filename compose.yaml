@@ -1,0 +1,45 @@
+services:
+  photography-events-db:
+    image: postgis/postgis:18-3.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: photography_events
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set POSTGRES_ADMIN_PASSWORD}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - ${DB_DATA_PATH:-/mnt/cache/appdata/photography-events-db}:/var/lib/postgresql
+      - ./scripts/20-app-user.sh:/docker-entrypoint-initdb.d/20-app-user.sh:ro
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d photography_events"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+  photography-events-core:
+    build: .
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      CORE_API_TOKEN: ${CORE_API_TOKEN:?Set CORE_API_TOKEN}
+      CORE_DATABASE_TIMEOUT: ${CORE_DATABASE_TIMEOUT:-3}
+    volumes:
+      - ${CORE_DATA_PATH:-/mnt/cache/appdata/photography-events-core}:/var/lib/photography-events-core
+    ports:
+      - "${CORE_BIND_IP:-127.0.0.1}:${CORE_PORT:-8099}:8099"
+    networks: [database, api]
+    depends_on:
+      photography-events-db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8099/health/ready', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    stop_grace_period: 20s
+networks:
+  database:
+    internal: true
+  api: {}
