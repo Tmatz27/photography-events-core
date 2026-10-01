@@ -1,4 +1,5 @@
-# Explicit disposable CI override; production compose.yaml publishes no DB port.
+# Tests run on the private network; no CI database port is published either.
 services:
-  photography-events-db:
-    ports: ["127.0.0.1:54329:5432"]
+  photography-events-core:
+    build:
+      target: test

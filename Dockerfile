@@ -1,4 +1,4 @@
-FROM python:3.12.14-slim-bookworm
+FROM python:3.12.14-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.lock /app/requirements.lock
@@ -12,3 +12,11 @@ ENV PYTHONPATH=/app/src
 USER 10001:10001
 EXPOSE 8099
 CMD ["python", "scripts/start.py"]
+
+FROM runtime AS test
+USER root
+COPY requirements-dev.lock /app/requirements-dev.lock
+RUN pip install --no-cache-dir -r requirements-dev.lock
+COPY tests /app/tests
+COPY tools /app/tools
+USER 10001:10001

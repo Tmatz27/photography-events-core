@@ -20,6 +20,7 @@ def test_backoff_is_bounded_and_success_resets():
     state = next_state(policy, State(NOW, 99), NOW, success=False, jitter=lambda: 0)
     assert state.next_allowed_at == NOW + timedelta(seconds=86400)
     assert next_state(policy, state, NOW, success=True).consecutive_failures == 0
+    assert next_state(policy, state, NOW, success=False, jitter=lambda: 1).next_allowed_at == NOW + timedelta(seconds=86400)
 
 
 async def test_no_overlap_and_graceful_shutdown():

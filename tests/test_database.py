@@ -15,6 +15,7 @@ from pec.database import Database
 from pec.ingestion import ingest_fixture
 from pec.phenomena import evaluate
 from pec.retention import sweep
+from pec.scheduler import State
 
 URL = os.environ.get("CORE_TEST_DATABASE_URL")
 pytestmark = [pytest.mark.database, pytest.mark.skipif(not URL, reason="Requires disposable PostGIS database")]
@@ -151,3 +152,14 @@ async def test_gist_index_and_metric_spatial_query(db):
         names = (await c.execute(text("SELECT indexname FROM pg_indexes WHERE tablename='normalized_observations'"))).scalars().all()
         assert "ix_normalized_analysis" in names
         assert (await c.execute(text("SELECT ST_DWithin(analysis_geometry::geography,ST_SetSRID(ST_MakePoint(-119.80,35.20),4326)::geography,100) FROM normalized_observations"))).scalar()
+
+
+async def test_backoff_survives_new_database_client(db):
+    await ingest_fixture(db, DATA)
+    state = State(NOW + timedelta(hours=2), 3)
+    await db.save_backoff("fixture_observations", state)
+    restarted = Database(Settings(URL, "test-only-" + "a" * 40))
+    try:
+        assert await restarted.load_backoff("fixture_observations", NOW) == state
+    finally:
+        await restarted.close()

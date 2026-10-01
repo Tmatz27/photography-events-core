@@ -18,7 +18,9 @@ services:
       retries: 12
       start_period: 20s
   photography-events-core:
-    build: .
+    build:
+      context: .
+      target: runtime
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}

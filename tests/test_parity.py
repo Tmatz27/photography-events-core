@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pec.phenomena import evaluate
+from pec.logging import event
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures/legacy_tule_elk.json").read_text(encoding="utf-8"))
 
@@ -23,7 +24,10 @@ def test_legacy_semantic_parity(case):
     assert len(actual) == len(case["expected"])
     for item, expected in zip(actual, case["expected"], strict=True):
         fields = normalize(item)
-        assert {name: fields[name] for name in expected} == expected
+        observed = {name: fields[name] for name in expected}
+        if observed != expected:
+            event("parity_test_failure", code="semantic_mismatch")
+        assert observed == expected
 
 
 def test_identity_survives_recalculation():

@@ -78,6 +78,26 @@ class Database:
     async def close(self):
         await self.engine.dispose()
 
+    async def load_backoff(self, key, now):
+        from .scheduler import State
+        async def run():
+            async with self.engine.connect() as c:
+                row = (await c.execute(text("""SELECT b.next_allowed_at,b.consecutive_failures
+                    FROM source_backoff b JOIN sources s ON s.id=b.source_id WHERE s.key=:key"""),
+                    {"key": key})).mappings().first()
+                return State(**row) if row else State(now)
+        return await self._guard(run)
+
+    async def save_backoff(self, key, state):
+        async def run():
+            async with self.engine.begin() as c:
+                sid = (await c.execute(text("SELECT id FROM sources WHERE key=:key"), {"key": key})).scalar_one()
+                await c.execute(text("""INSERT INTO source_backoff VALUES(:sid,:next,:failures)
+                    ON CONFLICT(source_id) DO UPDATE SET next_allowed_at=EXCLUDED.next_allowed_at,
+                    consecutive_failures=EXCLUDED.consecutive_failures"""),
+                    {"sid": sid, "next": state.next_allowed_at, "failures": state.consecutive_failures})
+        await self._guard(run)
+
     async def _guard(self, operation):
         try:
             async with asyncio.timeout(self.timeout):

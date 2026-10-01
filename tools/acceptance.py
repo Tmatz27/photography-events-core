@@ -7,7 +7,6 @@ import json
 import os
 import secrets
 import subprocess
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -63,16 +62,18 @@ def main():
         results["database_versions"] = versions.strip()
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
         compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_test", "-c", "CREATE EXTENSION postgis")
-        url = f"postgresql+asyncpg://photography_events:{os.environ['POSTGRES_PASSWORD']}@127.0.0.1:54329/photography_events_test"
-        env = {**os.environ, "CORE_DATABASE_URL": url, "CORE_TEST_DATABASE_URL": url}
-        run(sys.executable, "-m", "alembic", "upgrade", "head", env=env)
-        run(sys.executable, "-m", "alembic", "upgrade", "head", env=env)
+        test_exec = ("exec", "-T", "-e", "POSTGRES_DB=photography_events_test", "photography-events-core", "python")
+        compose(*test_exec, "-m", "alembic", "upgrade", "head")
+        compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
         with (EVIDENCE / "pytest.log").open("w") as log:
-            run(sys.executable, "-m", "pytest", "-q", "--junitxml=evidence/tests.xml", env=env, stdout=log, stderr=subprocess.STDOUT)
+            try:
+                compose(*test_exec, "tools/database_tests.py", stdout=log, stderr=subprocess.STDOUT)
+            finally:
+                compose("cp", "photography-events-core:/tmp/core-tests.xml", str(EVIDENCE / "tests.xml"))
         # Test a full downgrade/upgrade only against the disposable test DB.
-        run(sys.executable, "-m", "alembic", "downgrade", "base", env=env)
-        run(sys.executable, "-m", "alembic", "upgrade", "head", env=env)
+        compose(*test_exec, "-m", "alembic", "downgrade", "base")
+        compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["migration_round_trip"] = "passed"
         compose("exec", "-T", "photography-events-core", "python", "-m", "pec", "tests/fixtures/legacy_tule_elk.json")
         key = "tule_elk_rut-2026-09-15"

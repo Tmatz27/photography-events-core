@@ -30,7 +30,7 @@ def next_state(policy, previous, now, *, success, retry_after=None, jitter=rando
     delay = policy.minimum_interval if success else min(policy.maximum_backoff,
         policy.minimum_interval * 2 ** min(failures - 1, 20))
     if not success:
-        delay += delay * 0.1 * jitter()
+        delay = min(policy.maximum_backoff, delay + delay * 0.1 * jitter())
     if retry_after:
         try:
             retry = float(retry_after)
@@ -73,6 +73,8 @@ class Scheduler:
                         async with asyncio.timeout(policy.timeout):
                             status, retry = await collect()
                         success = 200 <= status < 300
+                        if not success:
+                            event("source_collection_failure", source=key, code="http_failure")
                     except (TimeoutError, OSError):
                         event("source_collection_failure", source=key, code="network_failure")
                     except ValueError:
