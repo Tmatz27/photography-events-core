@@ -43,7 +43,8 @@ def validate_record(record):
     behavior = record.get("behavior")
     if behavior is not None and not isinstance(behavior, str):
         raise ValueError("invalid behavior")
-    return dict(observed=observed, subject=subject, lat=lat, lon=lon, count=count, behavior=behavior)
+    return dict(observed=observed, valid=observed + timedelta(days=14), subject=subject,
+                lat=lat, lon=lon, count=count, behavior=behavior)
 
 
 async def collect_fixture(db, data):
@@ -84,7 +85,7 @@ async def collect_fixture(db, data):
                 try:
                     fields = validate_record(record)
                 except (KeyError, ValueError, TypeError, OverflowError):
-                    fields = dict(observed=None, subject=None, lat=None, lon=None, count=None, behavior=None)
+                    fields = dict(observed=None, valid=None, subject=None, lat=None, lon=None, count=None, behavior=None)
                     rejected += 1
                     event("parser_failure", source=key, code="record_rejected")
                 else:
@@ -124,7 +125,7 @@ async def collect_fixture(db, data):
                     VALUES(:raw,'species',:subject,:observed,ST_SetSRID(ST_MakePoint(:lon,:lat),4326),
                     NULL,:count,:sensitive,'withheld',:valid,:behavior,:rid,:digest)"""),
                     {**fields, "raw": raw_id, "sensitive": sensitive, "rid": rid, "digest": digest,
-                     "valid": fields["observed"] + timedelta(days=14)})
+                     "valid": fields["valid"]})
             if key == "fixture_observations":
                 current = (await c.execute(text("""SELECT r.external_id,r.content_sha256,r.sensitive
                     FROM raw_observations r WHERE r.source_id=:sid ORDER BY r.external_id"""), {"sid": sid})).mappings()

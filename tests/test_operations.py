@@ -32,3 +32,15 @@ def test_restore_refuses_unsafe_destination_before_any_docker_call(name):
     result = subprocess.run(["sh", "scripts/restore.sh", "/does-not-exist.dump", name], cwd=ROOT, capture_output=True)
     assert result.returncode == 2
     assert b"Unsafe target database name" in result.stderr
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Operator script requires POSIX shell")
+def test_n8_failed_dump_removes_partial_archive(tmp_path):
+    docker = tmp_path / "docker"
+    docker.write_text("#!/bin/sh\nprintf 'partial backup'\nexit 1\n")
+    docker.chmod(0o700)
+    destination = tmp_path / "backups"
+    result = subprocess.run(["sh", "scripts/backup.sh"], cwd=ROOT, capture_output=True,
+        env={**os.environ, "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"], "BACKUP_DIR": str(destination)})
+    assert result.returncode != 0
+    assert list(destination.iterdir()) == []

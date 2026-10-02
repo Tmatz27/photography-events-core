@@ -43,6 +43,11 @@ INSERT INTO assessment_opportunities(opportunity_id,assessment_run_id,location_i
  drive_minutes,drive_basis,reason,awaiting,definition_key,definition_version,definition_hash,engine_version,
  data_as_of,valid_until,product FROM opportunities;
 
+ALTER TABLE assessment_opportunities ADD COLUMN product_sha256 TEXT;
+UPDATE assessment_opportunities SET product_sha256=encode(sha256(convert_to(product::text,'UTF8')),'hex');
+ALTER TABLE assessment_opportunities ALTER COLUMN product_sha256 SET NOT NULL;
+ALTER TABLE assessment_opportunities ADD CHECK(length(product_sha256)=64);
+
 UPDATE assessment_runs a SET expected_items=(SELECT count(*) FROM assessment_opportunities p WHERE p.assessment_run_id=a.id),
  state='incomplete',error_code='legacy_provenance_unverified';
 UPDATE assessment_current SET assessment_run_id=(SELECT id FROM assessment_runs ORDER BY data_as_of DESC,generated_at DESC,id DESC LIMIT 1);

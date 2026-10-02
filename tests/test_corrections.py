@@ -250,6 +250,7 @@ async def test_r22_required_newer_inputs_observe_grace(db):
     "UPDATE assessment_opportunities SET product=product-'reason'",
     "UPDATE assessment_opportunities SET product=jsonb_set(product,'{confidence}','101')",
     "UPDATE assessment_opportunities SET product=jsonb_set(product,'{confidence}','12')",
+    "UPDATE assessment_opportunities SET product=jsonb_set(product,'{location,latitude}','35.212345678')",
     "UPDATE assessment_runs SET expected_items=99 WHERE status='published'",
 ])
 async def test_n3_corrupt_current_product_is_sanitized_503(db, damage):
@@ -275,3 +276,16 @@ async def test_n1_writes_are_guarded_and_pool_recovers(db):
     assert db.engine.pool.checkedout() == 0
     db.timeout = 3
     await db.ready()
+
+
+@pytest.mark.parametrize("changes", [
+    {"scientific_name": ""}, {"latitude": None}, {"latitude": float("inf")},
+    {"observed_at": "invalid"}, {"observed_at": "9999-12-31T23:00:00+00:00"}, {"count": -1},
+])
+async def test_r5_malformed_variants_never_discard_good_record(db, changes):
+    record = DATA["sightings"][0]
+    await ingest_fixture(db, data_at(sightings=[record, {**record, "external_id": "malformed", **changes}]))
+    current = await db.opportunities(NOW)
+    assert current.items[0].evidence_state == "calendar_presence"
+    assert (await query(db, "SELECT sum(records_rejected) AS n FROM source_runs"))[0]["n"] == 1
+    assert len(await query(db, "SELECT id FROM raw_observations")) == 2

@@ -15,6 +15,19 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r requirements-dev.lock
+      - uses: actions/checkout@v4
+        with:
+          repository: Tmatz27/Home-assistant-photography-events
+          ref: 4905e35c0668c37737d84685e65d2a806f7c92f7
+          path: evidence/legacy
+      - name: Independent legacy recapture and differential comparisons
+        env:
+          PYTHONPATH: src
+        run: |
+          python tools/capture_legacy_parity.py --legacy-repo evidence/legacy --output /tmp/legacy-recaptured.json
+          cmp tests/fixtures/legacy_tule_elk.json /tmp/legacy-recaptured.json
+          python tools/verify_legacy_pipeline.py --legacy-repo evidence/legacy --output /tmp/legacy-pipeline.json --report evidence/parity.json --count 18000
+          cmp tests/fixtures/legacy_pipeline.json /tmp/legacy-pipeline.json
       - name: Static checks and portable tests
         env:
           PYTHONPATH: src
@@ -35,4 +48,6 @@ jobs:
             evidence/acceptance.json
             evidence/pytest.log
             evidence/tests.xml
+            evidence/parity.json
+            evidence/frozen-database.json
           if-no-files-found: warn

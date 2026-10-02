@@ -200,7 +200,8 @@ class Database:
                 WHERE data_as_of=:stamp AND error_code='input_conflict')"""), {"stamp": a["data_as_of"]})).scalar()
             if conflict:
                 raise AssessmentConflict()
-            rows = (await c.execute(text("""SELECT p.*,o.occurrence_key,o.phenomenon_key
+            rows = (await c.execute(text("""SELECT p.*,o.occurrence_key,o.phenomenon_key,
+                p.product_sha256=encode(sha256(convert_to(p.product::text,'UTF8')),'hex') AS cache_intact
                 FROM assessment_opportunities p JOIN opportunities o ON o.id=p.opportunity_id
                 WHERE p.assessment_run_id=:aid ORDER BY p.starts_at,o.occurrence_key"""), {"aid": a["id"]})).mappings().all()
             if len(rows) != a["expected_items"]:
@@ -208,6 +209,8 @@ class Database:
             items = []
             try:
                 for row in rows:
+                    if not row["cache_intact"]:
+                        raise InvalidStoredProduct()
                     product = Opportunity.model_validate(row["product"])
                     # The cache is versioned and validated against authoritative
                     # typed decisions. Corruption never becomes a partial success.

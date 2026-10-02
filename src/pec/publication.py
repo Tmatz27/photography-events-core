@@ -79,8 +79,9 @@ async def generate(db, data, *, evaluator=None):
                 {"key": item.occurrence_key, "phenomenon": item.phenomenon_key, "lid": lid})).scalar_one()
             values = {**item.model_dump(), "location_id": lid, "aid": aid, "oid": oid,
                       "product": json.dumps(item.model_dump(mode="json"))}
-            await c.execute(text(f"""INSERT INTO assessment_opportunities(assessment_run_id,opportunity_id,{','.join(DECISION)},product)
-                VALUES(:aid,:oid,{','.join(':'+key for key in DECISION)},CAST(:product AS jsonb))"""), values)
+            await c.execute(text(f"""INSERT INTO assessment_opportunities(assessment_run_id,opportunity_id,{','.join(DECISION)},product,product_sha256)
+                VALUES(:aid,:oid,{','.join(':'+key for key in DECISION)},CAST(:product AS jsonb),
+                encode(sha256(convert_to(CAST(:product AS jsonb)::text,'UTF8')),'hex'))"""), values)
             for nid in evidence.get(item.occurrence_key, []):
                 await c.execute(text("""INSERT INTO opportunity_observation_evidence
                     VALUES(:aid,:oid,:nid,'SUPPORTING')"""), {"aid": aid, "oid": oid, "nid": nid})

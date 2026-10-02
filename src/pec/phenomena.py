@@ -109,7 +109,7 @@ opportunity JSON. Fetch timestamps are deliberately absent from evidence age.
         # The product result is valid only while this safety check is current.
         # No stale observation is renewed by loading the same raw fixture again.
         validity = min(end, now + timedelta(hours=3))
-        if presence:
+        if state == "calendar_presence":
             validity = min(validity, max(datetime.fromisoformat(s["observed_at"]) for s in presence) + timedelta(days=14))
         result.append(Opportunity(
             occurrence_key=f"{d['key']}-{first.isoformat()}", phenomenon_key=d["key"],

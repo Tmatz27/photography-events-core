@@ -38,6 +38,21 @@ async def main():
         durations = await asyncio.wait_for(asyncio.gather(*(request(i) for i in range(8))), 5)
         assert db.engine.pool.checkedout() == 0, db.engine.pool.status()
         result = {"requests": 8, "deadline": 2, "seconds": durations, "checked_out_after_failure": 0}
+        # Cold connections can freeze during the handshake, before pool checkout.
+        # Exercise that separate cancellation path while the DB is still paused.
+        cold = Database(settings)
+        cold_app = create_app(settings, cold)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=cold_app), base_url="http://core") as cold_client:
+            async def cold_request():
+                start = asyncio.get_running_loop().time()
+                response = await cold_client.get("/health/ready")
+                elapsed = asyncio.get_running_loop().time() - start
+                assert response.status_code == 503 and elapsed <= 3
+                return round(elapsed, 4)
+            result["cold_seconds"] = await asyncio.wait_for(asyncio.gather(*(cold_request() for _ in range(8))), 5)
+            assert cold.engine.pool.checkedout() == 0
+            result["cold_checked_out_after_failure"] = 0
+        await cold.close()
         (ROOT / "frozen-results.json").write_text(json.dumps(result))
         (ROOT / "frozen-done").touch()
         await wait_file("frozen-recover")

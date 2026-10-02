@@ -1,0 +1,1066 @@
+{
+  "legacy_sha": "4905e35c0668c37737d84685e65d2a806f7c92f7",
+  "synthetic": true,
+  "pipeline": "digest(raw, now, 14*24) -> build_seasonal_opportunities -> annotate",
+  "cases": [
+    {
+      "name": "normal",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "private",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": true
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "future_inside_grace",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-27T17:30:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "future_waits_without_refetch",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-27T19:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": false,
+              "presentation": "watching",
+              "significance": 85,
+              "confidence": 70,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar",
+              "reason": "Documented peak underway.",
+              "awaiting": "Documented annual cycle from the site's managers or monitors; conditions and access on the day still matter.",
+              "blockers": [
+                "encounter unconfirmed: needs a recent report of the animals near the site"
+              ],
+              "held": false,
+              "cant_miss": false,
+              "watching": true,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        },
+        {
+          "input": {
+            "now": "2026-09-27T18:06:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "incremental_empty_batch",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        },
+        {
+          "input": {
+            "now": "2026-09-28T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "corrected_timestamp",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        },
+        {
+          "input": {
+            "now": "2026-09-27T18:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-07T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": false,
+              "presentation": "watching",
+              "significance": 85,
+              "confidence": 70,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar",
+              "reason": "Documented peak underway.",
+              "awaiting": "Documented annual cycle from the site's managers or monitors; conditions and access on the day still matter.",
+              "blockers": [
+                "encounter unconfirmed: needs a recent report of the animals near the site"
+              ],
+              "held": false,
+              "cant_miss": false,
+              "watching": true,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "corrected_coordinates",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        },
+        {
+          "input": {
+            "now": "2026-09-27T18:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 40,
+                "longitude": -123,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": false,
+              "presentation": "watching",
+              "significance": 85,
+              "confidence": 70,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar",
+              "reason": "Documented peak underway.",
+              "awaiting": "Documented annual cycle from the site's managers or monitors; conditions and access on the day still matter.",
+              "blockers": [
+                "encounter unconfirmed: needs a recent report of the animals near the site"
+              ],
+              "held": false,
+              "cant_miss": false,
+              "watching": true,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "corrected_species",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        },
+        {
+          "input": {
+            "now": "2026-09-27T18:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus elaphus",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": false,
+              "presentation": "watching",
+              "significance": 85,
+              "confidence": 70,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar",
+              "reason": "Documented peak underway.",
+              "awaiting": "Documented annual cycle from the site's managers or monitors; conditions and access on the day still matter.",
+              "blockers": [
+                "encounter unconfirmed: needs a recent report of the animals near the site"
+              ],
+              "held": false,
+              "cant_miss": false,
+              "watching": true,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "legacy_place_grouping",
+      "steps": [
+        {
+          "input": {
+            "now": "2026-09-27T17:00:00+00:00",
+            "horizon_days": 60,
+            "max_drive_hours": 6.0,
+            "home": [
+              34.742,
+              -120.5724
+            ],
+            "alerts": [],
+            "sightings": [
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 35.2,
+                "longitude": -119.8,
+                "observed_at": "2026-09-25T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "fixture-elk-1",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              },
+              {
+                "species": "Tule elk",
+                "scientific_name": "Cervus canadensis nannodes",
+                "latitude": 40,
+                "longitude": -119.8,
+                "observed_at": "2026-09-26T17:00:00+00:00",
+                "source": "iNaturalist",
+                "external_id": "second",
+                "observers": [
+                  "fixture-a"
+                ],
+                "count": 1,
+                "private_location": false
+              }
+            ],
+            "phenomenon": "tule_elk_rut"
+          },
+          "expected": [
+            {
+              "phenomenon_key": "tule_elk_rut",
+              "occurrence_key": "tule_elk_rut-2026-09-15",
+              "starts_at": "2026-09-15T00:00:00+00:00",
+              "ends_at": "2026-10-10T23:59:59.999999+00:00",
+              "eligibility": true,
+              "presentation": "cant_miss",
+              "significance": 85,
+              "confidence": 78,
+              "urgency": 85,
+              "drive_minutes": 81.0,
+              "drive_basis": "estimate",
+              "safety_state": "safe",
+              "access_state": "public",
+              "evidence_state": "calendar_presence",
+              "reason": "Peak of the documented annual cycle, with a recent report near the site.",
+              "awaiting": "Documented annual cycle and a recent report near the site. Conditions and access on the day still matter.",
+              "blockers": [],
+              "held": false,
+              "cant_miss": true,
+              "watching": false,
+              "gear": {
+                "take": "Sony FE 200-600mm f/5.6-6.3 G OSS",
+                "optional": [
+                  "Sony FE 70-200mm f/2.8 GM OSS II for animals in their landscape"
+                ],
+                "skip": [
+                  "Sony FE 2x Teleconverter: dawn light and moving animals need shutter speed more than reach. The 2x costs two stops (f/12.6 on the 200-600), slows autofocus and magnifies shimmer and shake; an APS-C crop of the 61 MP file keeps about 26 MP."
+                ],
+                "start": "1/1000 s or faster, f/6.3, auto ISO; animal-eye AF, continuous.",
+                "support": "Beanbag on the car window or a gimbal head; stay in or beside the vehicle",
+                "technique": "Burst for sparring; backlit breath and dust at first light is the frame.",
+                "video": "DJI Osmo Pocket 3 for bugling audio",
+                "drone": "DJI Mini 3: not appropriate - wildlife is the subject, and a drone disturbs it.",
+                "drone_status": "not_appropriate"
+              },
+              "ethics": "Stay in or beside the vehicle; keep well back from bulls.",
+              "safety_summary": "No NWS warnings for this place and time.",
+              "safety_notes": [
+                "Carrizo roads are impassable clay when wet."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
