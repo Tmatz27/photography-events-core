@@ -52,7 +52,8 @@ async def generate(db, data, *, evaluator=None):
         for item in items:
             if item.data_as_of != now:
                 raise ValueError("generation timestamp mismatch")
-        good_sources = {s["key"] for s in sources if s["status"] == "success"}
+        good_sources = {s["key"] for s in sources if s["status"] == "success"
+                        and (s["key"] != "nws_alerts" or s["context_payload"] is not None)}
         state = "complete" if REQUIRED_SOURCES <= good_sources else "incomplete"
         aid = (await c.execute(text("""INSERT INTO assessment_runs(generated_at,data_as_of,valid_until,scope,state,
             status,input_fingerprint,engine_version,definition_hash,error_code,expected_items)

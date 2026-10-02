@@ -98,6 +98,19 @@ ALTER TABLE normalized_observations ADD COLUMN behavior TEXT;
 ALTER TABLE normalized_observations ADD COLUMN source_run_id BIGINT REFERENCES source_runs(id);
 ALTER TABLE normalized_observations ADD COLUMN content_sha256 TEXT;
 UPDATE normalized_observations n SET source_run_id=r.source_run_id FROM raw_observations r WHERE r.id=n.raw_observation_id;
+-- Reconcile only the installed fixture policy. Old mismatched assertions stay
+-- available to legacy evidence but cannot participate in new assessments.
+UPDATE normalized_observations n SET superseded_at=r.fetched_at
+ FROM raw_observations r JOIN sources s ON s.id=r.source_id
+ WHERE n.raw_observation_id=r.id AND s.key='fixture_observations' AND n.subject_type='species'
+ AND (n.subject_key IS DISTINCT FROM r.raw_payload->>'scientific_name' OR n.observed_at IS DISTINCT FROM r.observed_at);
+-- Private observations lost usable analysis geometry in the first pass.
+-- Restore the restricted internal point where stored raw provenance supports it.
+UPDATE normalized_observations n SET analysis_geometry=r.exact_geometry,public_geometry=NULL,
+ sensitive=(r.sensitive OR n.sensitive),precision_class='withheld'
+ FROM raw_observations r JOIN sources s ON s.id=r.source_id
+ WHERE n.raw_observation_id=r.id AND s.key='fixture_observations' AND n.subject_type='species'
+ AND n.superseded_at IS NULL AND r.exact_geometry IS NOT NULL;
 CREATE UNIQUE INDEX ux_normalized_current ON normalized_observations(raw_observation_id,subject_type,subject_key)
  WHERE superseded_at IS NULL;
 CREATE INDEX ix_normalized_current_time ON normalized_observations(observed_at,valid_until) WHERE superseded_at IS NULL;

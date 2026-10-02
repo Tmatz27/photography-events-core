@@ -24,7 +24,7 @@ def definition(key="tule_elk_rut"):
     result = json.loads(path.read_text(encoding="utf-8"))
     digest = hashlib.sha256()
     # Decision code AND descriptive rule data participate in provenance.
-    for file in [path, ROOT / "phenomena.py", ROOT / "legacy_safety.py", ROOT / "spatial.py"]:
+    for file in [path, ROOT / "phenomena.py", ROOT / "legacy_safety.py", ROOT / "spatial.py", ROOT / "ingestion.py"]:
         digest.update(file.name.encode())
         digest.update(file.read_bytes().replace(b"\r\n", b"\n"))
     result["hash"] = digest.hexdigest()

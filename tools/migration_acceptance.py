@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from pec.config import Settings
-from pec.database import DECISION, Database
+from pec.database import DECISION, MATERIAL, Database
 from pec.phenomena import evaluate
 
 
@@ -36,8 +36,22 @@ async def main(mode):
                 {','.join(DECISION)},product) VALUES(:occurrence_key,:phenomenon_key,:aid,
                 {','.join(':'+key for key in DECISION)},CAST(:product AS jsonb))"""), values)
             sid = (await c.execute(text("INSERT INTO sources(key,name,source_type) VALUES('fixture_observations','Legacy seed','fixture') RETURNING id"))).scalar_one()
-            await c.execute(text("""INSERT INTO raw_observations(source_id,external_id,observed_at,fetched_at,raw_payload,parser_version)
-                VALUES(:sid,'legacy-observation',:now,:now,'{"preserve":"provider data"}','fixture-1')"""), {"sid": sid, "now": now})
+            rid = (await c.execute(text("""INSERT INTO source_runs(source_id,cycle_key,attempt_number,started_at,completed_at,status)
+                VALUES(:sid,'legacy',1,:now,:now,'success') RETURNING id"""), {"sid": sid, "now": now})).scalar_one()
+            raw = (await c.execute(text("""INSERT INTO raw_observations(source_id,source_run_id,external_id,observed_at,fetched_at,
+                raw_payload,parser_version,exact_geometry)
+                VALUES(:sid,:rid,'legacy-observation',:now,:now,CAST(:payload AS jsonb),'fixture-1',
+                ST_SetSRID(ST_MakePoint(-119.8,35.2),4326)) RETURNING id"""),
+                {"sid": sid, "rid": rid, "now": now, "payload": json.dumps({"preserve": "provider data",
+                "scientific_name": "Cervus canadensis nannodes", "private_location": True})})).scalar_one()
+            nid = (await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,
+                observed_at,valid_until,sensitive,precision_class) VALUES(:raw,'species','Cervus canadensis nannodes',
+                :now,:valid,TRUE,'withheld') RETURNING id"""),
+                {"raw": raw, "now": now, "valid": now + timedelta(days=14)})).scalar_one()
+            await c.execute(text("INSERT INTO opportunity_observation_evidence VALUES(1,:nid,'SUPPORTING')"), {"nid": nid})
+            await c.execute(text("INSERT INTO opportunity_context_evidence VALUES(1,:rid,'NEUTRAL')"), {"rid": rid})
+            await c.execute(text(f"""INSERT INTO opportunity_revisions(opportunity_id,recorded_at,{','.join(MATERIAL)})
+                VALUES(1,:now,{','.join(':'+key for key in MATERIAL)})"""), {**values, "now": now})
         await engine.dispose()
     else:
         db = Database(settings)
@@ -52,6 +66,11 @@ async def main(mode):
             assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0002"
             assert (await c.execute(text("SELECT occurrence_key FROM opportunities WHERE id=1"))).scalar() == result.items[0].occurrence_key
             assert (await c.execute(text("SELECT raw_payload->>'preserve' FROM raw_observations"))).scalar() == "provider data"
+            assert (await c.execute(text("SELECT sensitive AND analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()
+            assert (await c.execute(text("SELECT count(*) FROM legacy_observation_evidence"))).scalar() == 1
+            assert (await c.execute(text("SELECT count(*) FROM legacy_context_evidence"))).scalar() == 1
+            assert (await c.execute(text("SELECT count(*) FROM opportunity_revisions WHERE provenance_status='legacy_unscoped' AND assessment_run_id IS NULL"))).scalar() == 1
+            assert (await c.execute(text("SELECT count(*) FROM opportunity_observation_evidence"))).scalar() == 0
         await db.close()
         print("R20 passed: 0001 identity/provider data preserved, 0002 API reads conservative current generation")
 
