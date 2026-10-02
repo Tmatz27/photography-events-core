@@ -1,9 +1,10 @@
-"""Bounded async database access; SQL migrations are the authoritative models."""
+"""Bounded DB units of work and consistent generation reads."""
 import asyncio
-import json
+from contextvars import ContextVar
 from datetime import timedelta
 
-from sqlalchemy import text
+from pydantic import ValidationError
+from sqlalchemy import event as sa_event, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -12,20 +13,35 @@ from .logging import event
 from .schemas import Opportunity, OpportunityList, SourceHealth
 
 VERSION = dict(core_version=CORE_VERSION, api_version=API_VERSION, schema_version=SCHEMA_VERSION)
-# Versioned freshness policy, not executable JSON in the database.
 SOURCE_TTL = {"nws_alerts": timedelta(hours=3), "fixture_observations": timedelta(hours=24)}
 REQUIRED_SOURCES = frozenset(SOURCE_TTL)
 MATERIAL = ("presentation", "eligibility", "significance", "confidence", "urgency", "evidence_state",
             "access_state", "safety_state", "condition_state", "reason", "definition_version",
             "definition_hash", "engine_version")
+DECISION = tuple(dict.fromkeys(("location_id", "starts_at", "ends_at", "category", *MATERIAL,
+    "drive_minutes", "drive_basis", "awaiting", "definition_key", "data_as_of", "valid_until")))
+_ACTIVE = ContextVar("core_database_operation", default=None)
 
 
 class DatabaseUnavailable(Exception):
-    """Intentionally contains no database diagnostic string."""
+    """Machine code only. Never carry a driver/SQL/credential diagnostic."""
+    code = "not_ready"
 
 
 class SchemaUnavailable(DatabaseUnavailable):
     pass
+
+
+class InvalidStoredProduct(DatabaseUnavailable):
+    code = "invalid_stored_product"
+
+
+class AssessmentConflict(DatabaseUnavailable):
+    code = "assessment_conflict"
+
+
+class GenerationFailed(DatabaseUnavailable):
+    code = "generation_failed"
 
 
 def project_source(row, now):
@@ -37,10 +53,10 @@ def project_source(row, now):
                         error_code=row["error_code"])
 
 
-def envelope(assessment, items, sources, now, presentation=None, category=None):
+def envelope(assessment, items, sources, now, presentation=None, category=None, *, outdated=()):
     by_key = {s.key: s for s in sources}
     missing = sorted(key for key in REQUIRED_SOURCES if key not in by_key or by_key[key].state != "UP")
-    degraded = sorted(s.key for s in sources if s.state != "UP")
+    degraded = sorted(set(outdated) | {s.key for s in sources if s.state != "UP"})
     state = "complete"
     if not assessment or assessment["valid_until"] <= now or missing:
         state = "incomplete"
@@ -48,60 +64,87 @@ def envelope(assessment, items, sources, now, presentation=None, category=None):
         state = "degraded"
     public = []
     for item in items:
-        if item.valid_until <= now or missing:
-            # Stale saved intelligence is still readable as planning context,
-            # but cannot remain a travel recommendation indefinitely.
+        if item.valid_until <= now or state != "complete":
             item = item.model_copy(update={"eligibility": False, "presentation": "held", "held": True,
                 "watching": False, "safety_state": "unknown", "condition_state": "unknown",
-                "reason": "Assessment stale or required source unavailable; refresh before acting.",
+                "reason": "Assessment is not current; refresh before acting.",
+                "awaiting": "A successful assessment using current required inputs.",
                 "safety_summary": "Safety has not been checked with current data.",
-                "blockers": sorted(set(item.blockers + ["current assessment unavailable"]))})
+                "safety_notes": [], "blockers": ["current assessment unavailable"]})
         if presentation is not None and item.presentation != presentation:
             continue
         if category is not None and item.category != category:
             continue
         public.append(item)
-    return OpportunityList(**VERSION, generated_at=now,
-        data_as_of=assessment["data_as_of"] if assessment else None, assessment_state=state,
+    return OpportunityList(**VERSION, assessment_id=assessment.get("id") if assessment else None,
+        generated_at=now, data_as_of=assessment["data_as_of"] if assessment else None, assessment_state=state,
         missing_required_sources=missing, degraded_sources=degraded, items=public)
 
 
 class Database:
     def __init__(self, settings):
         self.timeout = settings.database_timeout
-        self.engine = create_async_engine(settings.database_url, pool_pre_ping=True, pool_size=5,
+        self.grace = timedelta(seconds=settings.evaluation_grace)
+        # Perform readiness/ping SQL after checkout, where the deadline guard owns
+        # the driver. An implicit pre-ping can hang before we can terminate it.
+        self.engine = create_async_engine(settings.database_url, pool_pre_ping=False, pool_size=5,
             max_overflow=0, pool_timeout=self.timeout, hide_parameters=True,
-            connect_args={"timeout": self.timeout, "command_timeout": self.timeout,
-                          "server_settings": {"statement_timeout": str(int(self.timeout * 1000))}})
+            connect_args={"timeout": self.timeout, "command_timeout": self.timeout * 2,
+                          "server_settings": {"statement_timeout": str(int(self.timeout * 2000))}})
         self.failed = False
+
+        @sa_event.listens_for(self.engine.sync_engine, "checkout")
+        def track_connection(connection, record, proxy):
+            active = _ACTIVE.get()
+            if active is not None:
+                active.add(connection.driver_connection)
+
+        @sa_event.listens_for(self.engine.sync_engine, "checkin")
+        def untrack_connection(connection, record):
+            active = _ACTIVE.get()
+            if active is not None and connection is not None:
+                active.discard(connection.driver_connection)
 
     async def close(self):
         await self.engine.dispose()
 
-    async def load_backoff(self, key, now):
-        from .scheduler import State
-        async def run():
-            async with self.engine.connect() as c:
-                row = (await c.execute(text("""SELECT b.next_allowed_at,b.consecutive_failures
-                    FROM source_backoff b JOIN sources s ON s.id=b.source_id WHERE s.key=:key"""),
-                    {"key": key})).mappings().first()
-                return State(**row) if row else State(now)
-        return await self._guard(run)
-
-    async def save_backoff(self, key, state):
-        async def run():
-            async with self.engine.begin() as c:
-                sid = (await c.execute(text("SELECT id FROM sources WHERE key=:key"), {"key": key})).scalar_one()
-                await c.execute(text("""INSERT INTO source_backoff VALUES(:sid,:next,:failures)
-                    ON CONFLICT(source_id) DO UPDATE SET next_allowed_at=EXCLUDED.next_allowed_at,
-                    consecutive_failures=EXCLUDED.consecutive_failures"""),
-                    {"sid": sid, "next": state.next_allowed_at, "failures": state.consecutive_failures})
-        await self._guard(run)
-
     async def _guard(self, operation):
+        drivers = set()
+        async def tracked():
+            token = _ACTIVE.set(drivers)
+            try:
+                return await operation()
+            finally:
+                _ACTIVE.reset(token)
+        task = asyncio.create_task(tracked())
+
+        async def abort():
+            # asyncpg terminate() aborts locally without waiting for the server.
+            # Do this BEFORE cancellation enters SQLAlchemy's shielded graceful
+            # close/rollback path, which can exceed the caller's deadline.
+            for driver in drivers:
+                driver.terminate()
+            task.cancel()
+            done, _ = await asyncio.wait({task}, timeout=0.5)
+            if done:
+                try:
+                    task.result()
+                except (Exception, asyncio.CancelledError):
+                    pass
+            else:
+                # Consume a late exception; never expose its diagnostic.
+                task.add_done_callback(lambda t: None if t.cancelled() else t.exception())
+                event("database_unavailable", code="cleanup_deadline")
+
         try:
-            async with asyncio.timeout(self.timeout):
-                result = await operation()
+            done, _ = await asyncio.wait({task}, timeout=self.timeout)
+            if not done:
+                await abort()
+                raise TimeoutError()
+            result = task.result()
+        except asyncio.CancelledError:
+            await abort()
+            raise
         except SchemaUnavailable:
             event("schema_issue", code="schema_or_postgis_mismatch")
             raise
@@ -115,81 +158,102 @@ class Database:
             self.failed = False
         return result
 
+    async def transaction(self, operation, *, write=False):
+        async def run():
+            async with self.engine.connect() as base:
+                connection = base if write else await base.execution_options(isolation_level="REPEATABLE READ")
+                async with connection.begin():
+                    return await operation(connection)
+        return await self._guard(run)
+
     async def _check(self, connection):
         version = (await connection.execute(text("SELECT version_num FROM alembic_version"))).scalar_one()
         postgis = (await connection.execute(text("SELECT extversion FROM pg_extension WHERE extname='postgis'"))).scalar_one_or_none()
         if version != SCHEMA_VERSION or not postgis or not postgis.startswith("3.6"):
             raise SchemaUnavailable()
-        # Check the actual application relations, not merely a responsive socket.
-        await connection.execute(text("SELECT id FROM opportunities LIMIT 0"))
+        await connection.execute(text("SELECT assessment_run_id FROM assessment_current LIMIT 0"))
+        await connection.execute(text("SELECT opportunity_id FROM assessment_opportunities LIMIT 0"))
         await connection.execute(text("SELECT key FROM source_health_current LIMIT 0"))
 
     async def ready(self):
-        async def run():
-            async with self.engine.connect() as connection:
-                await self._check(connection)
-        await self._guard(run)
+        await self.transaction(self._check)
 
     async def health(self, now):
-        async def run():
-            async with self.engine.connect() as connection:
-                await self._check(connection)
-                rows = (await connection.execute(text("SELECT * FROM source_health_current ORDER BY key"))).mappings()
-                return [project_source(row, now) for row in rows]
-        return await self._guard(run)
+        async def run(c):
+            await self._check(c)
+            rows = (await c.execute(text("SELECT * FROM source_health_current ORDER BY key"))).mappings()
+            return [project_source(row, now) for row in rows]
+        return await self.transaction(run)
 
     async def opportunities(self, now, presentation=None, category=None, occurrence_key=None):
-        async def run():
-            # A consistent read prevents a new assessment header being paired
-            # with old opportunity membership during a concurrent evaluation.
-            async with self.engine.connect() as base:
-                connection = await base.execution_options(isolation_level="REPEATABLE READ")
-                async with connection.begin():
-                    await self._check(connection)
-                    a = (await connection.execute(text("SELECT * FROM assessment_runs ORDER BY generated_at DESC,id DESC LIMIT 1"))).mappings().first()
-                    rows = []
-                    if occurrence_key:
-                        rows = (await connection.execute(text("SELECT product FROM opportunities WHERE occurrence_key=:key"), {"key": occurrence_key})).scalars().all()
-                    elif a:
-                        rows = (await connection.execute(text("SELECT product FROM opportunities WHERE assessment_run_id=:id ORDER BY starts_at,occurrence_key"), {"id": a["id"]})).scalars().all()
-                    health = (await connection.execute(text("SELECT * FROM source_health_current"))).mappings()
-                    return envelope(a, [Opportunity.model_validate(row) for row in rows],
-                                    [project_source(row, now) for row in health], now, presentation, category)
-        return await self._guard(run)
+        async def run(c):
+            await self._check(c)
+            a = (await c.execute(text("""SELECT a.* FROM assessment_current p
+                JOIN assessment_runs a ON a.id=p.assessment_run_id WHERE p.id=1"""))).mappings().first()
+            if a is None:
+                if (await c.execute(text("SELECT EXISTS(SELECT 1 FROM assessment_runs WHERE status='published')"))).scalar():
+                    raise InvalidStoredProduct()
+                return envelope(None, [], [], now)
+            if a["status"] != "published":
+                raise InvalidStoredProduct()
+            conflict = (await c.execute(text("""SELECT EXISTS(SELECT 1 FROM assessment_runs
+                WHERE data_as_of=:stamp AND error_code='input_conflict')"""), {"stamp": a["data_as_of"]})).scalar()
+            if conflict:
+                raise AssessmentConflict()
+            rows = (await c.execute(text("""SELECT p.*,o.occurrence_key,o.phenomenon_key
+                FROM assessment_opportunities p JOIN opportunities o ON o.id=p.opportunity_id
+                WHERE p.assessment_run_id=:aid ORDER BY p.starts_at,o.occurrence_key"""), {"aid": a["id"]})).mappings().all()
+            if len(rows) != a["expected_items"]:
+                raise InvalidStoredProduct()
+            items = []
+            try:
+                for row in rows:
+                    product = Opportunity.model_validate(row["product"])
+                    # The cache is versioned and validated against authoritative
+                    # typed decisions. Corruption never becomes a partial success.
+                    for key in (*DECISION, "occurrence_key", "phenomenon_key"):
+                        if key != "location_id" and getattr(product, key) != row[key]:
+                            raise InvalidStoredProduct()
+                    if occurrence_key is None or row["occurrence_key"] == occurrence_key:
+                        items.append(product.model_copy(update={"assessment_id": a["id"]}))
+            except (ValidationError, TypeError, ValueError):
+                raise InvalidStoredProduct() from None
+            provenance = (await c.execute(text("""SELECT s.key,p.role,p.required,p.consulted,
+                used.content_sha256 AS used_hash,used.status AS used_status,used.id AS used_id,
+                latest.id AS latest_id,latest.completed_at AS latest_at,latest.content_sha256 AS latest_hash
+                FROM assessment_sources p JOIN sources s ON s.id=p.source_id
+                LEFT JOIN source_runs used ON used.id=p.source_run_id
+                LEFT JOIN LATERAL (SELECT r.* FROM source_runs r WHERE r.source_id=s.id AND r.status='success'
+                    ORDER BY r.completed_at DESC,r.id DESC LIMIT 1) latest ON TRUE
+                WHERE p.assessment_run_id=:aid AND (p.required OR p.consulted)"""), {"aid": a["id"]})).mappings().all()
+            keys = {p["key"] for p in provenance}
+            health_rows = (await c.execute(text("SELECT * FROM source_health_current"))).mappings()
+            health = [project_source(row, now) for row in health_rows if row["key"] in keys]
+            outdated = {p["key"] for p in provenance if p["latest_id"] is not None
+                and p["latest_id"] != p["used_id"] and now - p["latest_at"] >= self.grace
+                and (p["used_status"] != "success" or p["latest_hash"] != p["used_hash"])}
+            return envelope(dict(a), items, health, now, presentation, category, outdated=outdated)
+        return await self.transaction(run)
 
-    async def persist(self, data, items, normalized_ids=(), context_ids=()):
-        """Transactional evaluated product write, shared by fixture and future collectors."""
-        async def run():
-            from datetime import datetime
-            now = datetime.fromisoformat(data["now"])
-            async with self.engine.begin() as c:
-                # Single evaluator in M1. Lock survives neither crash nor commit.
-                await c.execute(text("SELECT pg_advisory_xact_lock(7340191)"))
-                aid = (await c.execute(text("""INSERT INTO assessment_runs(generated_at,data_as_of,valid_until,scope,state)
-                    VALUES(:now,:now,:valid,'tule_elk_rut',:state) RETURNING id"""),
-                    {"now": now, "valid": now + timedelta(hours=3), "state": "complete" if data.get("alerts") is not None else "incomplete"})).scalar_one()
-                for item in items:
-                    loc = item.location
-                    lid = (await c.execute(text("""INSERT INTO locations(key,name,geometry,public_geometry,location_type,sensitivity)
-                        VALUES(:key,:name,ST_SetSRID(ST_MakePoint(:lon,:lat),4326),
-                        ST_SetSRID(ST_MakePoint(:lon,:lat),4326),'public_viewpoint','public')
-                        ON CONFLICT(key) DO UPDATE SET name=EXCLUDED.name RETURNING id"""),
-                        {"key": loc.key, "name": loc.name, "lat": loc.latitude, "lon": loc.longitude})).scalar_one()
-                    await c.execute(text("INSERT INTO phenomenon_locations VALUES(:key,:location,'primary') ON CONFLICT DO NOTHING"), {"key": item.definition_key, "location": lid})
-                    previous = (await c.execute(text("SELECT * FROM opportunities WHERE occurrence_key=:key"), {"key": item.occurrence_key})).mappings().first()
-                    values = item.model_dump()
-                    values.update(location_id=lid, assessment_run_id=aid, product=json.dumps(item.model_dump(mode="json")))
-                    columns = ["occurrence_key", "phenomenon_key", "location_id", "assessment_run_id", "starts_at", "ends_at", "category",
-                               *MATERIAL, "drive_minutes", "drive_basis", "awaiting", "definition_key", "data_as_of", "valid_until", "product"]
-                    columns = list(dict.fromkeys(columns))
-                    sql = f"INSERT INTO opportunities ({','.join(columns)}) VALUES ({','.join('CAST(:product AS jsonb)' if k == 'product' else ':' + k for k in columns)}) ON CONFLICT(occurrence_key) DO UPDATE SET "
-                    sql += ','.join(f"{k}=EXCLUDED.{k}" for k in columns if k != "occurrence_key") + " RETURNING id"
-                    oid = (await c.execute(text(sql), values)).scalar_one()
-                    if previous is None or any(previous[k] != values[k] for k in MATERIAL):
-                        await c.execute(text(f"INSERT INTO opportunity_revisions(opportunity_id,recorded_at,{','.join(MATERIAL)}) VALUES(:oid,:now,{','.join(':'+k for k in MATERIAL)})"), {**values, "oid": oid, "now": now})
-                    for nid in normalized_ids:
-                        await c.execute(text("INSERT INTO opportunity_observation_evidence VALUES(:oid,:nid,'SUPPORTING') ON CONFLICT DO NOTHING"), {"oid": oid, "nid": nid})
-                    for rid in context_ids:
-                        await c.execute(text("INSERT INTO opportunity_context_evidence VALUES(:oid,:rid,'NEUTRAL') ON CONFLICT DO NOTHING"), {"oid": oid, "rid": rid})
-        await self._guard(run)
+    async def generate(self, data, *, evaluator=None):
+        from .publication import generate
+        return await generate(self, data, evaluator=evaluator)
+
+    async def load_backoff(self, key, now):
+        from .scheduler import State
+        async def run(c):
+            row = (await c.execute(text("""SELECT b.next_allowed_at,b.consecutive_failures
+                FROM source_backoff b JOIN sources s ON s.id=b.source_id WHERE s.key=:key"""),
+                {"key": key})).mappings().first()
+            return State(**row) if row else State(now)
+        return await self.transaction(run)
+
+    async def save_backoff(self, key, state):
+        async def run(c):
+            sid = (await c.execute(text("SELECT id FROM sources WHERE key=:key"), {"key": key})).scalar_one()
+            await c.execute(text("""INSERT INTO source_backoff VALUES(:sid,:next,:failures)
+                ON CONFLICT(source_id) DO UPDATE SET next_allowed_at=EXCLUDED.next_allowed_at,
+                consecutive_failures=EXCLUDED.consecutive_failures"""),
+                {"sid": sid, "next": state.next_allowed_at, "failures": state.consecutive_failures})
+        await self.transaction(run, write=True)
 

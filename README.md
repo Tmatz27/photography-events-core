@@ -161,6 +161,9 @@ volume measurements. No partitioning or bulk imagery retention is implemented.
 
 ## Backup and restore
 
+Run both operator scripts from the Core repository directory containing
+`compose.yaml` and the intended `.env`; they use that Compose project context.
+
 Run nightly from the existing Unraid scheduling mechanism, with `BACKUP_DIR`
 exported to the mounted Synology destination:
 

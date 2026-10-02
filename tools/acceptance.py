@@ -63,7 +63,14 @@ def main():
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
         compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events_test", "-c", "CREATE EXTENSION postgis")
         test_exec = ("exec", "-T", "-e", "POSTGRES_DB=photography_events_test", "photography-events-core", "python")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0001")
+        compose(*test_exec, "-m", "alembic", "downgrade", "base")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0001")
+        results["migration_0001_round_trip"] = "passed"
+        compose(*test_exec, "tools/migration_acceptance.py", "seed")
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
+        compose(*test_exec, "tools/migration_acceptance.py", "verify")
+        results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
         with (EVIDENCE / "pytest.log").open("w") as log:
@@ -71,10 +78,7 @@ def main():
                 compose(*test_exec, "tools/database_tests.py", stdout=log, stderr=subprocess.STDOUT)
             finally:
                 compose("cp", "photography-events-core:/tmp/core-tests.xml", str(EVIDENCE / "tests.xml"))
-        # Test a full downgrade/upgrade only against the disposable test DB.
-        compose(*test_exec, "-m", "alembic", "downgrade", "base")
-        compose(*test_exec, "-m", "alembic", "upgrade", "head")
-        results["migration_round_trip"] = "passed"
+        results["migration_0002_downgrade"] = "forward-only; restore pre-upgrade backup instead of losing history"
         compose("exec", "-T", "photography-events-core", "python", "-m", "pec", "tests/fixtures/legacy_tule_elk.json")
         key = "tule_elk_rut-2026-09-15"
         first = check("/api/v1/opportunities/" + key)
@@ -85,6 +89,28 @@ def main():
         wait_ready()
         assert check("/api/v1/opportunities/" + key)["occurrence_key"] == key
         results["core_restart"] = "data preserved"
+        probe = subprocess.Popen([*COMPOSE, "exec", "-T", "photography-events-core", "python", "tools/frozen_database_probe.py"], cwd=ROOT)
+        def wait_marker(name):
+            for _ in range(100):
+                if probe.poll() is not None:
+                    raise AssertionError("Frozen database probe exited before handshake")
+                marker = subprocess.run([*COMPOSE, "exec", "-T", "photography-events-core", "test", "-f", "/tmp/" + name],
+                                        cwd=ROOT, capture_output=True)
+                if marker.returncode == 0:
+                    return
+                time.sleep(0.1)
+            raise AssertionError("Frozen database probe handshake timed out")
+        wait_marker("frozen-ready")
+        compose("pause", "photography-events-db")
+        try:
+            compose("exec", "-T", "photography-events-core", "touch", "/tmp/frozen-go")
+            wait_marker("frozen-done")
+        finally:
+            compose("unpause", "photography-events-db")
+            compose("exec", "-T", "photography-events-core", "touch", "/tmp/frozen-recover")
+        assert probe.wait(timeout=30) == 0
+        compose("cp", "photography-events-core:/tmp/frozen-results.json", str(EVIDENCE / "frozen-database.json"))
+        results["R19_frozen_database"] = json.loads((EVIDENCE / "frozen-database.json").read_text())
         compose("stop", "photography-events-db")
         check("/health/live")
         check("/health/ready", 503)

@@ -42,6 +42,7 @@ class Gear(Contract):
 
 
 class Opportunity(Contract):
+    assessment_id: int | None = None
     occurrence_key: str
     phenomenon_key: str
     title: str
@@ -81,6 +82,7 @@ class Opportunity(Contract):
 
 
 class OpportunityList(Version):
+    assessment_id: int | None = None
     generated_at: AwareDatetime
     data_as_of: AwareDatetime | None
     assessment_state: Literal["complete", "incomplete", "degraded"]

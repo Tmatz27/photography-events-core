@@ -44,7 +44,7 @@ def create_app(settings=None, database=None, clock=None):
 
     @app.exception_handler(DatabaseUnavailable)
     async def db_unavailable(request, exc):
-        return error(503, "not_ready", "Core database or schema unavailable")
+        return error(503, exc.code, "Core cannot serve a trustworthy current assessment")
 
     @app.exception_handler(RequestValidationError)
     async def invalid(request, exc):

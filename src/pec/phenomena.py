@@ -32,6 +32,10 @@ def definition(key="tule_elk_rut"):
 
 
 def evaluate(data: dict) -> list[Opportunity]:
+    return evaluate_with_evidence(data)[0]
+
+
+def evaluate_with_evidence(data: dict):
     """Evaluate a bounded logical fixture using the production application layer.
 
 An ingestion adapter supplies normalized species assertions, never final
@@ -56,7 +60,7 @@ opportunity JSON. Fetch timestamps are deliberately absent from evidence age.
                 and observed >= now - timedelta(days=14)
                 and haversine_km(d["latitude"], d["longitude"], s["latitude"], s["longitude"]) <= 120):
             presence.append(s)
-    result = []
+    result, evidence = [], {}
     for year in sorted({now.year - 1, now.year, horizon.year, now.year + 1}):
         first, last = date(year, *d["peak_start"]), date(year, *d["peak_end"])
         if last < now.date() or first > horizon:
@@ -67,6 +71,9 @@ opportunity JSON. Fetch timestamps are deliberately absent from evidence age.
         end = datetime.combine(last, time.max, now.tzinfo)
         underway = first <= now.date() <= last
         state = ("calendar_presence" if presence else "calendar") if near else "season"
+        evidence[f"{d['key']}-{first.isoformat()}"] = sorted({
+            nid for sighting in presence for nid in sighting.get("normalized_ids", [])
+        }) if state == "calendar_presence" else []
         score = min(78 if underway else 65, 74 if presence else 70) if near else 45
         planning_only = not near or score <= 60
         awaiting = (
@@ -120,5 +127,5 @@ opportunity JSON. Fetch timestamps are deliberately absent from evidence age.
             detail=d["photo_tips"], data_as_of=now, valid_until=validity,
             definition_key=d["key"], definition_version=d["version"], definition_hash=d["hash"], engine_version=CORE_VERSION,
         ))
-    return result
+    return result, evidence
 

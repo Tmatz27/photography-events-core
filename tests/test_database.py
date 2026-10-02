@@ -13,7 +13,6 @@ from sqlalchemy.exc import IntegrityError
 from pec.config import Settings
 from pec.database import Database
 from pec.ingestion import ingest_fixture
-from pec.phenomena import evaluate
 from pec.retention import sweep
 from pec.scheduler import State
 
@@ -37,7 +36,7 @@ async def test_postgis_and_migration_revision(db):
     await db.ready()
     async with db.engine.connect() as c:
         assert (await c.execute(text("SELECT postgis_lib_version()"))).scalar().startswith("3.6")
-        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0001"
+        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0002"
         assert (await c.execute(text("SELECT ST_SRID(ST_GeomFromText('POINT(-119.8 35.2)',4326))"))).scalar() == 4326
 
 
@@ -76,8 +75,8 @@ async def test_one_raw_can_produce_many_assertions(db):
     "INSERT INTO source_roles VALUES(1,'INVENTED')",
     "INSERT INTO source_roles VALUES(999,'SAFETY')",
     "UPDATE normalized_observations SET sensitive=TRUE,precision_class='exact'",
-    "UPDATE opportunities SET confidence=101",
-    "UPDATE opportunities SET eligibility=TRUE,presentation='planner'",
+    "UPDATE assessment_opportunities SET confidence=101",
+    "UPDATE assessment_opportunities SET eligibility=TRUE,presentation='planner'",
     "INSERT INTO raw_observations(source_id,external_id,fetched_at,parser_version) VALUES(1,'fixture-elk-1',now(),'test')",
 ])
 async def test_database_constraints(db, sql):
@@ -100,11 +99,11 @@ async def test_route_baseline_uniqueness(db):
 
 async def test_material_revisions_only(db):
     await ingest_fixture(db, DATA)
-    await db.persist(DATA, evaluate(DATA))
+    await db.generate(DATA)
     async with db.engine.connect() as c:
         assert (await c.execute(text("SELECT count(*) FROM opportunity_revisions"))).scalar() == 1
-    changed = {**DATA, "alerts": None}
-    await db.persist(changed, evaluate(changed))
+    changed = {**DATA, "alerts": None, "now": (NOW + timedelta(hours=1)).isoformat()}
+    await ingest_fixture(db, changed)
     async with db.engine.connect() as c:
         assert (await c.execute(text("SELECT count(*) FROM opportunity_revisions"))).scalar() == 2
         assert (await c.execute(text("SELECT count(*) FROM opportunities"))).scalar() == 1
@@ -112,7 +111,7 @@ async def test_material_revisions_only(db):
 
 async def test_failed_run_is_not_overwritten_by_success(db):
     await ingest_fixture(db, {**DATA, "alerts": None})
-    await ingest_fixture(db, DATA)
+    await ingest_fixture(db, {**DATA, "now": (NOW + timedelta(hours=1)).isoformat()})
     async with db.engine.connect() as c:
         states = (await c.execute(text("SELECT status FROM source_runs r JOIN sources s ON s.id=r.source_id WHERE s.key='nws_alerts' ORDER BY r.id"))).scalars().all()
         assert states == ["failure", "success"]
@@ -126,7 +125,7 @@ async def test_sensitive_coordinates_do_not_leave_api(db):
     assert "exact_geometry" not in result
     assert '"latitude":35.2,' not in result
     async with db.engine.connect() as c:
-        assert (await c.execute(text("SELECT analysis_geometry IS NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()
+        assert (await c.execute(text("SELECT analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()
 
 
 async def test_retention_is_bounded_and_preserves_revisions(db):

@@ -10,12 +10,15 @@ class Settings:
     database_url: str | URL = field(repr=False)
     api_token: str = field(repr=False)
     database_timeout: float = 3.0
+    evaluation_grace: float = 30.0
 
     def __post_init__(self):
         if len(self.api_token) < 32 or self.api_token.lower().startswith(('replace', 'changeme')):
             raise ValueError("CORE_API_TOKEN must be a generated secret of at least 32 characters")
         if not 0.1 <= self.database_timeout <= 30:
             raise ValueError("CORE_DATABASE_TIMEOUT must be between 0.1 and 30 seconds")
+        if not 0 <= self.evaluation_grace <= 300:
+            raise ValueError("CORE_EVALUATION_GRACE must be between 0 and 300 seconds")
         if not str(self.database_url).startswith("postgresql+asyncpg://"):
             raise ValueError("Use a PostgreSQL asyncpg database URL")
 
@@ -29,5 +32,6 @@ class Settings:
             url = URL.create("postgresql+asyncpg", username="photography_events", password=password,
                              host=os.environ.get("DB_HOST", "photography-events-db"),
                              database=os.environ.get("POSTGRES_DB", "photography_events"))
-        return cls(url, os.environ.get("CORE_API_TOKEN", ""), float(os.environ.get("CORE_DATABASE_TIMEOUT", "3")))
+        return cls(url, os.environ.get("CORE_API_TOKEN", ""), float(os.environ.get("CORE_DATABASE_TIMEOUT", "3")),
+                   float(os.environ.get("CORE_EVALUATION_GRACE", "30")))
 

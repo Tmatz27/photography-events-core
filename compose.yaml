@@ -26,6 +26,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       CORE_API_TOKEN: ${CORE_API_TOKEN:?Set CORE_API_TOKEN}
       CORE_DATABASE_TIMEOUT: ${CORE_DATABASE_TIMEOUT:-3}
+      CORE_EVALUATION_GRACE: ${CORE_EVALUATION_GRACE:-30}
     volumes:
       - ${CORE_DATA_PATH:-/mnt/cache/appdata/photography-events-core}:/var/lib/photography-events-core
     ports:
