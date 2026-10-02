@@ -5,7 +5,8 @@ from datetime import UTC, datetime
 
 EVENTS = frozenset({"startup", "schema_issue", "database_unavailable", "database_recovered",
     "source_collection_failure", "source_stale", "parser_failure", "scheduler_failure",
-    "api_request_failure", "authentication_failure", "parity_test_failure"})
+    "api_request_failure", "authentication_failure", "parity_test_failure", "retry_after_clamped",
+    "assessment_failure", "assessment_conflict"})
 logger = logging.getLogger("photography_events_core")
 
 
