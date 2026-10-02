@@ -67,6 +67,7 @@ Uvicorn; migration failure stops startup with a sanitized structured event.
 | `CORE_API_TOKEN` | Generated bearer secret, at least 32 characters |
 | `CORE_BIND_IP` / `CORE_PORT` | LAN binding; default `127.0.0.1:8099` |
 | `CORE_DATABASE_TIMEOUT` | Whole DB operation deadline, default 3 seconds |
+| `CORE_EVALUATION_GRACE` | Grace for materially newer relevant inputs; default 30 seconds, range 0–300 |
 | `DB_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-db` |
 | `CORE_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-core` |
 | `BACKUP_DIR` | Mounted Synology destination, no NAS credentials in Core |
@@ -83,7 +84,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0001`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0002`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -94,11 +95,14 @@ constant-time comparison independent of PostgreSQL:
 - `GET /api/v1/opportunities/{occurrence_key}`: one known occurrence, or 404.
 - `GET /api/v1/sources/health`: derived UP/STALE/DOWN source state.
 
-List responses contain `generated_at`, `data_as_of`, `assessment_state`,
+List responses contain `assessment_id`, `generated_at`, `data_as_of`, `assessment_state`,
 `missing_required_sources`, `degraded_sources`, version metadata, and typed
 `items`. A successful empty, current assessment is different from an unassessed
 or failed cycle. Database failures always return 503, never `items: []`.
-Expired decisions are projected as held/ineligible, even on detail lookup.
+List and detail read one current generation; each item carries its `assessment_id`.
+An occurrence outside that generation returns 404. Expired or outdated decisions
+are projected as held/ineligible, even on detail lookup. Equal-watermark input
+conflicts and corrupt stored products return sanitized 503 responses.
 Errors use `{"error":{"code":"...","message":"..."}}`; invalid filters are
 422, invalid tokens 401. Additive API fields are allowed for HA compatibility.
 
@@ -120,38 +124,63 @@ just because a fixture or provider record was fetched again.
 
 ## Database, migrations and provenance
 
-`migrations/versions/0001_schema.sql` is the explicit schema model and inventory.
+Revision `0001` remains unchanged. Revision `0002` upgrades existing data to
+immutable generations; [the schema supplement](docs/SCHEMA_0002.md) describes the
+new tables, constraints, indexes and preserved legacy evidence.
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
-`python -m alembic upgrade head` is repeat-safe; downgrade is destructive and is
-only exercised against disposable test databases.
+`python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
+upgrading. Revision `0002` is forward-only because `0001` cannot represent its
+history; rollback requires a verified pre-upgrade backup restored to a new DB
+and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
+check remains in CI. Migrated decisions stay incomplete/held until a fresh
+newer assessment supplies verified source provenance.
 
 High-volume row IDs use BIGINT identity. Deterministic occurrence identity is
 `tule_elk_rut-<original-window-start>` from legacy `active_windows` and `event_id`.
-Source-controlled JSON definition data plus Python decision/safety/spatial code
-produce the SHA-256 definition hash. The DB stores rule key/version/hash and
+Source-controlled JSON definition data plus Python decision/safety/spatial and
+ingestion code produce the SHA-256 definition hash. The DB stores rule key/version/hash and
 engine version, never executable policy blobs.
 
 Raw exact geometry is restricted ingestion data; normalized analysis/public
-geometry are separate. Sensitive fixture locations have no analysis/public
-point. API locations come exclusively from the curated public Carrizo site.
+geometry are separate. The installed Tule Elk policy permits protected exact
+points for internal analysis. Protected public points are NULL, and automatic
+provider updates cannot reduce protection. API locations come exclusively from
+the curated public Carrizo site.
 Locations accept arbitrary EPSG:4326 Geometry for future polygons. Observations
 use Point. The GiST index supports local evidence queries; metric tests cast to
 geography rather than treating degrees as metres. No clustering is implemented.
 
 Source attempts append; successful retries retain failed attempts. Current
-health is a SQL view plus versioned freshness policy. One raw record can produce
-multiple normalized assertions. Strict observation/context association tables
-preserve evidence provenance. Material decision changes append typed revisions;
-unchanged polling does not add snapshots. Route baseline uniqueness is enforced;
+health is a SQL view plus versioned freshness policy. Collection commits
+separately from assessment publication. Provider content changes supersede old
+normalized assertions; evaluation selects all eligible current stored assertions,
+including incremental batches and future records once their time window opens.
+Stable-ID fixture records without IDs are rejected individually.
+
+A locked singleton pointer publishes an immutable generation atomically. Only
+newer `data_as_of` advances it; equal inputs are idempotent and equal timestamps
+with different fingerprints fail closed. Fingerprints exclude database row IDs
+and fetch times. Evidence and material revisions reference the exact generation
+item. Required/consulted source-run provenance detects materially newer relevant
+inputs after the configured grace; unrelated source updates do not degrade it.
+Collection success cannot mask generation failure. Route baseline uniqueness is enforced;
 the slice retains the legacy calibrated drive estimate. No live routing provider
 is connected and no estimated route is described as routed.
 
 `scheduler.py` provides a single-process, non-overlapping asyncio framework with
-timeouts, Retry-After, bounded exponential backoff, jitter and shutdown. No jobs
-are registered at startup. `source_backoff` can persist restart state via the
-load/save callback interface. Multiple Core replicas are not supported in M1.
+timeouts, Retry-After, bounded exponential backoff, jitter and shutdown. All
+ordinary collector exceptions advance backoff; cancellation propagates. Invalid
+Retry-After values are ignored and extreme delays are clamped to a bounded
+policy (default one day). Live backoff survives state-store failure. No jobs are
+registered at startup. `source_backoff` persists restart state through load/save
+callbacks. Multiple Core replicas are not supported in M1.
+
+The DB guard covers reads, writes and pool checkout. On deadline it terminates
+the tracked asyncpg connection before cancellation can block in rollback/close.
+Frozen-DB CI checks concurrent warm-pool and cold-connect requests, bounded 503
+responses, zero checked-out connections and recovery after unpause.
 
 `retention.sweep` is an explicit bounded maintenance operation: redact raw
 payloads after 90 days, prune only unreferenced old source runs, retain evidence
@@ -173,7 +202,8 @@ BACKUP_DIR=/path/to/mounted/synology sh scripts/backup.sh
 
 The command is `docker compose exec -T photography-events-db pg_dump -U postgres
 -d photography_events -Fc --no-acl`. The script writes a mode-restricted
-`.partial` file and renames it only after success. A backup contains potentially
+`.partial` file and renames it only after success; a shell trap removes partial
+files on failure or interruption. A backup contains potentially
 sensitive ingestion data; protect the NAS destination accordingly.
 
 Restore only to a **new** compatible database:
@@ -235,13 +265,21 @@ the NPS Point Reyes reference inherited by the Carrizo rule; the location remain
 Carrizo and has not been replaced by Point Reyes. Behavior-report parser migration
 and any scientific-policy correction require a separate intentional change.
 
+CI also independently recaptures nine raw-to-API pipeline cases, including
+private geometry, future admission without refetch, provider corrections and
+legacy grouping. It executes 18,000 seeded evaluator comparisons with zero
+mismatches. See the correction review section and its committed CI artifacts
+for exact test counts and environments.
+
 ## Limitations and deferred scope
 
 Core has no production collectors or HA UI cutover. Pinnacles Condor is deferred:
 its independent count/behavior evidence paths, NPS access, public-site encounter
-classification and daily occurrence identity need their own complete parity
-fixture set before porting. Its daily key currently includes `now.date()` in
-legacy `birds._spectacle_row`; do not silently replace that with an annual key.
+classification need their own complete parity fixture set before porting. Its
+legacy `now.date()` identity can reset Follow/Skip/Seen during a continuous
+spectacle. The deferred design is an episode key based on phenomenon + site +
+episode_start, continued by qualifying fresh evidence. Do not blindly port the
+daily key. No Condor implementation or episode behavior is added in M1.
 
 No DBSCAN, Map, new live source family, iGPU/OpenVINO or `/dev/dri`, Redis/worker
 service, machine learning, broker, TimescaleDB, public API or v0.17 release has

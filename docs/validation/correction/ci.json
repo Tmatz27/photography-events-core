@@ -1,0 +1,74 @@
+{
+  "recorded_at": "2026-10-02",
+  "core": {
+    "starting_sha": "aebc9a1ae09c5d7c5252d1a85922f0b71348f9ae",
+    "head_sha": "b816e378975e88a5183368d6089ac092c34ae068",
+    "run_id": 36966654374,
+    "job_id": 110711764117,
+    "conclusion": "success",
+    "url": "https://github.com/Tmatz27/photography-events-core/actions/runs/36966654374",
+    "artifact_id": 11209424698,
+    "artifact_sha256": "0d164542375a49c930ed17d1ef625f03b68e3f71fde813dabeca1d2616212bdc",
+    "full_tests": {
+      "passed": 130,
+      "skipped": 0,
+      "failed": 0
+    },
+    "portable_linux": {
+      "passed": 69,
+      "skipped": 61
+    },
+    "portable_windows": {
+      "passed": 64,
+      "skipped": 66
+    }
+  },
+  "ha": {
+    "starting_sha": "7a9d4c6bcf00ffe17b68190a10df4dc83d4db83c",
+    "head_sha": "f499d8852ae32e71d8e1b97ed641744fc2b1b084",
+    "run_id": 36966194592,
+    "conclusion": "success",
+    "url": "https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/36966194592",
+    "core_client": {
+      "passed": 13
+    },
+    "portable": {
+      "job_id": 110710373432,
+      "run": 575,
+      "passed": 485,
+      "skipped": 90,
+      "seconds": 37.331
+    },
+    "card": {
+      "passed": 127,
+      "failed": 0
+    },
+    "matrix": [
+      {
+        "job_id": 110710373422,
+        "ha": "2024.11.3",
+        "python": "3.12",
+        "passed": 90,
+        "seconds": 251.839
+      },
+      {
+        "job_id": 110710373694,
+        "ha": "2025.3.4",
+        "python": "3.13",
+        "passed": 90,
+        "seconds": 451.465
+      }
+    ],
+    "hacs_job_id": 110710373235
+  },
+  "legacy": {
+    "sha": "4905e35c0668c37737d84685e65d2a806f7c92f7",
+    "original_cases": 15,
+    "original_fixture_sha256": "f246af07a37f5741c4a01904fbb26ef38fa4b929954a58a446b76d9e7db8840d",
+    "pipeline_cases": 9,
+    "pipeline_steps": 14,
+    "evaluator_comparisons": 18000,
+    "evaluator_mismatches": 0,
+    "seed": 20261001
+  }
+}

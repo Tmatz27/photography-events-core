@@ -1,5 +1,9 @@
 # Photography Events Core — Milestone 1 implementation review
 
+> Historical sections 1–38 describe the first pass. Read the
+> [INDEPENDENT REVIEW CORRECTION PASS](#independent-review-correction-pass)
+> for current behavior, the independently discovered defects and verified fixes.
+
 Prepared 2026-10-01. This packet describes implemented code and reproducible
 evidence, not a production migration. The original specification is preserved
 in [docs/IMPLEMENTATION_SPEC_MILESTONE_1.md](docs/IMPLEMENTATION_SPEC_MILESTONE_1.md).
@@ -585,3 +589,418 @@ and backoff, live route baselines, measured retention, and richer contract tests
 Only then design an opt-in HA connection flow and websocket/card projection with
 content-specific stale policy. Keep the local engine as the comparison oracle
 until a deliberate cutover milestone. None of that follow-up was implemented here.
+
+# INDEPENDENT REVIEW CORRECTION PASS
+
+Prepared 2026-10-02. This section supersedes conflicting implementation claims
+in sections 1–38, which are retained as the first-pass historical record.
+**Claude independently found the first-pass defects.** Its read-only audit
+reproduced strong evaluator parity but demonstrated that persistence, ingestion,
+provenance, scheduling and outage handling did not yet satisfy the promised
+pipeline guarantees. The required findings were accepted; passing evaluator
+tests was not evidence that the complete first implementation was correct.
+
+The authoritative correction request is preserved verbatim in
+[docs/CORRECTION_SPEC_MILESTONE_1.md](docs/CORRECTION_SPEC_MILESTONE_1.md).
+The architecture and Tule Elk business policy remain; this pass repairs their
+implementation. Nothing from Milestone 2 has been implemented.
+
+## Repository boundaries and commit provenance
+
+Both authoritative repositories were clean on main and matched the reviewed
+remote main before editing. Each was checked out on main and pulled with
+`--ff-only`. Only normal main commits/pushes were used; no reviewer branch,
+force push, release, tag, card change or version bump was used. The detached
+legacy checkout used solely for read-only oracle execution is not a development
+branch. HA remains 0.16.1 and its production local engine remains authoritative.
+
+| Repository | Verified starting SHA | Validated implementation SHA |
+|---|---|---|
+| Core | aebc9a1ae09c5d7c5252d1a85922f0b71348f9ae | b816e378975e88a5183368d6089ac092c34ae068 |
+| HA | 7a9d4c6bcf00ffe17b68190a10df4dc83d4db83c | f499d8852ae32e71d8e1b97ed641744fc2b1b084 |
+
+Core changes were committed in reviewable stages:
+
+1. `ca7467af556fa56e61a37c8f8ad03eca0e606f98`: scheduler failure/backoff fixes.
+2. `9784eef6db4f539dea46f95801861942e0ef3949`: migration, ingestion, immutable
+   publication, source/evidence provenance, bounded DB guard, regression tests.
+3. `6a65b6b44fa97a4be5b8bc77827f56e52a3d988d`: independent complete-pipeline
+   oracle, CI differential comparisons and cold-connection freeze coverage.
+4. `b816e378975e88a5183368d6089ac092c34ae068`: preserve usable legacy private
+   evidence and refuse to infer missing historical safety provenance.
+
+These dependencies largely follow the requested order; the interdependent
+schema/ingestion/publication changes share one integration commit. The final
+documentation commit follows these code SHAs. Its exact SHA and CI run are
+recorded in the external correction receipt delivered with this packet, since
+a committed document cannot contain its own final commit hash.
+
+## Disposition of every review finding
+
+All required findings were accepted and corrected. None was rejected.
+The equal-watermark and migration decisions below explicitly document the
+chosen safe behavior.
+
+| Finding | Disposition and implementation | Verification |
+|---|---|---|
+| B1 Immutable generations | Accepted; stable registry, generation items, singleton current pointer and atomic publication. Modified equal-watermark handling: identical fingerprint is replay; different fingerprint records conflict and fails reads closed. | R1–R4, R23 |
+| B2 Collection versus assessment | Accepted; separately committed collection, exact required/consulted source-run provenance, relevant content comparison and bounded grace. Failed generation cannot renew the previous assessment. | R16, R21, R22 |
+| B3 Record isolation | Accepted; validate each record, retain identifiable malformed raw records without current assertions, admit future records only inside legacy time window. | R5 plus six malformed variants |
+| B4 Provider corrections | Accepted; canonical payload hash, current raw corrections, superseded normalized assertions, re-normalization, monotonic automated protection. | R6–R10b |
+| B5 Private internal intelligence | Accepted; installed Tule Elk policy uses protected analysis points internally while public points remain NULL and DTO locations remain curated. | R8/R9, R18 private, R20 |
+| B6 Truthful evidence | Accepted; evaluator returns actual supporting assertion IDs per occurrence; strict generation-item evidence/revision FKs. Distant calendar seasons receive no unrelated support. | R11, R12 |
+| B7 Scheduler backoff | Accepted; all ordinary collector exceptions classified and backed off, bounded Retry-After, state loaded once and live backoff retained on persistence failure. | R13/R13b–R15 |
+| N1 Guard ingestion writes | Accepted; collection, generation, failure recording and scheduler persistence use the same whole-operation guard as reads. | bounded pg_sleep write and pool recovery |
+| N2 Frozen DB | Accepted; terminate owned driver before cancellation/rollback, bounded cleanup, cold-connect deadline, pool recovery. | R19 warm + cold concurrent requests |
+| N3 Corrupt stored product | Accepted; version/checksum/Pydantic/typed-column/item-count validation; sanitized 503 for list and detail, no partial successful response. | five corruption variants |
+| N4 Missing stable ID | Accepted; stable-ID fixture adapter rejects and counts ID-less records without inventing random identities. | R17 |
+| N5 Pipeline parity | Accepted; independent raw-provider legacy oracle and stored raw-to-API comparisons in CI. | R18, nine cases/14 steps |
+| N6 Incremental collection | Accepted; evaluate all current valid stored assertions, not just the latest incoming batch. | stored-evidence empty-batch test, R18 |
+| N7 Stale HA explanations | Optional finding accepted and implemented; deep-copied stale cache has neutral reason/awaiting/blockers/safety text and unknown safety/access/condition. | existing 13 client tests strengthened; HA matrix |
+| N8 Backup partial file | Accepted; EXIT/signal cleanup of exact partial filename; documented Compose repository/.env working context. | failure-path shell test and actual scripts |
+
+## Assessment generations, ordering and API consistency
+
+`opportunities` now contains only stable occurrence identity and site identity.
+`assessment_opportunities` owns typed decisions and versioned product data for
+one generation. A composite primary key prevents one occurrence's decision from
+being moved into another generation. Evidence and new material revisions have
+composite FKs to that exact generation item.
+
+Publication takes the shared transaction advisory lock and locks the id=1
+`assessment_current` row FOR UPDATE. It reads committed stored inputs, evaluates,
+writes the generation, items, source provenance, evidence and any material
+revisions, then advances the pointer in one transaction. Collection shares the
+short lock but commits separately; neither transaction includes provider network
+access. This simple serialization is deliberate for the installed single slice.
+
+The ordering key is `data_as_of`, never a sequence/random row ID:
+
+- Strictly newer watermark publishes and supersedes the former generation.
+- Older watermark produces a superseded historical generation without moving
+  current membership or changing the current decision.
+- Equal watermark/equal fingerprint is a superseded replay; the visible
+  generation and material revision count remain unchanged.
+- Equal watermark/different fingerprint records a failed `input_conflict`.
+  The current pointer is preserved for diagnosis, but both list and detail return
+  sanitized 503 `assessment_conflict` for that watermark. This holds in either
+  arrival order. A legitimate newer assessment resolves the conflict.
+
+The fingerprint is SHA-256 of canonical JSON logical inputs: admitted current
+records (provider identity, observed time, subject/count, usable geometry,
+protection and content hash), installed source content/status, fixture context
+and evaluation configuration, definition hash and engine version. Database IDs
+and fetch times are excluded. Legacy grouping order is retained because the
+legacy digest uses the first point in a species/place group; random database ID
+values are not included in semantic identity. Definition hashing includes rule
+JSON plus phenomena, safety, spatial and ingestion code, normalized for LF/CRLF.
+
+Each API operation uses a REPEATABLE READ transaction and resolves the current
+pointer once. List and detail select only that generation. Detail returns 404
+when the stable occurrence is absent from current membership. Envelope/items
+expose `assessment_id`; a sequence of separate requests can of course straddle
+a publication, so consumers can compare that explicit ID. Empty current
+membership is valid only for a successful, validated generation with zero
+expected items. Missing/deleted/corrupt items cannot turn into complete-empty.
+
+Stored product JSON is constrained to product_version=1, validated with
+Pydantic, checked against typed decisions and checked using PostgreSQL canonical
+JSONB SHA-256. Expected item count is also checked. Any corrupt row in the
+current generation fails the whole list/detail operation with a stable safe
+code; neither SQL nor driver diagnostics are exposed. Readiness tests schema,
+PostGIS and connectivity, not a full product integrity scan. Therefore a corrupt
+product may coexist with readiness 200 while its data request returns 503.
+
+## Collection success, source provenance and partial failure
+
+Source health continues to mean collection health. `assessment_sources`
+separately stores the exact run, source, role, required and consulted flags used
+by a generation. Its composite run/source FK prevents a run being attributed to
+the wrong source. The M1 fixture and NWS fixture-context inputs are both required
+and consulted. Context is provider data, not executable policy.
+
+At read time only generation-relevant required/consulted sources participate in
+assessment freshness. A newer successful run whose logical content differs
+makes the older assessment degraded after `CORE_EVALUATION_GRACE` (30 seconds
+by default, bounded 0–300). Merely fetching unchanged content does not do so.
+Unrelated source updates do not affect the generation. Missing/stale required
+inputs produce incomplete output; expiry and any noncomplete assessment hold
+items ineligible and neutralize current safety claims.
+
+Collection commits its attempts/raw/current assertions before generation begins.
+Generation failure rolls back all partial generation writes, keeps the old
+pointer, emits a sanitized code and best-effort records a failed attempt in a
+separate guarded transaction. If the database itself is unavailable, failure
+recording may also fail safely. R16 proves a successfully collected new high-wind
+warning plus an evaluator failure leaves source health UP but the old product
+degraded, held and safety unknown after grace. Source success is never used as
+a substitute for generation success.
+
+## Ingestion corrections, privacy and evidence scope
+
+The stable-ID fixture source rejects ID-less records and increments the rejected
+count. Each identified record is validated independently. Bad timestamps,
+unusable points, empty subjects, invalid counts and overflow are rejected without
+discarding valid neighbors. Identifiable raw diagnostic payloads remain; invalid
+non-JSON numeric values become null. Payloads and coordinates are not logged.
+Valid future timestamps are accepted into storage, including T+2h. Evaluation
+selects current nonsuperseded assertions inside [now−14 days, now+1 hour] with
+valid analysis geometry and validity; a later generation can use them without
+another fetch.
+
+Canonical content changes update raw observed time, exact geometry, payload,
+parser/run metadata and hash, supersede old normalized assertions and insert the
+new current assertion. This handles timestamp corrections both ways, coordinate,
+subject, count, behavior and payload-only changes. An unchanged fetch does not
+extend observed freshness. An older fetched attempt cannot roll a newer provider
+record backward. Incremental empty batches retain previously stored current
+evidence.
+
+Protection is old protection OR current provider protection. Becoming sensitive
+also clears historical normalized public points. Automation cannot remove
+protection; this is ingestion policy, not an irreversible DB trigger that would
+prevent a future authorized administrative correction. The installed Tule Elk
+policy explicitly permits protected exact analysis geometry. All public product
+locations use the curated Carrizo site, never raw observation coordinates.
+Future sources must supply their own policy rather than inheriting this permission.
+
+The adapter reproduces legacy species/place grouping before evaluation and keeps
+the group members' normalized IDs. `evaluate_with_evidence` returns those IDs only
+for occurrences whose rule actually uses that presence. A 2027 distant seasonal
+row receives zero 2026 supporting observation links. Later generations replace
+their own evidence selection while earlier generation/revision provenance remains
+available. Context links identify consulted source runs with neutral disposition;
+they are not fabricated sightings. Retention now protects all new/legacy source
+run references.
+
+## Migration 0002 and existing data
+
+The complete schema delta and its 19-table inventory are in
+[docs/SCHEMA_0002.md](docs/SCHEMA_0002.md). Revision 0001 was not rewritten.
+
+0002 preserves occurrence IDs/keys, raw provider identities/payloads, typed
+decision snapshots, old revisions and the original evidence associations.
+Original evidence tables become `legacy_observation_evidence` and
+`legacy_context_evidence`. Old revisions have NULL assessment ID and explicit
+`legacy_unscoped` provenance. Those data are retained honestly; the migration
+cannot reconstruct evidence truth that 0001 never stored.
+
+Legacy generations are marked incomplete with
+`legacy_provenance_unverified`; the latest legacy watermark is exposed as held
+until a newer assessment has trustworthy inputs. The migration reconciles
+fixture subject/timestamp mismatches by superseding stale assertions, and
+restores matching protected internal geometry from retained raw evidence while
+withholding public geometry. Missing migrated safety context cannot become a
+new complete generation merely because an old source attempt said success.
+
+R20 seeds real 0001 data, including a private raw point with missing normalized
+analysis geometry, old evidence/context and a revision. It upgrades to 0002,
+checks stable identity/provider data/internal geometry, checks both archived
+evidence tables and unscoped revision, and successfully reads the held current
+generation through the API. Repeat upgrade passes.
+
+**Documented operational choice: 0002 is forward-only.** A downgrade to 0001
+would destroy generation and correction history. It raises a clear error instead
+of silently collapsing data. Rollback requires a verified pre-upgrade backup,
+restored into a new database, with the pre-upgrade image. The original disposable
+0001→base→0001 check still passes. This is not a claim that 0002 downgrade passes.
+
+## Scheduler and bounded database failures
+
+The scheduler catches ordinary Exception subclasses, including KeyError,
+aiohttp.ClientResponseError, network, parser and timeout failures. It assigns
+stable classifications, advances bounded exponential backoff and logs no
+exception/payload text. Cancellation and process-control exceptions propagate.
+HTTP non-success results also back off. State is loaded once; later save failures
+do not reload stale state over the live increasing counter/deadline.
+
+Retry-After accepts finite nonnegative delta seconds and timezone-aware HTTP
+dates; garbage, NaN, infinity, negatives and naive dates are ignored. Past dates
+add no delay; own failure backoff still applies. Provider delay is clamped before
+timedelta construction to a policy ceiling (default 86,400 seconds, configurable
+up to seven days), with a `retry_after_clamped` event. Both 1e9 and 1e12 are
+bounded without overflow.
+
+The database guard owns checkout plus the whole read/write unit of work. Pool
+pre-ping is disabled so guarded SQL begins after driver tracking. On deadline or
+caller cancellation, it terminates tracked asyncpg drivers before cancelling the
+task; this avoids waiting for SQLAlchemy's graceful rollback/close on a frozen
+server. Cleanup is awaited for at most 0.5 seconds, with late exceptions consumed
+and a stable event if that cleanup limit is reached. Cold connection establishment
+also has the configured driver deadline. The implementation was checked against
+the installed SQLAlchemy 2.1.1 async adapter and asyncpg 0.31.0; see
+[SQLAlchemy asyncio](https://docs.sqlalchemy.org/en/21/orm/extensions/asyncio.html)
+and [asyncpg connection implementation](https://magicstack.github.io/asyncpg/current/_modules/asyncpg/connection.html).
+
+R19 pauses the actual Docker PostgreSQL container. Eight simultaneous API calls
+use a warmed five-connection pool, followed by eight cold-connect API calls from
+a fresh Database instance while still paused. With a two-second deadline, all
+return 503 within three seconds. At the recorded code SHA, warm calls took
+2.0056–2.0100 seconds and cold calls 2.0041–2.0050 seconds. Both pools had zero
+checked-out connections; the original pool served successful requests after
+unpause. A separate guarded write timeout also recovers. This addresses a frozen
+server, in addition to the original stopped-container test.
+
+## Exact R1–R23 result matrix
+
+All entries below PASS in the recorded green CI. R19/R20 are acceptance probes
+outside pytest and are not inflated into the 130-test count. R8/R9 share one
+test; parameterized cases and internal iterations are stated explicitly.
+
+| Requirement | Exact observed result |
+|---|---|
+| R1 | PASS: publish T+1h then T; pointer remains newer, older status superseded, complete list keeps one item. |
+| R2 A | PASS: equal watermark/equal input returns identical visible generation; material revisions remain one. |
+| R2 B | PASS: equal watermark/different inputs follows R23 explicit conflict behavior. |
+| R3 | PASS: 20/20 concurrent older/newer trials, alternating launch order; always newer watermark, complete one-item list, zero false complete-empty. |
+| R4 | PASS: newer two-item generation survives older one-item writer; both detail items equal list items/assessment ID; removed next-season item returns 404. |
+| R5 | PASS: valid + T+2h + malformed mixed batch; valid used, future stored then admitted without refetch, rejected counted. Six additional malformed variants also pass. |
+| R6 | PASS: timestamp corrections in both directions; two parameterized cases follow corrected observation freshness. |
+| R7 | PASS: corrected point beyond 120 km no longer supplies local presence. |
+| R8 | PASS: public→sensitive protection applied to current/historical assertions; public geometry/API/log checks pass. |
+| R9 | PASS: later provider false flag cannot reduce protection; exact internal evidence remains usable. |
+| R10 | PASS: corrected species supersedes the former current assertion and changes current evidence. |
+| R10b | PASS: count, behavior and payload-only corrections; 3/3 cases re-normalize and retain prior evidence. |
+| R11 | PASS: 366-day horizon; 2027 seasonal item has zero supporting 2026 observation links. |
+| R12 | PASS: later generation drops unused evidence; earlier generation/revision retains exact history. |
+| R13 | PASS: 6/6 exception classes including KeyError and actual aiohttp.ClientResponseError back off. HTTP 429 result also tested. |
+| R13b | PASS: every save fails across four attempts; each exception case retains counters 1,2,3,4 and increasing waits, with one load. |
+| R14 | PASS: 1e9 and 1e12 Retry-After both clamp to one day without overflow. |
+| R15 | PASS: nan, inf, -5, garbage, naive date and past date; 6/6 retain safe own backoff without crash. |
+| R16 | PASS: committed high-wind collection followed by forced generation failure; source remains UP, failed attempt recorded, pointer unchanged, after-grace assessment degraded/held/safety unknown. |
+| R17 | PASS: ID-less input twice; two rejected records, zero raw/current assertion/evidence duplicates. |
+| R18 | PASS: 9/9 raw-to-API cases, 14 sequential steps; private/future/corrections/incremental/grouping cases match pinned legacy semantics. |
+| R19 | PASS: actual paused Postgres, 8 warm + 8 cold concurrent requests; max 2.0100s versus 2s deadline, all below deadline+1s; zero checked-out leaks, recovery true. |
+| R20 | PASS: real 0001 seed→0002, identity/raw/evidence/history preserved, private analysis repaired, held API readable, repeat upgrade passed. |
+| R21 | PASS: successful newer unrelated source run does not degrade current complete generation. |
+| R22 | PASS: changed required input remains complete within grace and degraded after 31s; safety case is also verified by R16. |
+| R23 | PASS: different inputs at identical watermark in both arrival orders return explicit sanitized conflict for list/detail; legitimate newer generation restores complete state. |
+
+Additional corrections pass: five stored-product corruption variants,
+bounded ingestion/write failure and recovery, N6 stored current assertions,
+N7 HA stale explanation neutralization, N8 partial-backup cleanup.
+No required regression was waived or marked expected failure.
+
+## Parity and complete verification results
+
+The independent oracle remains HA
+`4905e35c0668c37737d84685e65d2a806f7c92f7`. CI checks out that exact commit,
+executes the original engine, and byte-compares recaptured fixtures. It does not
+derive expected outputs from Core.
+
+| Check | Exact result |
+|---|---|
+| Original evaluator fixture | 15/15 cases, 24 semantic fields; byte-identical recapture |
+| Original fixture SHA-256 | f246af07a37f5741c4a01904fbb26ef38fa4b929954a58a446b76d9e7db8840d |
+| Differential evaluator | 18,000 comparisons, seed 20261001, **0 mismatches** |
+| Pipeline oracle | 9/9 cases, 14 steps; independently recaptured file byte-identical |
+| Core full Linux/container suite | **130 passed**, 0 skipped/failed, 10.22s |
+| Core portable Linux suite | **69 passed, 61 DB tests skipped**, 1.20s |
+| Core portable Windows suite | **64 passed, 66 skipped** (61 DB + 5 POSIX shell tests) |
+| Static/contract checks | Ruff, compileall, OpenAPI generation, offline Alembic SQL passed |
+| Real DB | PostgreSQL **18.6**, PostGIS **3.6.4**, dedicated non-superuser application role |
+| HA Core-client suite | **13/13 passed**; existing cases strengthened for neutral stale explanations |
+| HA portable CI | **575 run: 485 passed, 90 skipped**, 0 failures/errors, 37.331s |
+| HA card | **127/127 passed**, 0 failed; card unchanged |
+| HA 2024.11.3 / Python 3.12 | **90/90 passed**, 251.839s |
+| HA 2025.3.4 / Python 3.13 | **90/90 passed**, 451.465s |
+| HA other gates | Python syntax/pyflakes, version/build-card consistency and HACS CI passed |
+
+The full Core count increased from 71 to 130: 59 added cases. The 61 DB-dependent
+tests (18 original plus 43 added) actually execute in Compose; portable skips
+are not substituted for that execution. R19/R20 and differential comparisons
+are additional successful gates.
+
+Pipeline cases are normal, private, future_inside_grace (+30m),
+future_waits_without_refetch (+2h, later admitted), incremental_empty_batch,
+corrected_timestamp, corrected_coordinates, corrected_species, and
+legacy_place_grouping. They cover raw collection, normalization, current stored
+selection, evaluation, persistence and authenticated API output. Product fields
+are compared with the real legacy digest→seasonal→annotation pipeline. No
+evaluator business-policy changes were made to force persistence tests to pass.
+
+## Docker, backup and CI evidence
+
+The full Compose workflow built Core, started dedicated PostGIS, applied/repeated
+migrations, checked readiness/authentication, restarted Core and DB, ran frozen
+and stopped-DB failure probes and verified persisted opportunity data. Stopped DB
+result: liveness 200, readiness 503, data 503; restart restored readiness/data.
+
+It executed the actual `scripts/backup.sh` and `scripts/restore.sh` using
+custom-format pg_dump -Fc. At the recorded code SHA the backup was **78,486
+bytes** with PGDMP signature. A new target DB received PostGIS, owner-preserving
+restore and migrations; a fresh Core container became ready and returned the
+stable occurrence. Restored opportunities owner was `photography_events`.
+Failure-path testing verifies partial-file cleanup. No production Unraid host or
+NAS was accessed; these are real disposable Linux Docker/Compose results.
+
+| Repository | CI conclusion and exact run |
+|---|---|
+| Core b816e378975e88a5183368d6089ac092c34ae068 | [SUCCESS — 36966654374](https://github.com/Tmatz27/photography-events-core/actions/runs/36966654374) |
+| HA f499d8852ae32e71d8e1b97ed641744fc2b1b084 | [SUCCESS — 36966194592](https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/36966194592) |
+
+Downloaded evidence is committed under
+[docs/validation/correction/](docs/validation/correction/README.md):
+acceptance.json, pytest.log, tests.xml, parity.json and frozen-database.json.
+Artifact 11209424698 ZIP SHA-256:
+`0d164542375a49c930ed17d1ef625f03b68e3f71fde813dabeca1d2616212bdc`.
+CI metadata includes the HA job conclusions and counts. No database files,
+backups, real secrets or raw private payloads are included. Final documentation
+SHA CI is separately verified in the delivered correction receipt.
+
+## Changed surfaces and remaining limitations
+
+Core runtime changes are concentrated in migration 0002, ingestion.py,
+publication.py, database.py, phenomena.py evidence selection/hash, scheduler.py,
+API/schema/config metadata, retention FK awareness, Compose grace configuration
+and backup cleanup. Tests/oracle/probes and CI supply evidence. Full changed-file
+inventory is available from `git diff --stat aebc9a1..HEAD`. HA changed only
+core_bridge.py, its existing test_core_client.py and CORE_DEVELOPMENT.md.
+
+All remaining scope and operational limits are explicit:
+
+- Only the Carrizo Tule Elk calendar/presence slice and synthetic fixture adapter
+  exist; no new live collectors, phenomena or complete behavior-report parser.
+  "Complete" refers only to this installed scope.
+- Legacy scientific/seasonal text, 14-day presence policy, drive calibration and
+  inherited source references remain unchanged and are not scientifically
+  revalidated. Route baselines are schema/framework only; no live route provider.
+- Condor remains absent. Q9's deferred decision is **episode identity**:
+  phenomenon + site + episode_start, continued by qualifying fresh evidence,
+  similar to existing aurora/waves episode concepts. Legacy now.date() can reset
+  Follow/Skip/Seen/notification state during one continuous spectacle and must
+  not be blindly ported. Episode thresholds and complete Condor parity remain
+  future work; neither annual identity nor a daily reset is implemented here.
+- HA's optional developer bridge is not a production configuration flow or
+  card/websocket cutover. HA 0.16.1 local decisions remain authoritative.
+- There is no live Unraid/NAS field trial, installed backup schedule or production
+  latency/load guarantee. Docker evidence is disposable CI. Image tags are not
+  digest-pinned; future releases need an operational pin/update policy.
+- Scheduler is single process, has no startup-registered collectors or
+  multi-replica ownership. The installed shared lock serializes collection and
+  evaluation; scaling, pagination and broader input catalogues are deferred.
+- Retention is explicit bounded maintenance, not automatically scheduled.
+  History growth needs measured production policy. Raw exact coordinates remain
+  restricted provenance after payload redaction; future source-specific geometry
+  retention and safety-context retention need policy. No partitioning is added.
+- Legacy 0001 evidence cannot be retroactively proven; preserved archives and
+  unscoped revisions stay visibly uncertain. 0002 is forward-only; rollback
+  requires pre-upgrade backup/image. Equal-watermark conflicts deliberately
+  withhold data until a legitimate newer generation is published.
+- Typed decisions and validated product JSON duplicate fields. The checksum
+  detects accidental cache corruption; privileged direct writers must still
+  honor publication invariants. Generalized normalized environmental context
+  is not implemented; source-native fixture safety context is retained as data.
+- Best-effort failed-assessment recording cannot succeed during total DB loss.
+  Readiness does not scan every product. API/guard deadlines assume a functioning
+  asyncio event loop; the tests cover actual paused/stopped PostgreSQL, not every
+  possible operating-system or network failure.
+- Safety policy synchronization, real source adapter integration, content-specific
+  cache TTL and source-specific retention remain follow-ups. LAN bearer transport
+  is HTTP unless the operator supplies HTTPS; no Internet exposure, accounts or
+  multi-user authorization are introduced.
+
+No DBSCAN, generalized clustering, map, new source family, vision worker,
+OpenVINO, Redis, Celery, Kafka, TimescaleDB, new phenomenon, v0.17 release or
+other Milestone-2 scope was introduced. The next action is final independent
+Milestone-1 review of these corrections and their evidence.

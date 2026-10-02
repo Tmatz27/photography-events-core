@@ -1,5 +1,8 @@
 # Milestone 1 schema
 
+This is the preserved revision 0001 inventory. Current installations also apply
+[revision 0002](SCHEMA_0002.md), which documents the correction schema and upgrade.
+
 Authoritative manually reviewed revision 0001, including every column, constraint and index.
 
 ```sql
