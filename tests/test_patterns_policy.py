@@ -31,7 +31,7 @@ def test_policy_change_changes_provenance():
 @pytest.mark.parametrize("changes",[{"eps_meters":float("nan")},{"eps_meters":float("inf")},
     {"min_independent_reports":0},{"clustering_crs":4326},{"clustering_crs":3857},
     {"future_tolerance_seconds":3601},{"behaviors":("made_up",)},
-    {"trigger":"FORECAST_PLUS_CONFIRMATION"},{"trigger":"LIVE_CONFIRMATION_REQUIRED"},
+    {"trigger":"FORECAST_PLUS_CONFIRMATION"},{"trigger":"LIVE_CONFIRMATION_REQUIRED"},{"trigger":"COUNT_THRESHOLD"},
     {"coherence_action":"recursive"}])
 def test_invalid_or_reserved_policy_cannot_run(changes):
     with pytest.raises(ValueError):

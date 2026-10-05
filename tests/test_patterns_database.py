@@ -514,3 +514,12 @@ async def test_provider_withdrawal_removes_current_support_and_preserves_history
     assert first.items and not result.clusters
     assert not await sql(db,"SELECT id FROM normalized_observations WHERE superseded_at IS NULL")
     assert len(await sql(db,"SELECT * FROM cluster_members WHERE cluster_id=:cid",cid=old["id"]))==3
+
+async def test_count_threshold_uses_maximum_single_report(db):
+    policy=replace(BEAR,trigger="COUNT_THRESHOLD",count_requirement=50,qualifying_reports=2)
+    rows=[record(0,count=10),record(1,count=40)]
+    first=await publish(db,rows,policies=(policy,))
+    assert not first.clusters
+    second=await publish(db,[record(0,count=10),record(1,count=100)],hour=1)
+    assert second.items[0].state=="qualified"
+    assert second.items[0].metrics.max_single_report_count==100

@@ -85,6 +85,8 @@ class Policy:
             raise ValueError("Invalid animal count requirement")
         if self.trigger == "BEHAVIOR_REQUIRED" and not self.behaviors:
             raise ValueError("A behavior gate needs explicit canonical behaviors")
+        if self.trigger == "COUNT_THRESHOLD" and self.count_requirement is None:
+            raise ValueError("A count gate needs an explicit count requirement")
         if not 0 <= self.future_tolerance_seconds <= 3600:
             raise ValueError("Invalid future tolerance")
 
