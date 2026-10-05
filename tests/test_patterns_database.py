@@ -437,3 +437,58 @@ async def test_immediate_privacy_raise_redacts_previous_debug(db):
     await collect_fixture(db,data(1,records(3,private_location=True)))
     current=await read(db,NOW+timedelta(hours=1))
     assert current.items[0].redacted and current.clusters[0].metrics is None
+
+async def test_explicit_unambiguous_merge_records_lineage(db):
+    policy=replace(BEAR,allow_merge=True)
+    rows=[record(i,longitude=-120.5+(0 if i<2 else 0.07)) for i in range(4)]
+    first=await publish(db,rows,policies=(policy,))
+    joined=[{**r,"longitude":-120.47+i*0.0001} for i,r in enumerate(rows)]
+    second=await publish(db,joined,hour=1)
+    assert len(first.items)==2 and len(second.clusters)==1
+    merged=await sql(db,"SELECT * FROM pattern_episodes WHERE merged_into_episode_id IS NOT NULL")
+    assert len(merged)==1 and merged[0]["status"]=="ended"
+    assert len([item for item in second.items if item.state!="ended"])==1
+
+
+async def test_ambiguous_dbscan_border_is_deterministic_across_shuffles(db):
+    policy=replace(BEAR,eps_meters=1000,min_independent_reports=4,minimum_observations=4,
+                   maximum_cluster_diameter_meters=4000)
+    offsets=(-1780,-1740,-1700,-820,0,820,1700,1740,1780)
+    rows=[record(i,longitude=-120.5+offset/91000) for i,offset in enumerate(offsets)]
+    expected=None
+    for seed in range(6):
+        await reset(db)
+        shuffled=rows[:]
+        random.Random(seed).shuffle(shuffled)
+        result=await publish(db,shuffled,policies=(policy,))
+        assert len(result.clusters)==2
+        logical=([(row["cluster_key"],row["independent_report_count"]) for row in await clusters(db)],
+                 [view.episode_key for view in result.items])
+        if expected is None:
+            expected=logical
+        assert logical==expected
+
+
+async def test_multiple_assertions_in_one_documentation_event_count_once(db):
+    policy=replace(BEAR,min_independent_reports=1,minimum_observations=1)
+    result=await publish(db,records(3,report_external_id="one-checklist",behaviors=["feeding"]),policies=(policy,))
+    value=result.items[0].metrics
+    assert value.observation_count==3 and value.independent_report_count==1
+    assert (await sql(db,"SELECT independent_report_count FROM cluster_behavior_summaries WHERE behavior_code='feeding'"))[0]["independent_report_count"]==1
+
+
+async def test_old_collection_is_not_current_shadow_coverage(db):
+    await publish(db,records(3))
+    await db.generate(data(25))
+    result=await read(db,NOW+timedelta(hours=25))
+    assert result.analysis_state=="outdated"
+
+
+async def test_changed_policy_or_engine_marks_debug_outdated_before_recompute(db,monkeypatch):
+    await publish(db,records(3))
+    db.pattern_policies=(replace(BEAR,version="next"),)
+    assert (await read(db,NOW)).analysis_state=="outdated"
+    db.pattern_policies=POLICIES
+    from pec.patterns import engine
+    monkeypatch.setattr(engine,"engine_hash",lambda:"0"*64)
+    assert (await read(db,NOW)).analysis_state=="outdated"

@@ -83,8 +83,8 @@ async def persist_cluster(c, aid, policy, item, now):
 
 
 async def run(c, aid, now, policies, rows, sources, *, published):
-    await c.execute(text("""INSERT INTO pattern_generation_runs VALUES(:aid,:hash,'shadow',:now,0,0)"""),
-                    {"aid":aid,"hash":policy_hash(policies),"now":now})
+    await c.execute(text("""INSERT INTO pattern_generation_runs VALUES(:aid,:hash,:engine_hash,'shadow',:now,0,0)"""),
+                    {"aid":aid,"hash":policy_hash(policies),"engine_hash":engine_hash(),"now":now})
     if sources:
         await c.execute(text("""INSERT INTO pattern_generation_sources
             (assessment_run_id,source_id,source_run_id,content_sha256) VALUES(:aid,:source_id,:source_run_id,:content_sha256)"""),

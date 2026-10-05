@@ -127,12 +127,17 @@ async def read(db, now, episode_key=None):
             SELECT 1 FROM pattern_generation_sources p JOIN sources s ON s.id=p.source_id
             JOIN LATERAL(SELECT * FROM source_runs WHERE source_id=p.source_id ORDER BY completed_at DESC,id DESC LIMIT 1) r ON TRUE
             WHERE p.assessment_run_id=:aid AND (NOT s.enabled OR r.status<>'success'
+            OR r.completed_at<:stale
             OR (r.content_sha256 IS DISTINCT FROM p.content_sha256 AND r.completed_at<=:grace)))"""),
-            {"aid":aid,"grace":now-db.grace})).scalar_one()
+            {"aid":aid,"grace":now-db.grace,"stale":now-timedelta(hours=24)})).scalar_one()
         state = "outdated" if changed or assessment["valid_until"]<=now else "current"
-        from .engine import policy_hash
-        if run["policy_hash"] != policy_hash(db.pattern_policies):
+        from .engine import engine_hash, policy_hash
+        if run["policy_hash"] != policy_hash(db.pattern_policies) or run["engine_hash"] != engine_hash():
             state = "outdated"
+        source_count = (await c.execute(text("SELECT count(*) FROM pattern_generation_sources WHERE assessment_run_id=:aid"),
+                                       {"aid":aid})).scalar_one()
+        if source_count == 0:
+            state = "unassessed"
         views, previews = [], []
         policies = {p.key:p for p in db.pattern_policies}
         for row in snapshots:

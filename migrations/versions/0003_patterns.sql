@@ -124,6 +124,7 @@ CREATE TABLE cluster_behavior_summaries (
 CREATE TABLE pattern_generation_runs (
  assessment_run_id BIGINT PRIMARY KEY REFERENCES assessment_runs(id),
  policy_hash TEXT NOT NULL CHECK(length(policy_hash)=64),
+ engine_hash TEXT NOT NULL CHECK(length(engine_hash)=64),
  mode TEXT NOT NULL CHECK(mode='shadow'),
  calculated_at TIMESTAMPTZ NOT NULL,
  expected_clusters INTEGER NOT NULL CHECK(expected_clusters>=0),
