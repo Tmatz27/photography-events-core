@@ -10,4 +10,3 @@ Unedited files extracted from artifact11357213002 of [Core run37338718104](https
 - [m2-performance.json](m2-performance.json):1000-report synthetic measurements and full EXPLAIN ANALYZE JSON.
 
 The final documentation commit and exact-SHA rerun are recorded outside this repository in the submission receipt, avoiding a self-referential commit hash. Timings are measured fixture observations, not production SLAs.
-

@@ -504,4 +504,3 @@ CREATE TABLE pattern_episode_revisions (
 CREATE INDEX ix_episode_revisions ON pattern_episode_revisions(pattern_episode_id,assessment_run_id);
 ALTER TABLE assessment_opportunities ADD COLUMN pattern_episode_id BIGINT REFERENCES pattern_episodes(id);
 ```
-
