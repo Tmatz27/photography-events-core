@@ -330,7 +330,7 @@ spectacle. The deferred design is an episode key based on phenomenon + site +
 episode_start, continued by qualifying fresh evidence. Do not blindly port the
 daily key. No Condor implementation or episode behavior is added in M1.
 
-No DBSCAN, Map, new live source family, iGPU/OpenVINO or `/dev/dri`, Redis/worker
+No map, new live source family, iGPU/OpenVINO or `/dev/dri`, Redis/worker
 service, machine learning, broker, TimescaleDB, public API or v0.17 release has
 been added. The detailed implementation review packet records actual acceptance
 results and remaining limitations; do not infer operational completion from this
