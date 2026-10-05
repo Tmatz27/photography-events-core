@@ -420,7 +420,7 @@ async def test_guarded_failure_rolls_back_episode_mutations(db,monkeypatch):
     from pec.patterns import engine
     async def fail(*args,**kwargs):
         raise KeyError("private diagnostic")
-    monkeypatch.setattr(engine,"persist_cluster",fail)
+    monkeypatch.setattr(engine,"persist_clusters",fail)
     from pec.database import GenerationFailed
     with pytest.raises(GenerationFailed):
         await db.generate(data(1))

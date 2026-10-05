@@ -1,4 +1,5 @@
 """Persist shadow outputs inside the M1 atomic generation publication."""
+import json
 from dataclasses import asdict
 from datetime import timedelta
 import hashlib
@@ -56,30 +57,55 @@ async def public_destination(c, policy, cluster):
     return None
 
 
-async def persist_cluster(c, aid, policy, item, now):
-    params = {**item,"aid":aid,"phenomenon":policy.key,"version":policy.version,"hash":policy.hash,
-        "engine":CORE_VERSION,"engine_hash":engine_hash(),"crs":policy.clustering_crs,"now":now,
-        "window_start":now-timedelta(seconds=policy.temporal_window_seconds),
-        "window_end":now+timedelta(seconds=policy.future_tolerance_seconds)}
-    columns = ("provider_record_count","observation_count","independent_report_count","independent_source_count",
-               "max_single_report_count","first_observed_at","last_observed_at","contains_sensitive_evidence",
-               "qualification_state","public_location_id")
-    item["id"] = (await c.execute(text(f"""INSERT INTO observation_clusters(assessment_run_id,phenomenon_key,cluster_key,
-        pattern_episode_id,policy_version,policy_hash,engine_version,engine_hash,clustering_crs,calculated_at,
-        centroid_internal,bounding_center_internal,radius_meters,window_start,window_end,{','.join(columns)})
-        VALUES(:aid,:phenomenon,:cluster_key,:pattern_episode_id,:version,:hash,:engine,:engine_hash,:crs,:now,
-        ST_GeomFromEWKT(:centroid_wkt),ST_GeomFromEWKT(:center_wkt),:radius_meters,:window_start,:window_end,
-        {','.join(':'+key for key in columns)}) RETURNING id"""),params)).scalar_one()
+async def persist_clusters(c, aid, policies, results, now):
+    entries=[(policy,item) for policy in policies for item in results[policy.key]]
+    if not entries:
+        return
+    # Bulk headers return their identities by logical policy/member key. The
+    # driver never needs one INSERT round trip for every candidate cluster.
+    columns=("assessment_run_id","phenomenon_key","cluster_key","pattern_episode_id","policy_version","policy_hash",
+        "engine_version","engine_hash","clustering_crs","calculated_at","centroid_internal","bounding_center_internal",
+        "radius_meters","window_start","window_end","provider_record_count","observation_count","independent_report_count",
+        "independent_source_count","max_single_report_count","first_observed_at","last_observed_at",
+        "contains_sensitive_evidence","qualification_state","public_location_id")
+    declarations=("assessment_run_id bigint,phenomenon_key text,cluster_key text,pattern_episode_id bigint,"
+        "policy_version text,policy_hash text,engine_version text,engine_hash text,clustering_crs integer,"
+        "calculated_at timestamptz,centroid_internal text,bounding_center_internal text,radius_meters float8,"
+        "window_start timestamptz,window_end timestamptz,provider_record_count integer,observation_count integer,"
+        "independent_report_count integer,independent_source_count integer,max_single_report_count integer,"
+        "first_observed_at timestamptz,last_observed_at timestamptz,contains_sensitive_evidence boolean,"
+        "qualification_state text,public_location_id bigint")
+    headers=[]
+    source_hash=engine_hash()
+    for policy,item in entries:
+        header={key:item[key] for key in columns if key in item}
+        header.update(assessment_run_id=aid,phenomenon_key=policy.key,policy_version=policy.version,
+            policy_hash=policy.hash,engine_version=CORE_VERSION,engine_hash=source_hash,
+            clustering_crs=policy.clustering_crs,calculated_at=now,centroid_internal=item["centroid_wkt"],
+            bounding_center_internal=item["center_wkt"],window_start=now-timedelta(seconds=policy.temporal_window_seconds),
+            window_end=now+timedelta(seconds=policy.future_tolerance_seconds))
+        headers.append(header)
+    selected=[f"ST_GeomFromEWKT(p.{key})" if key in ("centroid_internal","bounding_center_internal") else f"p.{key}"
+              for key in columns]
+    inserted=(await c.execute(text(f"""INSERT INTO observation_clusters({','.join(columns)})
+        SELECT {','.join(selected)} FROM jsonb_to_recordset(CAST(:headers AS jsonb)) AS p({declarations})
+        RETURNING id,phenomenon_key,cluster_key"""),
+        {"headers":json.dumps(headers,default=lambda value:value.isoformat(),allow_nan=False)})).mappings()
+    ids={(row["phenomenon_key"],row["cluster_key"]):row["id"] for row in inserted}
+    memberships,behaviors=[],[]
+    for policy,item in entries:
+        item["id"]=ids[(policy.key,item["cluster_key"])]
+        memberships.extend({"cid":item["id"],"nid":row["id"],"gid":row["report_group_id"],
+            "mid":row["membership_id"],"representative":row["id"] in item["representative_ids"]}
+            for row in item["members"])
+        behaviors.extend({"cid":item["id"],"code":code,**counts} for code,counts in item["behaviors"].items())
+        event("cluster_created",code="shadow_candidate")
     await c.execute(text("""INSERT INTO cluster_members(cluster_id,normalized_observation_id,report_group_id,membership_id,representative)
-        VALUES(:cid,:nid,:gid,:mid,:representative)"""),
-        [{"cid":item["id"],"nid":r["id"],"gid":r["report_group_id"],"mid":r["membership_id"],
-          "representative":r["id"] in item["representative_ids"]} for r in item["members"]])
-    if item["behaviors"]:
+        VALUES(:cid,:nid,:gid,:mid,:representative)"""),memberships)
+    if behaviors:
         await c.execute(text("""INSERT INTO cluster_behavior_summaries(cluster_id,behavior_code,observation_count,
             independent_report_count,independent_source_count) VALUES(:cid,:code,:observation_count,
-            :independent_report_count,:independent_source_count)"""),
-            [{"cid":item["id"],"code":code,**counts} for code,counts in item["behaviors"].items()])
-    event("cluster_created",code="shadow_candidate")
+            :independent_report_count,:independent_source_count)"""),behaviors)
 
 
 async def run(c, aid, now, policies, rows, sources, *, published):
@@ -100,9 +126,7 @@ async def run(c, aid, now, policies, rows, sources, *, published):
             await c.execute(text("""INSERT INTO pattern_observation_dispositions VALUES(:aid,:key,:nid,:disposition)"""),
                 [{"aid":aid,"key":policy.key,"nid":nid,"disposition":value} for nid,value in sorted(dispositions.items())])
     outcomes = await episodes.assign(c,results,policies,now) if published else {}
-    for policy in policies:
-        for item in results[policy.key]:
-            await persist_cluster(c,aid,policy,item,now)
+    await persist_clusters(c,aid,policies,results,now)
     if published:
         await episodes.snapshots(c,aid,outcomes,now)
     count = sum(len(items) for items in results.values())
