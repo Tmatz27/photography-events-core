@@ -95,9 +95,11 @@ CREATE TABLE observation_clusters (
  qualification_state TEXT NOT NULL CHECK(qualification_state IN ('developing','qualified')),
  public_location_id BIGINT REFERENCES locations(id),
  UNIQUE(assessment_run_id,phenomenon_key,cluster_key),
- UNIQUE(id,assessment_run_id,pattern_episode_id)
+ UNIQUE(id,assessment_run_id,pattern_episode_id),
+ CHECK(independent_report_count<=observation_count AND provider_record_count<=observation_count AND independent_source_count<=provider_record_count),
+ CHECK(first_observed_at<=last_observed_at AND window_start<window_end)
 );
-CREATE INDEX ix_cluster_generation_episode ON observation_clusters(assessment_run_id,pattern_episode_id);
+CREATE UNIQUE INDEX ux_cluster_generation_episode ON observation_clusters(assessment_run_id,pattern_episode_id) WHERE pattern_episode_id IS NOT NULL;
 CREATE INDEX ix_cluster_episode_history ON observation_clusters(pattern_episode_id,assessment_run_id);
 CREATE INDEX ix_cluster_centroid ON observation_clusters USING gist(centroid_internal);
 CREATE INDEX ix_location_public_geometry ON locations USING gist(public_geometry);

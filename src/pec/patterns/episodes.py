@@ -45,7 +45,7 @@ def strongest(cluster):
 def match_rank(episode, cluster):
     overlap = len(set(episode["previous_reports"]) & report_names(cluster))
     distance = math.hypot(cluster["x"]-episode["previous_x"], cluster["y"]-episode["previous_y"])
-    return (-overlap, distance, episode["started_at"], episode["episode_key"])
+    return (-overlap, distance, episode["started_at"], episode["created_at"], episode["episode_key"])
 
 
 async def assign(c, clusters_by_policy, policies, now):
@@ -84,7 +84,7 @@ async def assign(c, clusters_by_policy, policies, now):
                     sum(e["id"] in {item["id"] for item in opt} for opt in options.values()) == 1
                     and set(e["previous_reports"]) & report_names(cluster) for e in free))
                 if policy.allow_merge and unambiguous:
-                    episode = min(free, key=lambda e: (e["started_at"], e["episode_key"]))
+                    episode = min(free, key=lambda e: (e["started_at"], e["created_at"], e["episode_key"]))
                     for loser in free:
                         available.discard(loser["id"])
                         if loser["id"] != episode["id"]:

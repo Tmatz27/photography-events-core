@@ -258,9 +258,13 @@ async def test_a24_mirrors_do_not_supply_density(db):
 
 async def test_a25_high_uncertainty(db):
     rows=records(4,MONARCH.subject)+[record(99,MONARCH.subject,coordinate_uncertainty_meters=15000,longitude=-120.52)]
-    result=await publish(db,rows)
+    await publish(db,records(4,MONARCH.subject))
+    first=(await clusters(db))[0]
+    result=await publish(db,rows,hour=1)
     assert result.items[0].metrics.independent_report_count==4
     assert len(await sql(db,"SELECT * FROM pattern_observation_dispositions WHERE disposition='regional'"))==1
+    same=await sql(db,"SELECT ST_Equals(a.centroid_internal,b.centroid_internal) AS unchanged FROM observation_clusters a JOIN observation_clusters b ON b.assessment_run_id=:aid WHERE a.id=:id",aid=result.assessment_id,id=first["id"])
+    assert same[0]["unchanged"]
 
 
 async def test_a26_area_observation(db):
@@ -492,3 +496,21 @@ async def test_changed_policy_or_engine_marks_debug_outdated_before_recompute(db
     from pec.patterns import engine
     monkeypatch.setattr(engine,"engine_hash",lambda:"0"*64)
     assert (await read(db,NOW)).analysis_state=="outdated"
+
+async def test_m2_future_admission_without_refetch(db):
+    rows=records(3,observed_at=(NOW+timedelta(hours=2)).isoformat())
+    first=await publish(db,rows)
+    assert not first.clusters
+    await db.generate(data(1.1))
+    second=await read(db,NOW+timedelta(hours=1.1))
+    assert second.items[0].metrics.independent_report_count==3
+    assert len(await sql(db,"SELECT * FROM raw_observations"))==3
+
+
+async def test_provider_withdrawal_removes_current_support_and_preserves_history(db):
+    first=await publish(db,records(3))
+    old=(await clusters(db))[0]
+    result=await publish(db,records(3,withdrawn=True),hour=1)
+    assert first.items and not result.clusters
+    assert not await sql(db,"SELECT id FROM normalized_observations WHERE superseded_at IS NULL")
+    assert len(await sql(db,"SELECT * FROM cluster_members WHERE cluster_id=:cid",cid=old["id"]))==3
