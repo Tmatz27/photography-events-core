@@ -76,6 +76,7 @@ CREATE TABLE observation_clusters (
  policy_version TEXT NOT NULL,
  policy_hash TEXT NOT NULL CHECK(length(policy_hash)=64),
  engine_version TEXT NOT NULL,
+ engine_hash TEXT NOT NULL CHECK(length(engine_hash)=64),
  clustering_crs INTEGER NOT NULL,
  calculated_at TIMESTAMPTZ NOT NULL,
  centroid_internal GEOMETRY(Point,4326) NOT NULL,

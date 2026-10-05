@@ -130,6 +130,9 @@ async def read(db, now, episode_key=None):
             OR (r.content_sha256 IS DISTINCT FROM p.content_sha256 AND r.completed_at<=:grace)))"""),
             {"aid":aid,"grace":now-db.grace})).scalar_one()
         state = "outdated" if changed or assessment["valid_until"]<=now else "current"
+        from .engine import policy_hash
+        if run["policy_hash"] != policy_hash(db.pattern_policies):
+            state = "outdated"
         views, previews = [], []
         policies = {p.key:p for p in db.pattern_policies}
         for row in snapshots:

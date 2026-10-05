@@ -32,7 +32,7 @@ SOURCE_SQL = """SELECT s.id AS source_id,s.key,r.id AS source_run_id,r.status,r.
 # The SQL groups one deterministic point per report. Cluster numbers are local
 # query artifacts; membership hashes, not cid values, drive stable tie-breaking.
 CLUSTER_SQL = """WITH points AS (
- SELECT report_key,nid,ST_Transform(ST_SetSRID(ST_MakePoint(lon,lat),4326),:srid) AS geom
+ SELECT report_key,nid,ST_Transform(ST_SetSRID(ST_MakePoint(lon,lat),4326),CAST(:srid AS integer)) AS geom
  FROM jsonb_to_recordset(CAST(:points AS jsonb))
  AS p(report_key text,nid bigint,lon float8,lat float8)
 ), labelled AS (
@@ -48,7 +48,7 @@ SELECT reports,ST_AsEWKT(ST_Transform(ST_Centroid(shape),4326)) AS centroid_wkt,
  ST_X((circle).center) AS x,ST_Y((circle).center) AS y,
  (circle).radius AS radius_meters FROM bounds ORDER BY reports"""
 
-DENSITY_LABEL = "ST_ClusterDBSCAN(geom,eps=>:eps,minpoints=>:minimum) OVER(ORDER BY report_key)"
+DENSITY_LABEL = "ST_ClusterDBSCAN(geom,eps=>CAST(:eps AS float8),minpoints=>CAST(:minimum AS integer)) OVER(ORDER BY report_key)"
 SINGLE_LABEL = "row_number() OVER(ORDER BY report_key)"
 
 

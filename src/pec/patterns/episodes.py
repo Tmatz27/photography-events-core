@@ -8,8 +8,8 @@ from ..logging import event
 from .policy import canonical_hash
 
 ACTIVE_SQL = """SELECT e.*,c.radius_meters AS previous_radius,
- ST_X(ST_Transform(c.bounding_center_internal,3310)) AS previous_x,
- ST_Y(ST_Transform(c.bounding_center_internal,3310)) AS previous_y,
+ ST_X(ST_Transform(c.bounding_center_internal,c.clustering_crs)) AS previous_x,
+ ST_Y(ST_Transform(c.bounding_center_internal,c.clustering_crs)) AS previous_y,
  COALESCE(p.reports,ARRAY[]::text[]) AS previous_reports
  FROM pattern_episodes e LEFT JOIN LATERAL (
  SELECT c.* FROM observation_clusters c JOIN assessment_runs a ON a.id=c.assessment_run_id

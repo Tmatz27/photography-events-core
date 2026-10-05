@@ -40,7 +40,8 @@ async def generate(db, data, *, evaluator=None):
         pattern_rows, pattern_sources = [], []
         if db.patterns_mode == "shadow":
             pattern_rows, pattern_sources, pattern_identity = await pattern_clustering.load_inputs(c)
-            identity["patterns"] = {"inputs": pattern_identity, "policies": pattern_engine.policy_hash(db.pattern_policies)}
+            identity["patterns"] = {"inputs": pattern_identity, "policies": pattern_engine.policy_hash(db.pattern_policies),
+                                    "engine_hash": pattern_engine.engine_hash()}
         rules = definition()
         digest = fingerprint({"inputs": identity, "definition_hash": rules["hash"], "engine": CORE_VERSION})
         now = datetime.fromisoformat(data["now"])

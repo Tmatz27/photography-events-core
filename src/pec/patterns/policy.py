@@ -25,6 +25,13 @@ class Destination:
     viewing_radius_meters: float
     sensitive_allowed: bool = False
 
+    def __post_init__(self):
+        import math
+        if (not self.key or not self.name or not math.isfinite(self.latitude) or not math.isfinite(self.longitude)
+                or not -90 <= self.latitude <= 90 or not -180 <= self.longitude <= 180
+                or not math.isfinite(self.viewing_radius_meters) or self.viewing_radius_meters <= 0):
+            raise ValueError("Invalid approved destination")
+
 
 @dataclass(frozen=True)
 class Policy:
@@ -71,6 +78,13 @@ class Policy:
             self.behavior_min_reports, self.qualifying_reports)
         if any(not math.isfinite(v) or v <= 0 for v in positive):
             raise ValueError("Pattern thresholds must be finite and positive")
+        for count in (self.min_independent_reports,self.minimum_observations,self.behavior_min_reports,self.qualifying_reports):
+            if type(count) is not int or count > 2147483647:
+                raise ValueError("Report thresholds must be integer counts")
+        if self.count_requirement is not None and (type(self.count_requirement) is not int or not 0 <= self.count_requirement <= 2147483647):
+            raise ValueError("Invalid animal count requirement")
+        if self.trigger == "BEHAVIOR_REQUIRED" and not self.behaviors:
+            raise ValueError("A behavior gate needs explicit canonical behaviors")
         if not 0 <= self.future_tolerance_seconds <= 3600:
             raise ValueError("Invalid future tolerance")
 

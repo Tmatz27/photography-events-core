@@ -1,6 +1,8 @@
 """Persist shadow outputs inside the M1 atomic generation publication."""
 from dataclasses import asdict
 from datetime import timedelta
+import hashlib
+from pathlib import Path
 
 from sqlalchemy import text
 
@@ -12,6 +14,14 @@ from .policy import canonical_hash
 
 def policy_hash(policies):
     return canonical_hash([asdict(p) for p in sorted(policies,key=lambda p:p.key)])
+
+
+def engine_hash():
+    digest=hashlib.sha256()
+    for name in ("identity.py","clustering.py","episodes.py","engine.py","policy.py","api.py"):
+        digest.update(name.encode())
+        digest.update(Path(__file__).with_name(name).read_bytes().replace(b"\r\n",b"\n"))
+    return digest.hexdigest()
 
 
 async def public_destination(c, policy, cluster):
@@ -48,16 +58,16 @@ async def public_destination(c, policy, cluster):
 
 async def persist_cluster(c, aid, policy, item, now):
     params = {**item,"aid":aid,"phenomenon":policy.key,"version":policy.version,"hash":policy.hash,
-        "engine":CORE_VERSION,"crs":policy.clustering_crs,"now":now,
+        "engine":CORE_VERSION,"engine_hash":engine_hash(),"crs":policy.clustering_crs,"now":now,
         "window_start":now-timedelta(seconds=policy.temporal_window_seconds),
         "window_end":now+timedelta(seconds=policy.future_tolerance_seconds)}
     columns = ("provider_record_count","observation_count","independent_report_count","independent_source_count",
                "max_single_report_count","first_observed_at","last_observed_at","contains_sensitive_evidence",
                "qualification_state","public_location_id")
     item["id"] = (await c.execute(text(f"""INSERT INTO observation_clusters(assessment_run_id,phenomenon_key,cluster_key,
-        pattern_episode_id,policy_version,policy_hash,engine_version,clustering_crs,calculated_at,
+        pattern_episode_id,policy_version,policy_hash,engine_version,engine_hash,clustering_crs,calculated_at,
         centroid_internal,bounding_center_internal,radius_meters,window_start,window_end,{','.join(columns)})
-        VALUES(:aid,:phenomenon,:cluster_key,:pattern_episode_id,:version,:hash,:engine,:crs,:now,
+        VALUES(:aid,:phenomenon,:cluster_key,:pattern_episode_id,:version,:hash,:engine,:engine_hash,:crs,:now,
         ST_GeomFromEWKT(:centroid_wkt),ST_GeomFromEWKT(:center_wkt),:radius_meters,:window_start,:window_end,
         {','.join(':'+key for key in columns)}) RETURNING id"""),params)).scalar_one()
     await c.execute(text("""INSERT INTO cluster_members(cluster_id,normalized_observation_id,report_group_id,membership_id,representative)
