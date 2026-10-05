@@ -83,6 +83,9 @@ def envelope(assessment, items, sources, now, presentation=None, category=None, 
 
 class Database:
     def __init__(self, settings):
+        from .patterns.policy import POLICIES
+        self.patterns_mode = settings.patterns_mode
+        self.pattern_policies = POLICIES
         self.timeout = settings.database_timeout
         self.grace = timedelta(seconds=settings.evaluation_grace)
         # Perform readiness/ping SQL after checkout, where the deadline guard owns
@@ -173,6 +176,7 @@ class Database:
             raise SchemaUnavailable()
         await connection.execute(text("SELECT assessment_run_id FROM assessment_current LIMIT 0"))
         await connection.execute(text("SELECT opportunity_id FROM assessment_opportunities LIMIT 0"))
+        await connection.execute(text("SELECT assessment_run_id FROM pattern_generation_runs LIMIT 0"))
         await connection.execute(text("SELECT key FROM source_health_current LIMIT 0"))
 
     async def ready(self):

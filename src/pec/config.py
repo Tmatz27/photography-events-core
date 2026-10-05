@@ -11,8 +11,11 @@ class Settings:
     api_token: str = field(repr=False)
     database_timeout: float = 3.0
     evaluation_grace: float = 30.0
+    patterns_mode: str = "off"
 
     def __post_init__(self):
+        if self.patterns_mode not in ("off", "shadow"):
+            raise ValueError("CORE_PATTERNS_MODE must be off or shadow; production promotion is not enabled")
         if len(self.api_token) < 32 or self.api_token.lower().startswith(('replace', 'changeme')):
             raise ValueError("CORE_API_TOKEN must be a generated secret of at least 32 characters")
         if not 0.1 <= self.database_timeout <= 30:
@@ -33,5 +36,5 @@ class Settings:
                              host=os.environ.get("DB_HOST", "photography-events-db"),
                              database=os.environ.get("POSTGRES_DB", "photography_events"))
         return cls(url, os.environ.get("CORE_API_TOKEN", ""), float(os.environ.get("CORE_DATABASE_TIMEOUT", "3")),
-                   float(os.environ.get("CORE_EVALUATION_GRACE", "30")))
+                   float(os.environ.get("CORE_EVALUATION_GRACE", "30")), os.environ.get("CORE_PATTERNS_MODE", "off"))
 

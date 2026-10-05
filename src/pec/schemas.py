@@ -43,10 +43,11 @@ class Gear(Contract):
 
 class Opportunity(Contract):
     assessment_id: int | None = None
+    pattern_episode_id: int | None = None
     occurrence_key: str
     phenomenon_key: str
     title: str
-    category: Literal["mammals", "birds"]
+    category: Literal["mammals", "birds", "insects"]
     location: PublicLocation
     starts_at: AwareDatetime
     ends_at: AwareDatetime

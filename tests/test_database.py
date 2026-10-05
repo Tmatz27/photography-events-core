@@ -27,7 +27,7 @@ async def db():
     assert make_url(URL).database.endswith("_test"), "Never test against a production database"
     database = Database(Settings(URL, "test-only-" + "a" * 40))
     async with database.engine.begin() as c:
-        await c.execute(text("TRUNCATE sources,locations,assessment_runs RESTART IDENTITY CASCADE"))
+        await c.execute(text("TRUNCATE sources,locations,assessment_runs,observation_report_groups RESTART IDENTITY CASCADE"))
     yield database
     await database.close()
 
@@ -36,7 +36,7 @@ async def test_postgis_and_migration_revision(db):
     await db.ready()
     async with db.engine.connect() as c:
         assert (await c.execute(text("SELECT postgis_lib_version()"))).scalar().startswith("3.6")
-        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0002"
+        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0003"
         assert (await c.execute(text("SELECT ST_SRID(ST_GeomFromText('POINT(-119.8 35.2)',4326))"))).scalar() == 4326
 
 

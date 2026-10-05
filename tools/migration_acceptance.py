@@ -63,7 +63,7 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0002"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0003"
             assert (await c.execute(text("SELECT occurrence_key FROM opportunities WHERE id=1"))).scalar() == result.items[0].occurrence_key
             assert (await c.execute(text("SELECT raw_payload->>'preserve' FROM raw_observations"))).scalar() == "provider data"
             assert (await c.execute(text("SELECT sensitive AND analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()
@@ -71,6 +71,9 @@ async def main(mode):
             assert (await c.execute(text("SELECT count(*) FROM legacy_context_evidence"))).scalar() == 1
             assert (await c.execute(text("SELECT count(*) FROM opportunity_revisions WHERE provenance_status='legacy_unscoped' AND assessment_run_id IS NULL"))).scalar() == 1
             assert (await c.execute(text("SELECT count(*) FROM opportunity_observation_evidence"))).scalar() == 0
+            assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NULL"))).scalar() == 1
+            assert (await c.execute(text("SELECT spatial_precision FROM normalized_observations"))).scalar() == "unknown"
+            assert (await c.execute(text("SELECT behavior_code FROM normalized_observation_behaviors"))).scalar() == "presence"
         await db.close()
         print("R20 passed: 0001 identity/provider data preserved, 0002 API reads conservative current generation")
 

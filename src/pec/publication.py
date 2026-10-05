@@ -36,6 +36,11 @@ async def generate(db, data, *, evaluator=None):
         pointer = (await c.execute(text("SELECT assessment_run_id FROM assessment_current WHERE id=1 FOR UPDATE"))).scalar_one()
         current = (await c.execute(text("SELECT * FROM assessment_runs WHERE id=:id"), {"id": pointer})).mappings().first() if pointer else None
         logical, sources, identity = await stored_inputs(c, data)
+        from .patterns import clustering as pattern_clustering, engine as pattern_engine
+        pattern_rows, pattern_sources = [], []
+        if db.patterns_mode == "shadow":
+            pattern_rows, pattern_sources, pattern_identity = await pattern_clustering.load_inputs(c)
+            identity["patterns"] = {"inputs": pattern_identity, "policies": pattern_engine.policy_hash(db.pattern_policies)}
         rules = definition()
         digest = fingerprint({"inputs": identity, "definition_hash": rules["hash"], "engine": CORE_VERSION})
         now = datetime.fromisoformat(data["now"])
@@ -98,6 +103,9 @@ async def generate(db, data, *, evaluator=None):
                     assessment_run_id,provenance_status,{','.join(MATERIAL)})
                     VALUES(:oid,:recorded,:aid,'generation',{','.join(':'+k for k in MATERIAL)})"""),
                     {**values, "recorded": datetime.now(UTC)})
+        if db.patterns_mode == "shadow" and not error:
+            await pattern_engine.run(c, aid, now, db.pattern_policies, pattern_rows, pattern_sources,
+                                     published=status == "published")
         if status == "published":
             if pointer:
                 await c.execute(text("UPDATE assessment_runs SET status='superseded' WHERE id=:id"), {"id": pointer})

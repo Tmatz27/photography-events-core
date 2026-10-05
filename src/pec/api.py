@@ -75,6 +75,19 @@ def create_app(settings=None, database=None, clock=None):
 
     secured = [Depends(auth)]
 
+    from .patterns.api import PatternResponse, read as read_patterns
+
+    @app.get("/api/v1/debug/patterns", response_model=PatternResponse, dependencies=secured)
+    async def patterns():
+        return await read_patterns(db, clock())
+
+    @app.get("/api/v1/debug/patterns/{episode_key}", response_model=PatternResponse, dependencies=secured)
+    async def pattern(episode_key: str):
+        result = await read_patterns(db, clock(), episode_key)
+        if not result.items:
+            raise HTTPException(404)
+        return result
+
     @app.get("/api/v1/opportunities", response_model=OpportunityList, dependencies=secured,
              responses={401: {"model": Error}, 503: {"model": Error}, 422: {"model": Error}})
     async def opportunities(presentation: Presentation | None = None, category: Literal["mammals", "birds"] | None = None):

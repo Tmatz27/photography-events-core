@@ -1,5 +1,7 @@
 # Tests run on the private network; no CI database port is published either.
 services:
   photography-events-core:
+    environment:
+      CORE_PATTERNS_MODE: shadow
     build:
       target: test

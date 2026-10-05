@@ -18,6 +18,7 @@ async def sweep(connection, now, batch_size=500):
         AND NOT EXISTS(SELECT 1 FROM opportunity_context_evidence e WHERE e.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM legacy_context_evidence e WHERE e.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM assessment_sources a WHERE a.source_run_id=r.id)
+        AND NOT EXISTS(SELECT 1 FROM pattern_generation_sources p WHERE p.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM normalized_observations n WHERE n.source_run_id=r.id)
         ORDER BY completed_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
         {"cutoff": now - timedelta(days=90), "batch": batch_size})

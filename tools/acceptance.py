@@ -58,6 +58,8 @@ def main():
     try:
         compose("up", "-d", "--wait", "--wait-timeout", "150")
         results["startup"] = wait_ready()
+        assert results["startup"]["schema_version"] == "0003"
+        results["fresh_database_to_0003"] = "passed"
         versions = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events", "-Atc", "SELECT version(),postgis_full_version()", capture_output=True, text=True).stdout
         results["database_versions"] = versions.strip()
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
@@ -71,6 +73,7 @@ def main():
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
+        results["migration_0001_0002_0003"] = "identity, memberships, behavior and held API verified"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
         with (EVIDENCE / "pytest.log").open("w") as log:
@@ -83,12 +86,20 @@ def main():
         key = "tule_elk_rut-2026-09-15"
         first = check("/api/v1/opportunities/" + key)
         results["fixture_readable"] = first["occurrence_key"]
+        compose("exec", "-T", "photography-events-core", "python", "tools/m2_acceptance.py")
+        compose("cp", "photography-events-core:/tmp/m2-performance.json", str(EVIDENCE / "m2-performance.json"))
+        patterns = check("/api/v1/debug/patterns")
+        assert len(patterns["items"]) == 1 and not patterns["preview_opportunities"]
+        episode_key = patterns["items"][0]["episode_key"]
+        results["M2_shadow_1000_reports"] = "one episode; zero promoted opportunities"
         check("/api/v1/opportunities", 401, token=False)
         results["bad_token"] = "401"
         compose("restart", "photography-events-core")
         wait_ready()
         assert check("/api/v1/opportunities/" + key)["occurrence_key"] == key
         results["core_restart"] = "data preserved"
+        assert check("/api/v1/debug/patterns")["items"][0]["episode_key"] == episode_key
+        results["M2_core_restart"] = "episode identity preserved"
         probe = subprocess.Popen([*COMPOSE, "exec", "-T", "photography-events-core", "python", "tools/frozen_database_probe.py"], cwd=ROOT)
         def wait_marker(name):
             for _ in range(100):
@@ -120,6 +131,8 @@ def main():
         wait_ready()
         assert check("/api/v1/opportunities/" + key)["occurrence_key"] == key
         results["database_restart"] = "ready and data preserved"
+        assert check("/api/v1/debug/patterns")["items"][0]["episode_key"] == episode_key
+        results["M2_database_restart"] = "episode identity preserved"
         # Execute the operator scripts themselves, not merely equivalent commands.
         backup_result = run("sh", "scripts/backup.sh", env={**os.environ, "BACKUP_DIR": str(EVIDENCE / "backups")},
                             capture_output=True, text=True)
@@ -136,6 +149,8 @@ def main():
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         wait_ready(8100)
         assert check("/api/v1/opportunities/" + key, port=8100)["occurrence_key"] == key
+        assert check("/api/v1/debug/patterns", port=8100)["items"][0]["episode_key"] == episode_key
+        results["M2_restore"] = "episode identity and generation artifacts preserved"
         results["restore"] = "clean DB, extension, pg_restore, migrations, Core readiness and data passed"
     finally:
         (EVIDENCE / "acceptance.json").write_text(json.dumps(results, indent=2) + "\n")

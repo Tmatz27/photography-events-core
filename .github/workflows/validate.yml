@@ -1,4 +1,4 @@
-name: Milestone 1 validation
+name: Core milestone validation
 on:
   push:
     branches: [main]
@@ -43,11 +43,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: milestone-1-evidence
+          name: core-milestone-evidence
           path: |
             evidence/acceptance.json
             evidence/pytest.log
             evidence/tests.xml
             evidence/parity.json
             evidence/frozen-database.json
+            evidence/m2-performance.json
           if-no-files-found: warn

@@ -6,7 +6,9 @@ from datetime import UTC, datetime
 EVENTS = frozenset({"startup", "schema_issue", "database_unavailable", "database_recovered",
     "source_collection_failure", "source_stale", "parser_failure", "scheduler_failure",
     "api_request_failure", "authentication_failure", "parity_test_failure", "retry_after_clamped",
-    "assessment_failure", "assessment_conflict"})
+    "assessment_failure", "assessment_conflict", "report_group_created", "report_group_membership_superseded",
+    "cluster_created", "cluster_rejected_incoherent", "cluster_low_precision_excluded", "episode_created",
+    "episode_continued", "episode_split", "episode_merged", "episode_ended", "public_location_unavailable"})
 logger = logging.getLogger("photography_events_core")
 
 

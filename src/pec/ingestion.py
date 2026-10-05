@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import text
 
 from .logging import event
+from .patterns import identity as report_identity
 
 LOCK = 7340191
 ROLES = {"fixture_observations": "CORROBORATION", "nws_alerts": "SAFETY"}
@@ -38,7 +39,7 @@ def validate_record(record):
     if not (math.isfinite(lat) and math.isfinite(lon) and -90 <= lat <= 90 and -180 <= lon <= 180):
         raise ValueError("invalid point")
     count = record.get("count")
-    if count is not None and (not isinstance(count, int) or isinstance(count, bool) or count < 0):
+    if count is not None and (not isinstance(count, int) or isinstance(count, bool) or not 0 <= count <= 2147483647):
         raise ValueError("invalid count")
     behavior = record.get("behavior")
     if behavior is not None and not isinstance(behavior, str):
@@ -59,13 +60,20 @@ async def collect_fixture(db, data):
         # This prevents a correction halfway through generation's logical input read.
         await c.execute(text("SELECT pg_advisory_xact_lock(:lock)"), {"lock": LOCK})
         runs = {}
-        for key, role in ROLES.items():
+        providers = sorted({r.get("provider", "fixture_observations") for r in data.get("sightings", [])
+                            if isinstance(r, dict) and r.get("provider", "fixture_observations") in report_identity.FIXTURE_PROVIDERS})
+        roles = {**ROLES, **{key: "CORROBORATION" for key in providers}}
+        for key, role in roles.items():
             sid = (await c.execute(text("""INSERT INTO sources(key,name,source_type,requires_stable_ids)
                 VALUES(:key,:name,'fixture',TRUE) ON CONFLICT(key) DO UPDATE SET name=EXCLUDED.name RETURNING id"""),
                 {"key": key, "name": "Synthetic fixture: " + key})).scalar_one()
             await c.execute(text("INSERT INTO source_roles VALUES(:sid,:role) ON CONFLICT DO NOTHING"), {"sid": sid, "role": role})
             success = key != "nws_alerts" or data.get("alerts") is not None
-            records = data.get("sightings", []) if key == "fixture_observations" else []
+            records = [r for r in data.get("sightings", []) if
+                       (r.get("provider", "fixture_observations") if isinstance(r, dict) else "fixture_observations") == key]
+            if key == "fixture_observations":
+                records += [r for r in data.get("sightings", []) if isinstance(r, dict)
+                            and r.get("provider", "fixture_observations") not in report_identity.FIXTURE_PROVIDERS]
             rid = (await c.execute(text("""INSERT INTO source_runs(source_id,cycle_key,attempt_number,started_at,
                 completed_at,status,records_received,provider_updated_at,error_code,context_payload)
                 VALUES(:sid,:cycle,1,:now,:now,:status,:count,:provider,:error,CAST(:context AS jsonb)) RETURNING id"""),
@@ -83,7 +91,10 @@ async def collect_fixture(db, data):
                 payload = safe_payload(record)
                 digest = fingerprint(payload)
                 try:
+                    if record.get("provider", "fixture_observations") not in report_identity.FIXTURE_PROVIDERS:
+                        raise ValueError("Unknown fixture provider")
                     fields = validate_record(record)
+                    details = report_identity.metadata(record, key)
                 except (KeyError, ValueError, TypeError, OverflowError):
                     fields = dict(observed=None, valid=None, subject=None, lat=None, lon=None, count=None, behavior=None)
                     rejected += 1
@@ -110,6 +121,7 @@ async def collect_fixture(db, data):
                     "now": now, "payload": canonical(payload), "digest": digest, "sensitive": sensitive})).scalar_one()
                 if not changed:
                     continue
+                await report_identity.supersede(c, raw_id, now)
                 await c.execute(text("""UPDATE normalized_observations SET superseded_at=:now
                     WHERE raw_observation_id=:raw AND superseded_at IS NULL"""), {"now": now, "raw": raw_id})
                 # Automation can only raise protection, including historical
@@ -117,16 +129,17 @@ async def collect_fixture(db, data):
                 if sensitive:
                     await c.execute(text("""UPDATE normalized_observations SET sensitive=TRUE,
                         public_geometry=NULL,precision_class='withheld' WHERE raw_observation_id=:raw"""), {"raw": raw_id})
-                if fields["subject"] is None:
+                if fields["subject"] is None or details["withdrawn"]:
                     continue
-                await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,
+                nid = (await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,
                     subject_key,observed_at,analysis_geometry,public_geometry,reported_count,sensitive,
                     precision_class,valid_until,behavior,source_run_id,content_sha256)
                     VALUES(:raw,'species',:subject,:observed,ST_SetSRID(ST_MakePoint(:lon,:lat),4326),
-                    NULL,:count,:sensitive,'withheld',:valid,:behavior,:rid,:digest)"""),
+                    NULL,:count,:sensitive,'withheld',:valid,:behavior,:rid,:digest) RETURNING id"""),
                     {**fields, "raw": raw_id, "sensitive": sensitive, "rid": rid, "digest": digest,
-                     "valid": fields["valid"]})
-            if key == "fixture_observations":
+                     "valid": fields["valid"]})).scalar_one()
+                await report_identity.attach(c, nid, details, now)
+            if key != "nws_alerts":
                 current = (await c.execute(text("""SELECT r.external_id,r.content_sha256,r.sensitive
                     FROM raw_observations r WHERE r.source_id=:sid ORDER BY r.external_id"""), {"sid": sid})).mappings()
                 content_hash = fingerprint([dict(row) for row in current])
