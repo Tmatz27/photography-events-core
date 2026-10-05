@@ -62,6 +62,19 @@ async def reset(db):
         await c.execute(text("TRUNCATE sources,locations,assessment_runs,observation_report_groups RESTART IDENTITY CASCADE"))
 
 
+async def test_postgis_report_density_primitive(db):
+    # Exercise SQL directly in a disposable test transaction so a PostGIS/type
+    # regression supplies its diagnostic without weakening API sanitization.
+    from pec.ingestion import collect_fixture
+    from pec.patterns import clustering
+    await collect_fixture(db,data(sightings=records(3)))
+    async with db.engine.begin() as c:
+        rows,_,_=await clustering.load_inputs(c)
+        found,_=await clustering.candidates(c,rows,BEAR,NOW)
+        assert len(found)==1 and found[0]["independent_report_count"]==3
+        assert 0 < found[0]["radius_meters"] < 100
+
+
 async def test_a1_scattered_monarchs(db):
     rows = [record(i,MONARCH.subject,latitude=32+(i//10)*1.5,longitude=-124+(i%10)*0.9) for i in range(40)]
     result = await publish(db,rows)
