@@ -1,0 +1,20 @@
+{
+  "repository": "Tmatz27/photography-events-core",
+  "sha": "e36c45015243ff39b0e29e7c44df37ca5bca758e",
+  "run_id": 37338718104,
+  "job_id": 111860012611,
+  "conclusion": "success",
+  "artifact_id": 11357213002,
+  "artifact_sha256": "cff39ea7d8218cee73bc0adf55768623d007f8e79fd31442626a0b6f58a01242",
+  "full_tests": {
+    "passed": 210,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ha": {
+    "sha": "c76726ece1e485ece03810087927da344289fba7",
+    "run_id": 37334287547,
+    "conclusion": "all four jobs success"
+  },
+  "note": "Code-freeze evidence. Final documentation commit and its exact-SHA CI recorded in external submission receipt."
+}

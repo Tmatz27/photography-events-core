@@ -1,0 +1,1 @@
+{"requests": 8, "deadline": 2, "seconds": [2.0123, 2.0097, 2.009, 2.0086, 2.0086, 2.0056, 2.0061, 2.0067], "checked_out_after_failure": 0, "cold_seconds": [2.0048, 2.0043, 2.0041, 2.004, 2.0036, 2.0034, 2.0042, 2.0041], "cold_checked_out_after_failure": 0, "recovered": true}

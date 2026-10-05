@@ -1,12 +1,13 @@
-# Photography Events Core — Milestone 1 development
+# Photography Events Core — Milestone 2 shadow development
 
 A LAN-only Python service for the Photography Events regret-prevention product.
 The Home Assistant v0.16.1 local engine remains authoritative. Core is a
 foundation and deterministic Carrizo Plain Tule Elk parity slice, not a public
 release or a replacement for the existing integration.
 
-Read the [Milestone 1 implementation review](IMPLEMENTATION_REVIEW_MILESTONE_1.md)
-for the exact scope, deviations, provenance and verified acceptance results.
+The accepted [Milestone 1 review](IMPLEMENTATION_REVIEW_MILESTONE_1.md) records
+the foundation. The [Milestone 2 review](IMPLEMENTATION_REVIEW_MILESTONE_2.md)
+records observation intelligence, shadow activation, acceptance and limitations.
 
 HA repository: https://github.com/Tmatz27/Home-assistant-photography-events
 
@@ -68,6 +69,7 @@ Uvicorn; migration failure stops startup with a sanitized structured event.
 | `CORE_BIND_IP` / `CORE_PORT` | LAN binding; default `127.0.0.1:8099` |
 | `CORE_DATABASE_TIMEOUT` | Whole DB operation deadline, default 3 seconds |
 | `CORE_EVALUATION_GRACE` | Grace for materially newer relevant inputs; default 30 seconds, range 0–300 |
+| `CORE_PATTERNS_MODE` | `off` by default; `shadow` computes development intelligence, with no production promotion |
 | `DB_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-db` |
 | `CORE_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-core` |
 | `BACKUP_DIR` | Mounted Synology destination, no NAS credentials in Core |
@@ -84,7 +86,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0002`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0003`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -124,15 +126,16 @@ just because a fixture or provider record was fetched again.
 
 ## Database, migrations and provenance
 
-Revision `0001` remains unchanged. Revision `0002` upgrades existing data to
-immutable generations; [the schema supplement](docs/SCHEMA_0002.md) describes the
-new tables, constraints, indexes and preserved legacy evidence.
+Revisions `0001` and `0002` remain unchanged. Revision `0002` provides immutable
+assessment generations ([schema](docs/SCHEMA_0002.md)); revision `0003` adds
+correctable report membership, canonical behavior, immutable analytical clusters
+and persistent episodes ([schema](docs/SCHEMA_0003.md)).
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
 `python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
-upgrading. Revision `0002` is forward-only because `0001` cannot represent its
-history; rollback requires a verified pre-upgrade backup restored to a new DB
+upgrading. Revisions `0002` and `0003` are forward-only because earlier schemas
+cannot represent their histories; rollback requires a verified pre-upgrade backup restored to a new DB
 and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
 check remains in CI. Migrated decisions stay incomplete/held until a fresh
 newer assessment supplies verified source provenance.
@@ -270,6 +273,52 @@ private geometry, future admission without refetch, provider corrections and
 legacy grouping. It executes 18,000 seeded evaluator comparisons with zero
 mismatches. See the correction review section and its committed CI artifacts
 for exact test counts and environments.
+
+## Observation intelligence: explicit shadow mode
+
+Set `CORE_PATTERNS_MODE=shadow` in `.env` and recreate Core to compute M2 during
+an assessment. The default remains `off`. Nothing is seeded at startup. Use the
+existing explicit synthetic fixture import to supply records; the M2 test
+fixtures construct local synthetic provider mirrors, never new live collectors.
+
+The pipeline is current normalized assertions → qualified report identity →
+policy-specific temporal/precision admission → report-level DBSCAN → coherent
+clusters → continuing pattern episodes → held developer opportunity previews.
+Same provider ID upserts once; only trusted fixture-adapter qualified origin IDs
+merge mirrors. No fuzzy deduplication occurs. Membership corrections preserve
+the exact historical links used by earlier clusters. Explicit canonical behavior
+is queryable separately from raw text; presence never implies feeding or cubs.
+
+Policies in `src/pec/patterns/policy.py` are provisional architectural fixtures.
+They use EPSG:3310 projected meters for the California operating envelope;
+storage remains EPSG:4326. Meter units do not imply exact geodesic distance.
+One deterministic representative per independent report enters ordered DBSCAN.
+Unknown accuracy, area locations and excessive uncertainty stay outside density
+and centroid calculations. Regional signals cannot satisfy tight thresholds.
+Incoherent candidates exceeding the enclosing-circle diameter limit are rejected.
+Animal counts use the largest single report, never a sum or an exact population.
+
+Clusters and episode snapshots are generation-scoped; previous history survives
+recomputation. Episode identity persists in PostgreSQL across restarts. At most
+one cluster continues a given episode per generation; additional compatible
+clusters record child lineage. Automatic merge requires explicit policy and
+unambiguous evidence continuity. Expired episodes never automatically reopen.
+Policy changes end/restart episodes conservatively. Source-controlled policy
+hashes and analytical engine source hashes make the calculation inspectable.
+
+Authenticated `GET /api/v1/debug/patterns` and its `/{episode_key}` detail route
+return redacted summaries, cluster diagnostics and held previews from one current
+assessment. They expose no raw records, internal centroids or radii. Sensitive
+metrics, behaviors and named locations are withheld; private analysis still
+participates internally. Only explicitly approved source-controlled destination
+relationships may produce public previews; no nearest-location fallback exists.
+All previews remain ineligible with unknown travel checks. Debug APIs are never
+consumed by the HA card or developer bridge.
+
+Normal `GET /api/v1/opportunities` retains accepted M1 decisions and permits an
+optional nullable `pattern_episode_id` in the model. There is no production M2
+promotion mode. Raw ordinary observations do not become Core product rows;
+pattern summaries are inspected only in the explicit developer path until review.
 
 ## Limitations and deferred scope
 
