@@ -67,7 +67,7 @@ async def reconcile(c, now):
         n.behavior,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,
         ARRAY(SELECT behavior_code FROM normalized_observation_behaviors b
             WHERE b.normalized_observation_id=n.id ORDER BY behavior_code) AS behaviors,
-        r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
+        r.id AS raw_observation_id,r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
         m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at,
         g.origin_namespace,g.origin_external_id
         FROM normalized_observations n JOIN raw_observations r ON r.id=n.raw_observation_id
@@ -80,7 +80,7 @@ async def reconcile(c, now):
     claims=defaultdict(list)
     for row in rows:
         payload={**(row["raw_payload"] or {})}
-        payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['id']}")
+        payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['raw_observation_id']}")
         # Old M1 assertions may predate raw behavior fields.
         payload.setdefault("behavior",row["behavior"])
         if row["raw_payload"] is None:

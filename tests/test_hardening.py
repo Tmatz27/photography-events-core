@@ -214,6 +214,23 @@ async def test_c2_canonical_still_incompatible_keeps_mirror_independent(db):
 async def test_c3_canonical_becomes_incompatible_splits_valid_mirror(db):
     await publish(db,[record(0),origin_claim()])
     assert len({r["report_group_id"] for r in await current_groups(db)})==1
+
+async def test_legacy_raw_identity_survives_multiple_assertions_and_pruned_payload(db):
+    await collect_fixture(db,data(sightings=records(2)))
+    async with db.engine.begin() as c:
+        await c.execute(text("UPDATE raw_observations SET external_id=NULL,raw_payload=NULL WHERE id=2"))
+        await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,
+            observed_at,analysis_geometry,sensitive,precision_class,valid_until,source_run_id,content_sha256)
+            SELECT raw_observation_id,subject_type,subject_key,observed_at,analysis_geometry,sensitive,
+            precision_class,valid_until,source_run_id,content_sha256 FROM normalized_observations
+            WHERE raw_observation_id=2"""))
+    await reconcile(db)
+    result=await sql(db,"""SELECT m.report_group_id,g.origin_external_id FROM observation_report_group_members m
+        JOIN observation_report_groups g ON g.id=m.report_group_id JOIN normalized_observations n
+        ON n.id=m.normalized_observation_id WHERE n.raw_observation_id=2 AND m.superseded_at IS NULL""")
+    assert len(result)==2 and len({r["report_group_id"] for r in result})==1
+    assert all(r["origin_external_id"]=="legacy-raw-2" for r in result)
+
     history=await sql(db,"SELECT cluster_id,normalized_observation_id,report_group_id,membership_id FROM cluster_members ORDER BY cluster_id,normalized_observation_id")
     await collect_fixture(db,data(1,[record(0,observed_at=(NOW+timedelta(days=2)).isoformat())]))
     await reconcile(db,1)
