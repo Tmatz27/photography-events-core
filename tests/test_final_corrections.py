@@ -46,14 +46,17 @@ async def assert_healthy(db):
     assert not db.failed
 
 
-async def test_f1_slow_locked_finish_cannot_block_new_high_wind_m1(db,monkeypatch):
+async def test_f1_slow_locked_finish_cannot_block_new_high_wind_m1(db,monkeypatch,record_property):
     base,observed=await stalled_finish(db,monkeypatch)
     wind={**DATA,"now":(NOW+timedelta(hours=2)).isoformat(),"alerts":[{
         "event":"High Wind Warning","onset":NOW.isoformat(),
         "ends":(NOW+timedelta(days=1)).isoformat(),"same":["006079"]}]}
     db.patterns_mode="off"
     await collect_fixture(db,wind)
+    start=time.perf_counter()
     result=await db.generate(wind)
+    record_property("m1_publication_seconds",time.perf_counter()-start)
+    record_property("m1_deadline_seconds",db.timeout)
     assert result["status"]=="published" and result["assessment_id"]!=base["assessment_id"]
     product=await db.opportunities(NOW+timedelta(hours=2))
     assert product.assessment_state=="complete" and product.items[0].safety_state=="unsafe"
@@ -211,12 +214,14 @@ async def test_f13_sql_loader_excludes_old_history_before_python_admission(db):
     assert len(rows)==3 and all(row["observed_at"]>=NOW-timedelta(days=4) for row in rows)
 
 
-async def test_f14_default_m1_latency_bounded_while_server_finish_stalls(db,monkeypatch):
+async def test_f14_default_m1_latency_bounded_while_server_finish_stalls(db,monkeypatch,record_property):
     await stalled_finish(db,monkeypatch)
     db.patterns_mode="off"
     start=time.perf_counter()
     result=await db.generate(data(2))
     elapsed=time.perf_counter()-start
+    record_property("m1_publication_seconds",elapsed)
+    record_property("m1_deadline_seconds",db.timeout)
     assert db.timeout==3 and elapsed<3 and result["status"]=="published"
     await assert_healthy(db)
 
