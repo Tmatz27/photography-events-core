@@ -20,6 +20,7 @@ INPUT_SQL = """SELECT n.id,n.raw_observation_id,n.subject_key,n.observed_at,n.va
  JOIN observation_report_group_members m ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
  JOIN observation_report_groups g ON g.id=m.report_group_id
  WHERE n.superseded_at IS NULL AND n.subject_type='species'
+ AND n.observed_at BETWEEN :window_start AND :window_end AND n.valid_until>=:now
  AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
  ORDER BY s.key,r.external_id,n.subject_key"""
 
@@ -52,8 +53,14 @@ DENSITY_LABEL = "ST_ClusterDBSCAN(geom,eps=>CAST(:eps AS float8),minpoints=>CAST
 SINGLE_LABEL = "row_number() OVER(ORDER BY report_key)"
 
 
-async def load_inputs(c):
-    rows = [dict(r) for r in (await c.execute(text(INPUT_SQL))).mappings()]
+def input_window(now, policies):
+    return dict(now=now,window_start=now-timedelta(seconds=max(
+        (p.temporal_window_seconds for p in policies),default=0)),
+        window_end=now+timedelta(seconds=max((p.future_tolerance_seconds for p in policies),default=0)))
+
+
+async def load_inputs(c, now, policies):
+    rows = [dict(r) for r in (await c.execute(text(INPUT_SQL),input_window(now,policies))).mappings()] if policies else []
     sources = [dict(r) for r in (await c.execute(text(SOURCE_SQL))).mappings()]
     identity = []
     for row in rows:
@@ -112,7 +119,7 @@ def summarize(members, reps):
         contains_sensitive_evidence=any(r["sensitive"] for r in members), behaviors=behaviors)
 
 
-async def candidates(c, rows, policy, now):
+async def candidates(c, rows, policy, now, *, rejections=None):
     groups, dispositions = admit(rows, policy, now)
     reps = {key: representative(members) for key, members in groups.items()}
     if not reps:
@@ -124,31 +131,62 @@ async def candidates(c, rows, policy, now):
     label = SINGLE_LABEL if policy.trigger == "EXCEPTIONAL_PRESENCE" else DENSITY_LABEL
     shapes = (await c.execute(text(CLUSTER_SQL.format(label=label)), params)).mappings().all()
     output = []
-    for shape in shapes:
+
+    def accept(shape):
         members = [r for key in shape["reports"] for r in groups[key]]
         summary = summarize(members, {key: reps[key] for key in shape["reports"]})
         if 2*shape["radius_meters"] > policy.maximum_cluster_diameter_meters:
             for row in members:
                 dispositions[row["id"]] = "incoherent"
-            event("cluster_rejected_incoherent", code="diameter_exceeded")
-            continue
+            return None
         if (summary["independent_report_count"] < policy.min_independent_reports
                 or summary["observation_count"] < policy.minimum_observations):
-            continue
+            return None
         matching = {r["report_key"] for r in members if set(r["behaviors"]) & set(policy.behaviors)}
         if policy.trigger == "BEHAVIOR_REQUIRED" and len(matching) < policy.behavior_min_reports:
             for row in members:
                 dispositions[row["id"]] = "behavior_gate"
-            continue
-        count_ok = policy.count_requirement is None or (summary["max_single_report_count"] or 0) >= policy.count_requirement
+            return None
+        count_ok = policy.count_requirement is None or (
+            summary["max_single_report_count"] is not None and summary["max_single_report_count"] >= policy.count_requirement)
         if policy.trigger == "COUNT_THRESHOLD" and not count_ok:
-            continue
+            return None
         qualified = summary["independent_report_count"] >= policy.qualifying_reports and count_ok
         for row in members:
             dispositions[row["id"]] = "cluster_input"
-        output.append({**dict(shape), **summary, "cluster_key": canonical_hash(shape["reports"]),
+        return {**dict(shape), **summary, "cluster_key": canonical_hash(shape["reports"]),
             "qualification_state": "qualified" if qualified else "developing",
-            "members": members, "representative_ids": {reps[key]["id"] for key in shape["reports"]}})
+            "members": members, "representative_ids": {reps[key]["id"] for key in shape["reports"]}}
+
+    for shape in shapes:
+        if 2*shape["radius_meters"] <= policy.maximum_cluster_diameter_meters:
+            accepted=accept(shape)
+            if accepted:
+                output.append(accepted)
+            continue
+        members=[r for key in shape["reports"] for r in groups[key]]
+        for row in members:
+            dispositions[row["id"]]="incoherent"
+        event("cluster_rejected_incoherent",code="diameter_exceeded")
+        recovered=[]
+        fallback=policy.coherence_fallback_eps_meters
+        if fallback is not None:
+            # Exactly one additional pass, restricted to this rejected component.
+            # accept() applies every original gate and never calls DBSCAN.
+            subset=[point for point in points if point["report_key"] in set(shape["reports"])]
+            fallback_shapes=(await c.execute(text(CLUSTER_SQL.format(label=DENSITY_LABEL)),
+                {**params,"eps":fallback,"points":json.dumps(subset)})).mappings().all()
+            recovered=[item for candidate in fallback_shapes if (item:=accept(candidate)) is not None]
+            output.extend(recovered)
+        if rejections is not None:
+            rejections.append(dict(phenomenon_key=policy.key,candidate_key=canonical_hash(shape["reports"]),
+                policy_version=policy.version,policy_hash=policy.hash,candidate_observation_count=len(members),
+                independent_report_count=len(shape["reports"]),primary_eps_meters=policy.eps_meters,
+                candidate_radius_meters=shape["radius_meters"],candidate_diameter_meters=2*shape["radius_meters"],
+                maximum_diameter_meters=policy.maximum_cluster_diameter_meters,fallback_eps_meters=fallback,
+                fallback_attempted=fallback is not None,
+                fallback_result="recovered" if recovered else "no_qualifying_core" if fallback else "not_configured",
+                recovered_cluster_count=len(recovered),contains_sensitive_evidence=any(r["sensitive"] for r in members)))
     if any(d in ("regional", "excluded_precision") for d in dispositions.values()):
         event("cluster_low_precision_excluded", code="retained_without_density")
     return sorted(output, key=lambda item: item["cluster_key"]), dispositions

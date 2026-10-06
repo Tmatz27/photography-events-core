@@ -60,6 +60,12 @@ async def main(mode):
             await c.execute(text("""INSERT INTO pattern_generation_runs
                 VALUES(1,:hash,:hash,'shadow',:now,0,0)"""),{"hash":"a"*64,"now":now})
         await engine.dispose()
+    elif mode == "seed-final":
+        engine = create_async_engine(settings.database_url)
+        async with engine.begin() as c:
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0004"
+            await c.execute(text("UPDATE normalized_observations SET behavior='bugling'"))
+        await engine.dispose()
     else:
         db = Database(settings)
         await db.ready()
@@ -70,7 +76,7 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0004"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0005"
             run=(await c.execute(text("SELECT * FROM pattern_generation_runs WHERE assessment_run_id=1"))).mappings().one()
             assert run["status"]=="published" and run["policy_hash"]==run["engine_hash"]=="a"*64
             assert run["started_at"]==run["completed_at"]==run["calculated_at"]==now
@@ -84,7 +90,7 @@ async def main(mode):
             assert (await c.execute(text("SELECT count(*) FROM opportunity_observation_evidence"))).scalar() == 0
             assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NULL"))).scalar() == 1
             assert (await c.execute(text("SELECT spatial_precision FROM normalized_observations"))).scalar() == "unknown"
-            assert (await c.execute(text("SELECT behavior_code FROM normalized_observation_behaviors"))).scalar() == "presence"
+            assert set((await c.execute(text("SELECT behavior_code FROM normalized_observation_behaviors"))).scalars()) == {"presence","rut"}
         await db.close()
         print("R20 passed: 0001 identity/provider data preserved, 0002 API reads conservative current generation")
 

@@ -11,7 +11,7 @@ from sqlalchemy import text
 from pec.config import Settings
 from pec.database import Database
 from pec.ingestion import ingest_fixture
-from pec.patterns import clustering
+from pec.patterns import clustering, engine, episodes
 from pec.patterns.policy import POLICIES
 
 
@@ -27,6 +27,18 @@ async def main():
         observed_at=now.isoformat(),latitude=35.3,longitude=-120.5+i*0.0000001,
         coordinate_uncertainty_meters=10) for i in range(1000)]
     data={**base,"now":now.isoformat(),"sightings":[*base["sightings"],*wildlife]}
+    phases={"compute":[],"episode_prepare":[],"finish_transaction":[]}
+    original_compute,original_prepare,original_finish=engine.compute,episodes.prepare,engine.finish
+    def measured(original,key):
+        async def call(*args,**kwargs):
+            start=time.perf_counter()
+            result=await original(*args,**kwargs)
+            phases[key].append(round(time.perf_counter()-start,6))
+            return result
+        return call
+    engine.compute=measured(original_compute,"compute")
+    episodes.prepare=measured(original_prepare,"episode_prepare")
+    engine.finish=measured(original_finish,"finish_transaction")
     try:
         await ingest_fixture(db,data)
         await db.wait_for_patterns()
@@ -48,7 +60,7 @@ async def main():
         db.timeout=30
         async def measure(c):
             start=time.perf_counter()
-            rows,sources,identity=await clustering.load_inputs(c)
+            rows,sources,identity=await clustering.load_inputs(c,now,POLICIES)
             load_seconds=time.perf_counter()-start
             policy=POLICIES[1]
             start=time.perf_counter()
@@ -61,7 +73,7 @@ async def main():
             params=dict(points=json.dumps(points),srid=3310,eps=policy.eps_meters,minimum=policy.min_independent_reports)
             density_plan=(await c.execute(text("EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+
                 clustering.CLUSTER_SQL.format(label=clustering.DENSITY_LABEL)),params)).scalar_one()
-            input_plan=(await c.execute(text("EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+clustering.INPUT_SQL))).scalar_one()
+            input_plan=(await c.execute(text("EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+clustering.INPUT_SQL),clustering.input_window(now,POLICIES))).scalar_one()
             return {"synthetic_provider_records":len(wildlife),"density_points":len(points),
                     "load_inputs_seconds":round(load_seconds,6),"dbscan_seconds":round(cluster_seconds,6),
                     "candidate_clusters":len(candidates),"policy":asdict(policy),"input_plan":input_plan,
@@ -70,9 +82,11 @@ async def main():
         report["m1_publication_seconds"]=publication
         report["shadow_completed_seconds"]=completions
         report["m1_publication_deadline_seconds"]=3
+        report["m2_phase_seconds"]=phases
         Path("/tmp/m2-performance.json").write_text(json.dumps(report,indent=2)+"\n")
         print("M2 smoke passed: 1000 synthetic reports, one immutable shadow cluster; query plans captured.")
     finally:
+        engine.compute,episodes.prepare,engine.finish=original_compute,original_prepare,original_finish
         await db.close()
 
 

@@ -119,10 +119,10 @@ async def claim(c, aid, now, policies):
     return claimed
 
 
-async def prepare(c, aid):
+async def prepare(c, aid, now, policies):
     # Assertions and source hashes must come from one MVCC snapshot even when
     # a collector commits a correction between the two input queries.
-    rows, sources, identity = await clustering.load_inputs(c)
+    rows, sources, identity = await clustering.load_inputs(c,now,policies)
     await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
                     {"aid":aid,"hash":canonical_hash(identity)})
     if sources:
@@ -132,11 +132,17 @@ async def prepare(c, aid):
     return rows
 
 
+class Analysis(dict):
+    def __init__(self):
+        super().__init__()
+        self.rejections=[]
+
+
 async def compute(c, rows, policies, now):
     # No M1 lock, row lock, episode mutation or publication writes.
-    results, dispositions = {}, []
+    results, dispositions = Analysis(), []
     for policy in sorted(policies,key=lambda p:p.key):
-        items, reasons = await clustering.candidates(c,rows,policy,now)
+        items, reasons = await clustering.candidates(c,rows,policy,now,rejections=results.rejections)
         results[policy.key] = items
         dispositions.extend({"key":policy.key,"nid":nid,"disposition":value}
                             for nid,value in sorted(reasons.items()))
@@ -155,25 +161,36 @@ async def stage(c, aid, policies, results, dispositions, now):
             VALUES(:aid,:key,:nid,:disposition)"""),[{"aid":aid,**row} for row in dispositions])
     await c.execute(text("UPDATE pattern_generation_runs SET expected_clusters=:count WHERE assessment_run_id=:aid"),
                     {"aid":aid,"count":sum(map(len,results.values()))})
+    if results.rejections:
+        columns=tuple(results.rejections[0])
+        await c.execute(text(f"""INSERT INTO pattern_coherence_rejections(assessment_run_id,{','.join(columns)})
+            VALUES(:aid,{','.join(':'+key for key in columns)})"""),
+            [{"aid":aid,**row} for row in results.rejections])
 
 
-async def finish(c, aid, policies, results, now):
+async def finish(c, aid, results, now, plan):
     # Serialize only the short pointer check + episode/snapshot publication.
     # The separate one-second guard bounds both lock waiting and publication;
     # a brief concurrent M1 commit must not drop a valid current shadow result.
+    # Client cancellation alone cannot guarantee backend lock release. These
+    # server-local bounds precede every pointer/registry lock and are reset at
+    # transaction end. PG18's whole-transaction bound also covers many small SQLs.
+    await c.execute(text("SET LOCAL lock_timeout='500ms'"))
+    await c.execute(text("SET LOCAL statement_timeout='750ms'"))
+    await c.execute(text("SET LOCAL transaction_timeout='900ms'"))
     current = (await c.execute(text("""SELECT assessment_run_id FROM assessment_current
         WHERE id=1 FOR UPDATE"""))).scalar_one_or_none()
-    if current != aid:
+    if current != aid or not await episodes.registry_matches(c,plan):
         await c.execute(text("""UPDATE pattern_generation_runs SET status='superseded',completed_at=:done
             WHERE assessment_run_id=:aid"""),{"aid":aid,"done":datetime.now(UTC)})
         return
-    outcomes = await episodes.assign(c,results,policies,now)
+    outcomes = await episodes.assign(c,plan,now)
     for items in results.values():
         for item in items:
             await c.execute(text("""UPDATE observation_clusters SET pattern_episode_id=:eid,
                 contains_sensitive_evidence=:sensitive WHERE id=:id"""),
                 {"id":item["id"],"eid":item["pattern_episode_id"],"sensitive":item["contains_sensitive_evidence"]})
-    await episodes.snapshots(c,aid,outcomes,now)
+    await episodes.snapshots(c,aid,outcomes,now,plan["previous"])
     await c.execute(text("""UPDATE pattern_generation_runs SET status='published',expected_episodes=:count,
         completed_at=:done WHERE assessment_run_id=:aid"""),
         {"aid":aid,"count":len(outcomes),"done":datetime.now(UTC)})
@@ -185,20 +202,28 @@ async def run(db, aid, now, policies):
         claimed = await db.pattern_transaction(lambda c: claim(c,aid,now,policies),write=True)
         if claimed is None:
             return
-        rows = await db.pattern_transaction(lambda c: prepare(c,aid),write=True,repeatable=True)
+        rows = await db.pattern_transaction(lambda c: prepare(c,aid,now,policies),write=True,repeatable=True)
         results, dispositions = await db.pattern_transaction(lambda c: compute(c,rows,policies,now))
         await db.pattern_transaction(lambda c: stage(c,aid,policies,results,dispositions,now),write=True)
+        plan = await db.pattern_transaction(lambda c: episodes.prepare(c,results,policies,now,
+            rejected={row["phenomenon_key"] for row in results.rejections}))
         # Bound time holding assessment_current independently of expensive work.
-        await db.pattern_transaction(lambda c: finish(c,aid,policies,results,now),
+        await db.pattern_transaction(lambda c: finish(c,aid,results,now,plan),
                                      write=True,timeout=min(1.0,db.pattern_timeout))
-    except (Exception, asyncio.CancelledError) as exc:
-        code = "shadow_cancelled" if isinstance(exc,asyncio.CancelledError) else "shadow_failed"
-        event("pattern_failure",code=code)
-        async def failed(c):
-            await c.execute(text("""UPDATE pattern_generation_runs SET status='failed',error_code=:code,
-                completed_at=:done WHERE assessment_run_id=:aid AND status='running'"""),
-                {"aid":aid,"code":code,"done":datetime.now(UTC)})
-        try:
-            await db.pattern_transaction(failed,write=True,timeout=min(1.0,db.pattern_timeout))
-        except Exception:
-            event("pattern_failure",code="failure_record_unavailable")
+    except asyncio.CancelledError:
+        await record_failure(db,aid,"shadow_cancelled")
+        raise
+    except Exception:
+        await record_failure(db,aid,"shadow_failed")
+
+
+async def record_failure(db, aid, code):
+    event("pattern_failure",code=code)
+    async def failed(c):
+        await c.execute(text("""UPDATE pattern_generation_runs SET status='failed',error_code=:code,
+            completed_at=:done WHERE assessment_run_id=:aid AND status='running'"""),
+            {"aid":aid,"code":code,"done":datetime.now(UTC)})
+    try:
+        await db.pattern_transaction(failed,write=True,timeout=min(1.0,db.pattern_timeout))
+    except Exception:
+        event("pattern_failure",code="failure_record_unavailable")

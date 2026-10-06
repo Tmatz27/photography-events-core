@@ -1,6 +1,7 @@
 """Redacted, authenticated shadow inspection. Never a raw observation feed."""
 from datetime import timedelta
 from typing import Literal
+from pydantic import Field
 
 from sqlalchemy import text
 
@@ -39,6 +40,28 @@ class ClusterView(Contract):
     metrics: Metrics | None = None
 
 
+class CoherenceMetrics(Contract):
+    candidate_observation_count: int
+    independent_report_count: int
+    candidate_radius_meters: float
+    candidate_diameter_meters: float
+    recovered_cluster_count: int
+
+
+class CoherenceView(Contract):
+    phenomenon_key: str
+    state: Literal["coherence_rejected"] = "coherence_rejected"
+    policy_version: str
+    policy_hash: str
+    primary_eps_meters: float
+    maximum_diameter_meters: float
+    fallback_eps_meters: float | None
+    fallback_attempted: bool
+    fallback_result: str
+    redacted: bool
+    metrics: CoherenceMetrics | None = None
+
+
 class PatternResponse(Contract):
     core_version: str
     api_version: str
@@ -49,6 +72,7 @@ class PatternResponse(Contract):
     items: list[PatternView]
     clusters: list[ClusterView]
     preview_opportunities: list[Opportunity]
+    coherence_rejections: list[CoherenceView] = Field(default_factory=list)
 
 
 def metrics(row):
@@ -138,6 +162,21 @@ async def read(db, now, episode_key=None):
                                        {"aid":aid})).scalar_one()
         if source_count == 0:
             state = "unassessed"
+        diagnostics=[]
+        rejected=(await c.execute(text("""SELECT d.*,(d.contains_sensitive_evidence OR EXISTS(
+            SELECT 1 FROM pattern_observation_dispositions p JOIN normalized_observations n
+            ON n.id=p.normalized_observation_id WHERE p.assessment_run_id=d.assessment_run_id
+            AND p.phenomenon_key=d.phenomenon_key AND n.sensitive) OR EXISTS(
+            SELECT 1 FROM pattern_episode_snapshots snap JOIN pattern_episodes ep ON ep.id=snap.pattern_episode_id
+            WHERE snap.assessment_run_id=d.assessment_run_id AND ep.phenomenon_key=d.phenomenon_key
+            AND snap.contains_sensitive_evidence)) AS protected
+            FROM pattern_coherence_rejections d WHERE d.assessment_run_id=:aid
+            ORDER BY d.phenomenon_key,d.candidate_key"""),{"aid":aid})).mappings()
+        for row in rejected:
+            value=None if row["protected"] else CoherenceMetrics(**{key:row[key] for key in CoherenceMetrics.model_fields})
+            diagnostics.append(CoherenceView(**{key:row[key] for key in (
+                "phenomenon_key","policy_version","policy_hash","primary_eps_meters","maximum_diameter_meters",
+                "fallback_eps_meters","fallback_attempted","fallback_result")},redacted=row["protected"],metrics=value))
         views, previews = [], []
         policies = {p.key:p for p in db.pattern_policies}
         for row in snapshots:
@@ -165,5 +204,6 @@ async def read(db, now, episode_key=None):
             policy_version=row["policy_version"],policy_hash=row["policy_hash"],redacted=row["protected"],
             metrics=None if row["protected"] else metrics(row)) for row in rows] if episode_key is None else []
         return PatternResponse(**VERSION,assessment_id=aid,mode="shadow",analysis_state=state,
-                               items=views,clusters=public_clusters,preview_opportunities=previews)
+                               items=views,clusters=public_clusters,preview_opportunities=previews,
+                               coherence_rejections=diagnostics)
     return await db.transaction(operation)

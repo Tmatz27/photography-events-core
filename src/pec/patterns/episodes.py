@@ -48,8 +48,10 @@ def match_rank(episode, cluster):
     return (-overlap, distance, episode["started_at"], episode["created_at"], episode["episode_key"])
 
 
-async def assign(c, clusters_by_policy, policies, now):
+async def prepare(c, clusters_by_policy, policies, now, rejected=()):
     existing = [dict(r) for r in (await c.execute(text(ACTIVE_SQL))).mappings()]
+    basis = registry_hash(existing)
+    next_id = -1
     policy_by_key = {p.key: p for p in policies}
     outcomes = {}
     for episode in existing:
@@ -90,11 +92,9 @@ async def assign(c, clusters_by_policy, policies, now):
                         if loser["id"] != episode["id"]:
                             loser.update(status="ended", ended_at=now, merged_into_episode_id=episode["id"])
                             outcomes[loser["id"]] = (loser,None,"merged")
-                            event("episode_merged",code="unambiguous_policy_merge")
                 elif len(free)>1:
                     transition = "merge_ambiguous"
                 episode["last_supported_at"] = max(episode["last_supported_at"],support)
-                event("episode_continued",code=transition)
             else:
                 parent = choices[0]["id"] if choices else None
                 key = policy.key + "-" + canonical_hash([policy.key,now.isoformat(),cluster["cluster_key"]])[:24]
@@ -106,11 +106,9 @@ async def assign(c, clusters_by_policy, policies, now):
                     policy_version=policy.version,policy_hash=policy.hash,
                     continuation_gap_seconds=policy.continuation_gap_seconds,
                     parent_episode_id=parent,merged_into_episode_id=None,created_at=now,updated_at=now)
-                columns = tuple(episode)
-                episode["id"] = (await c.execute(text(f"""INSERT INTO pattern_episodes({','.join(columns)})
-                    VALUES({','.join(':'+k for k in columns)}) RETURNING id"""),episode)).scalar_one()
+                episode["id"] = next_id
+                next_id -= 1
                 transition = "split" if parent else "created"
-                event("episode_split" if parent else "episode_created",code="qualifying_candidate")
             episode.update(status=cluster["qualification_state"],public_location_id=cluster["public_location_id"],
                            contains_sensitive_evidence=episode["contains_sensitive_evidence"] or cluster["contains_sensitive_evidence"],
                            policy_version=policy.version,policy_hash=policy.hash,updated_at=now)
@@ -121,19 +119,62 @@ async def assign(c, clusters_by_policy, policies, now):
     for episode in existing:
         if episode["id"] not in outcomes:
             episode["status"] = "developing"
-            outcomes[episode["id"]] = (episode,None,"unsupported")
-    for episode, cluster, transition in outcomes.values():
+            transition = "coherence_rejected" if episode["phenomenon_key"] in rejected else "unsupported"
+            outcomes[episode["id"]] = (episode,None,transition)
+    previous = {}
+    for eid,(episode,cluster,transition) in outcomes.items():
         episode["updated_at"] = now
+        if eid > 0:
+            previous[eid] = (await c.execute(text("""SELECT material_fingerprint FROM pattern_episode_snapshots s
+                JOIN assessment_runs a ON a.id=s.assessment_run_id WHERE pattern_episode_id=:eid
+                ORDER BY a.data_as_of DESC,s.assessment_run_id DESC LIMIT 1"""),{"eid":eid})).scalar_one_or_none()
+    return dict(outcomes=outcomes,registry_hash=basis,previous=previous)
+
+
+REGISTRY_FIELDS = ("id","episode_key","phenomenon_key","subject_key","compatibility_key","status",
+    "started_at","last_supported_at","ended_at","public_location_id","contains_sensitive_evidence",
+    "policy_version","policy_hash","continuation_gap_seconds","parent_episode_id","merged_into_episode_id",
+    "created_at","updated_at")
+REGISTRY_SQL = "SELECT " + ",".join(REGISTRY_FIELDS) + " FROM pattern_episodes WHERE status<>'ended' ORDER BY id"
+
+
+def registry_hash(rows):
+    return canonical_hash([{key:row[key].isoformat() if hasattr(row[key],"isoformat") else row[key]
+                           for key in REGISTRY_FIELDS} for row in sorted(rows,key=lambda row:row["id"])])
+
+
+async def registry_matches(c, plan):
+    rows=(await c.execute(text(REGISTRY_SQL))).mappings().all()
+    return registry_hash(rows)==plan["registry_hash"]
+
+
+async def assign(c, plan, now):
+    """Apply prepared deterministic mutations; no spatial queries or matching."""
+    ids={}
+    for eid,(episode,cluster,transition) in plan["outcomes"].items():
+        if eid < 0:
+            columns=tuple(key for key in episode if key!="id")
+            ids[eid]=(await c.execute(text(f"""INSERT INTO pattern_episodes({','.join(columns)})
+                VALUES({','.join(':'+key for key in columns)}) RETURNING id"""),episode)).scalar_one()
+    outcomes={}
+    for eid,(episode,cluster,transition) in plan["outcomes"].items():
+        episode["id"]=ids.get(eid,eid)
+        for key in ("parent_episode_id","merged_into_episode_id"):
+            episode[key]=ids.get(episode[key],episode[key])
+        if cluster is not None:
+            cluster["pattern_episode_id"]=episode["id"]
         await c.execute(text("""UPDATE pattern_episodes SET status=:status,last_supported_at=:last_supported_at,
             ended_at=:ended_at,public_location_id=:public_location_id,contains_sensitive_evidence=:contains_sensitive_evidence,
             policy_version=:policy_version,policy_hash=:policy_hash,merged_into_episode_id=:merged_into_episode_id,
             updated_at=:updated_at WHERE id=:id"""),episode)
-        if episode["status"] == "ended":
-            event("episode_ended",code=transition)
+        outcomes[episode["id"]]=(episode,cluster,transition)
+        name = ("episode_ended" if episode["status"]=="ended" else
+                "episode_split" if transition=="split" else "episode_created" if transition=="created" else "episode_continued")
+        event(name,code=transition)
     return outcomes
 
 
-async def snapshots(c, aid, outcomes, now):
+async def snapshots(c, aid, outcomes, now, previous):
     for episode, cluster, transition in outcomes.values():
         fields = ("status","started_at","last_supported_at","ended_at","public_location_id",
                   "contains_sensitive_evidence","policy_version","policy_hash","parent_episode_id","merged_into_episode_id")
@@ -141,14 +182,11 @@ async def snapshots(c, aid, outcomes, now):
         material["metrics"] = ({key:cluster[key] for key in ("provider_record_count","observation_count",
             "independent_report_count","independent_source_count","max_single_report_count","behaviors")} if cluster else None)
         digest = canonical_hash(material)
-        previous = (await c.execute(text("""SELECT material_fingerprint FROM pattern_episode_snapshots s
-            JOIN assessment_runs a ON a.id=s.assessment_run_id WHERE pattern_episode_id=:eid
-            ORDER BY a.data_as_of DESC,s.assessment_run_id DESC LIMIT 1"""),{"eid":episode["id"]})).scalar_one_or_none()
         values = {**episode,"aid":aid,"eid":episode["id"],"cid":cluster["id"] if cluster else None,
                   "transition":transition,"fingerprint":digest}
         await c.execute(text(f"""INSERT INTO pattern_episode_snapshots(assessment_run_id,pattern_episode_id,cluster_id,
             {','.join(fields)},transition_code,material_fingerprint)
             VALUES(:aid,:eid,:cid,{','.join(':'+key for key in fields)},:transition,:fingerprint)"""),values)
-        if previous != digest:
+        if previous.get(episode["id"]) != digest:
             await c.execute(text("""INSERT INTO pattern_episode_revisions(assessment_run_id,pattern_episode_id,recorded_at)
                 VALUES(:aid,:eid,:now)"""),{"aid":aid,"eid":episode["id"],"now":now})

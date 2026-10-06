@@ -59,6 +59,7 @@ class Policy:
     allow_regional: bool = True
     allow_merge: bool = False
     coherence_action: str = "reject"
+    coherence_fallback_eps_meters: float | None = None
     operating_bounds: tuple[float, float, float, float] = (-125, 31, -113, 43)
     destinations: tuple[Destination, ...] = ()
 
@@ -81,8 +82,13 @@ class Policy:
         for count in (self.min_independent_reports,self.minimum_observations,self.behavior_min_reports,self.qualifying_reports):
             if type(count) is not int or count > 2147483647:
                 raise ValueError("Report thresholds must be integer counts")
-        if self.count_requirement is not None and (type(self.count_requirement) is not int or not 0 <= self.count_requirement <= 2147483647):
+        if self.count_requirement is not None and (type(self.count_requirement) is not int or not 1 <= self.count_requirement <= 2147483647):
             raise ValueError("Invalid animal count requirement")
+        if self.coherence_fallback_eps_meters is not None and (
+                isinstance(self.coherence_fallback_eps_meters,bool)
+                or not math.isfinite(self.coherence_fallback_eps_meters)
+                or not 0 < self.coherence_fallback_eps_meters < self.eps_meters):
+            raise ValueError("Fallback epsilon must be finite, positive and stricter than primary epsilon")
         if self.trigger == "BEHAVIOR_REQUIRED" and not self.behaviors:
             raise ValueError("A behavior gate needs explicit canonical behaviors")
         if self.trigger == "COUNT_THRESHOLD" and self.count_requirement is None:
@@ -117,7 +123,8 @@ POLICIES = (
            maximum_cluster_diameter_meters=800, coordinate_uncertainty_limit=200,
            episode_spatial_tolerance=600, qualifying_reports=15, count_requirement=100),
     Policy("black_bear_activity", "Ursus americanus", "Black bear activity", "mammals",
-           eps_meters=3000, maximum_cluster_diameter_meters=9000, episode_spatial_tolerance=5000),
+           eps_meters=3000, maximum_cluster_diameter_meters=9000, episode_spatial_tolerance=5000,
+           coherence_fallback_eps_meters=1000),
     Policy("bald_eagle_fishing", "Haliaeetus leucocephalus", "Bald eagle fishing", "birds",
            trigger="BEHAVIOR_REQUIRED", behaviors=("fishing",), eps_meters=1500,
            maximum_cluster_diameter_meters=4000),

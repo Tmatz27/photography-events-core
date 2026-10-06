@@ -189,13 +189,13 @@ async def test_s1_input_capture_keeps_assertions_and_source_hash_in_one_snapshot
     captured,release=asyncio.Event(),asyncio.Event()
     original=clustering.load_inputs
     expected=(await sql(db,"SELECT max(id) AS id FROM source_runs"))[0]["id"]
-    async def interleave(c):
+    async def interleave(c,*args):
         assert (await c.execute(text("SHOW transaction_isolation"))).scalar_one()=="repeatable read"
         before=(await c.execute(text("SELECT max(id) FROM source_runs"))).scalar_one()
         assert before==expected
         captured.set()
         await release.wait()
-        rows,sources,identity=await original(c)
+        rows,sources,identity=await original(c,*args)
         assert all(source["source_run_id"]<=expected for source in sources)
         assert len(rows)==3
         return rows,sources,identity
