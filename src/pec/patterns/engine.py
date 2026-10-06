@@ -159,9 +159,10 @@ async def stage(c, aid, policies, results, dispositions, now):
 
 async def finish(c, aid, policies, results, now):
     # Serialize only the short pointer check + episode/snapshot publication.
-    # NOWAIT yields to an active M1 publisher rather than queueing behind it.
+    # The separate one-second guard bounds both lock waiting and publication;
+    # a brief concurrent M1 commit must not drop a valid current shadow result.
     current = (await c.execute(text("""SELECT assessment_run_id FROM assessment_current
-        WHERE id=1 FOR UPDATE NOWAIT"""))).scalar_one_or_none()
+        WHERE id=1 FOR UPDATE"""))).scalar_one_or_none()
     if current != aid:
         await c.execute(text("""UPDATE pattern_generation_runs SET status='superseded',completed_at=:done
             WHERE assessment_run_id=:aid"""),{"aid":aid,"done":datetime.now(UTC)})

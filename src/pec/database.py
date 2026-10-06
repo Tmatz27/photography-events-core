@@ -141,7 +141,14 @@ class Database:
             async with self.pattern_engine.connect() as base:
                 connection = base if write and not repeatable else await base.execution_options(isolation_level="REPEATABLE READ")
                 async with connection.begin():
-                    return await operation(connection)
+                    try:
+                        return await operation(connection)
+                    except asyncio.CancelledError:
+                        # A suspended Python operation may issue no driver SQL
+                        # after terminate(), so explicitly discard its dead pool
+                        # record before failure recording checks out a connection.
+                        await connection.invalidate()
+                        raise
         return await self._guard(run, timeout=timeout or self.pattern_timeout, isolated=True)
 
     async def _guard(self, operation, *, timeout=None, isolated=False):
