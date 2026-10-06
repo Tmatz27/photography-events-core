@@ -64,11 +64,16 @@ async def reconcile(c, now):
     transaction; clustering never consumes half-reconciled memberships.
     """
     rows=[dict(row) for row in (await c.execute(text("""SELECT n.id,n.subject_key,n.observed_at,
-        n.behavior,r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
-        m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at
+        n.behavior,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,
+        ARRAY(SELECT behavior_code FROM normalized_observation_behaviors b
+            WHERE b.normalized_observation_id=n.id ORDER BY behavior_code) AS behaviors,
+        r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
+        m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at,
+        g.origin_namespace,g.origin_external_id
         FROM normalized_observations n JOIN raw_observations r ON r.id=n.raw_observation_id
         JOIN sources s ON s.id=r.source_id LEFT JOIN observation_report_group_members m
         ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
+        LEFT JOIN observation_report_groups g ON g.id=m.report_group_id
         WHERE n.superseded_at IS NULL AND n.subject_type='species'
         AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
         ORDER BY s.key,r.external_id,n.id"""))).mappings()]
@@ -78,6 +83,15 @@ async def reconcile(c, now):
         payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['id']}")
         # Old M1 assertions may predate raw behavior fields.
         payload.setdefault("behavior",row["behavior"])
+        if row["raw_payload"] is None:
+            # Ordinary old provider bodies may have been pruned already. Keep
+            # established normalized metadata and an existing explicit link;
+            # never invent an origin claim from species, time or geometry.
+            payload.update(coordinate_uncertainty_meters=row["coordinate_uncertainty_meters"],
+                           spatial_precision=row["spatial_precision"],credible=row["credible"],
+                           behaviors=list(row["behaviors"]))
+            if row["link_basis"]=="explicit_origin_id":
+                payload.update(origin_namespace=row["origin_namespace"],origin_external_id=row["origin_external_id"])
         row["details"]=metadata(payload,row["source_key"])
         details=row["details"]
         claims[(details["namespace"],details["origin"])].append(row)

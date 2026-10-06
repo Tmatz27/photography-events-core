@@ -269,4 +269,21 @@ async def test_enrichment_backend_stall_releases_shared_assertion_for_m1_correct
         "status":"failed","input_fingerprint":None}
     assert len(await sql(db,"SELECT * FROM normalized_observations WHERE superseded_at IS NULL AND behavior='feeding'"))==3
 
-
+async def test_retained_explicit_claim_retries_after_raw_body_pruning(db):
+    from pec.retention import sweep
+    mirror=origin_claim(observed_at=(NOW-timedelta(days=100)).isoformat(),
+                        notes="bulk provider body to remove")
+    await collect_fixture(db,data(sightings=[record(0),mirror]))
+    await reconcile(db)
+    assert len({r["report_group_id"] for r in await current_groups(db)})==2
+    async with db.engine.begin() as c:
+        result=await sweep(c,NOW)
+    assert result["payloads_redacted"]==1
+    payload=(await sql(db,"SELECT raw_payload FROM raw_observations JOIN sources ON sources.id=source_id WHERE sources.key='fixture_mirror_a'"))[0]["raw_payload"]
+    assert payload["origin_external_id"]=="report-0" and payload["_m2_retained_metadata"]
+    assert "notes" not in payload and "scientific_name" not in payload
+    async with db.engine.begin() as c:
+        assert (await sweep(c,NOW))["payloads_redacted"]==0
+    await collect_fixture(db,data(1,[record(0,observed_at=mirror["observed_at"])]))
+    await reconcile(db,1)
+    assert len({r["report_group_id"] for r in await current_groups(db)})==1
