@@ -9,9 +9,9 @@ from ..logging import event
 from .policy import canonical_hash
 
 INPUT_SQL = """SELECT n.id,n.raw_observation_id,n.subject_key,n.observed_at,n.valid_until,
- n.reported_count,n.sensitive,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,
+ n.reported_count,n.sensitive,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,n.origin_identity_status,
  n.content_sha256,n.source_run_id,s.id AS source_id,s.key AS source_key,s.enabled,
- r.external_id,m.id AS membership_id,m.report_group_id,g.origin_namespace,g.origin_external_id,
+ r.external_id,m.id AS membership_id,m.report_group_id,m.link_basis,g.origin_namespace,g.origin_external_id,
  ST_X(n.analysis_geometry) AS longitude,ST_Y(n.analysis_geometry) AS latitude,
  ARRAY(SELECT behavior_code FROM normalized_observation_behaviors b
        WHERE b.normalized_observation_id=n.id ORDER BY behavior_code) AS behaviors
@@ -119,7 +119,7 @@ def summarize(members, reps):
         contains_sensitive_evidence=any(r["sensitive"] for r in members), behaviors=behaviors)
 
 
-async def candidates(c, rows, policy, now, *, rejections=None):
+async def candidates(c, rows, policy, now, *, rejections=None, lineage=None):
     groups, dispositions = admit(rows, policy, now)
     reps = {key: representative(members) for key, members in groups.items()}
     if not reps:
@@ -168,6 +168,11 @@ async def candidates(c, rows, policy, now, *, rejections=None):
         for row in members:
             dispositions[row["id"]]="incoherent"
         event("cluster_rejected_incoherent",code="diameter_exceeded")
+        if lineage is not None:
+            # Internal matching evidence only; never persisted in diagnostics
+            # or exposed through the privacy-redacted debug response.
+            lineage.append({**dict(shape),"phenomenon_key":policy.key,
+                            "members":members,"public_location_id":None})
         recovered=[]
         fallback=policy.coherence_fallback_eps_meters
         if fallback is not None:

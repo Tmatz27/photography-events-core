@@ -87,6 +87,9 @@ def main():
             finally:
                 compose("cp", "photography-events-core:/tmp/core-tests.xml", str(EVIDENCE / "tests.xml"))
         results["migration_0002_downgrade"] = "forward-only; restore pre-upgrade backup instead of losing history"
+        compose("cp",str(EVIDENCE / "collection-baselines"),"photography-events-core:/tmp/collection-baselines")
+        compose(*test_exec,"tools/collection_benchmark.py")
+        compose("cp","photography-events-core:/tmp/collection-performance.json",str(EVIDENCE / "collection-performance.json"))
         compose("exec", "-T", "photography-events-core", "python", "-m", "pec", "tests/fixtures/legacy_tule_elk.json")
         key = "tule_elk_rut-2026-09-15"
         first = check("/api/v1/opportunities/" + key)
@@ -143,6 +146,12 @@ def main():
                             capture_output=True, text=True)
         backup = Path(backup_result.stdout.strip())
         before_restore=check("/api/v1/debug/patterns")
+        identity_sql="""SELECT md5(COALESCE(string_agg(concat_ws('|',m.id,m.report_group_id,
+            m.normalized_observation_id,m.link_basis,m.created_at,m.superseded_at,
+            g.origin_namespace,g.origin_external_id),',' ORDER BY m.id),''))
+            FROM observation_report_group_members m JOIN observation_report_groups g ON g.id=m.report_group_id"""
+        before_identity=compose("exec","-T","photography-events-db","psql","-U","postgres",
+            "-d","photography_events","-Atc",identity_sql,capture_output=True,text=True).stdout.strip()
         assert backup.read_bytes()[:5] == b"PGDMP"
         results["backup_bytes"] = backup.stat().st_size
         run("sh", "scripts/restore.sh", str(backup), "photography_events_restore_test")
@@ -151,6 +160,16 @@ def main():
             "SELECT tableowner FROM pg_tables WHERE schemaname='public' AND tablename='opportunities'", capture_output=True, text=True).stdout.strip()
         assert owners == "photography_events", owners
         results["restored_application_owner"] = owners
+        m2_owners=compose("exec","-T","photography-events-db","psql","-U","postgres",
+            "-d","photography_events_restore_test","-Atc","""SELECT DISTINCT tableowner FROM pg_tables
+            WHERE schemaname='public' AND tablename IN
+            ('observation_report_groups','observation_report_group_members','pattern_episodes','normalized_observations')""",
+            capture_output=True,text=True).stdout.strip()
+        assert m2_owners=="photography_events",m2_owners
+        restored_identity=compose("exec","-T","photography-events-db","psql","-U","postgres",
+            "-d","photography_events_restore_test","-Atc",identity_sql,capture_output=True,text=True).stdout.strip()
+        assert restored_identity==before_identity
+        results["restored_report_group_identity"]="exact current/historical membership digest preserved"
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         restored_ready=wait_ready(8100)

@@ -1,5 +1,7 @@
 """Fixture-adapter identity claims are qualified and correctable, never fuzzy."""
 import math
+import json
+from collections import defaultdict
 from datetime import timedelta
 
 from sqlalchemy import text
@@ -11,7 +13,7 @@ FIXTURE_PROVIDERS = frozenset(("fixture_observations", "fixture_mirror_a", "fixt
 ORIGIN_TIME_TOLERANCE = timedelta(hours=1)
 
 
-def metadata(record, provider):
+def metadata(record, provider, *, enrich=True):
     # This adapter is local synthetic-fixture plumbing, not a generic trusted
     # field supplied by an arbitrary live provider or public API.
     namespace = record.get("origin_namespace", provider)
@@ -34,25 +36,13 @@ def metadata(record, provider):
     withdrawn = record.get("withdrawn", False)
     if type(credible) is not bool or type(withdrawn) is not bool:
         raise ValueError("Credibility/withdrawal flags must be booleans")
+    values=record.get("behaviors",[])
+    if not isinstance(values,list) or not all(isinstance(value,str) for value in values):
+        raise ValueError("Behavior terms must be strings")
     return dict(namespace=namespace, origin=origin,local_namespace=provider,local_origin=local_origin,
                 basis="explicit_origin_id" if "origin_namespace" in record else "provider_identity",
                 uncertainty=uncertainty, precision=precision, credible=credible,
-                behaviors=behavior_codes(record), withdrawn=withdrawn)
-
-
-async def supersede(c, raw_id, now):
-    changed = await c.execute(text("""UPDATE observation_report_group_members m SET superseded_at=:now
-        FROM normalized_observations n WHERE n.id=m.normalized_observation_id
-        AND n.raw_observation_id=:raw AND m.superseded_at IS NULL"""), {"raw": raw_id, "now": now})
-    if changed.rowcount:
-        event("report_group_membership_superseded", code="provider_correction")
-
-
-async def group_id(c, namespace, origin, now):
-    return (await c.execute(text("""INSERT INTO observation_report_groups(origin_namespace,origin_external_id,created_at)
-        VALUES(:namespace,:origin,:now) ON CONFLICT(origin_namespace,origin_external_id)
-        DO UPDATE SET origin_external_id=EXCLUDED.origin_external_id RETURNING id"""),
-        {"namespace":namespace,"origin":origin,"now":now})).scalar_one()
+                behaviors=behavior_codes(record) if enrich else (), withdrawn=withdrawn)
 
 
 def mismatch(assertion, references):
@@ -64,55 +54,94 @@ def mismatch(assertion, references):
     return None
 
 
-async def attach(c, nid, details, now):
-    group=await group_id(c,details["namespace"],details["origin"],now)
-    assertion=(await c.execute(text("SELECT subject_key,observed_at FROM normalized_observations WHERE id=:nid"),
-                              {"nid":nid})).mappings().one()
-    members=[dict(row) for row in (await c.execute(text("""SELECT n.id AS nid,n.subject_key,n.observed_at,
-        m.id AS membership_id,m.created_at,m.link_basis,s.key AS source_key,r.external_id,r.raw_payload
-        FROM observation_report_group_members m JOIN normalized_observations n ON n.id=m.normalized_observation_id
-        JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id
-        WHERE m.report_group_id=:gid AND m.superseded_at IS NULL AND n.superseded_at IS NULL"""),
-        {"gid":group})).mappings()]
-    canonical=[row for row in members if row["source_key"]==details["namespace"]]
-    authority=details["local_namespace"]==details["namespace"]
-    status="explicit_verified" if authority and details["basis"]=="explicit_origin_id" else "provider_identity"
-    basis=details["basis"]
-    if basis=="explicit_origin_id" and not authority:
-        reason=mismatch(assertion,canonical or members) if members else None
-        status="explicit_verified" if canonical and not reason else "explicit_unverified"
-        if reason:
-            event("origin_identity_mismatch",code=reason)
-            group=await group_id(c,details["local_namespace"],details["local_origin"],now)
-            basis,status="provider_identity","origin_identity_mismatch"
-    else:
-        # A canonical arrival/correction can disprove a mirror that arrived first.
-        # Rehome only its current link; immutable historical membership survives.
-        references=[*canonical,dict(assertion)]
-        for member in members:
-            if member["link_basis"]!="explicit_origin_id":
-                continue
-            reason=mismatch(member,references)
+async def reconcile(c, now):
+    """Atomically resolve the current fixture set before shadow input capture.
+
+    Claims survive rejection in raw_payload. Read every current trusted claim,
+    including independent/rehomed mirrors, so either side's correction retries
+    the same validator. No M1 lock or per-record SQL is used. A concurrent provider
+    correction either precedes this MVCC snapshot or aborts this shadow-only
+    transaction; clustering never consumes half-reconciled memberships.
+    """
+    rows=[dict(row) for row in (await c.execute(text("""SELECT n.id,n.subject_key,n.observed_at,
+        n.behavior,r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
+        m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at
+        FROM normalized_observations n JOIN raw_observations r ON r.id=n.raw_observation_id
+        JOIN sources s ON s.id=r.source_id LEFT JOIN observation_report_group_members m
+        ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
+        WHERE n.superseded_at IS NULL AND n.subject_type='species'
+        AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
+        ORDER BY s.key,r.external_id,n.id"""))).mappings()]
+    claims=defaultdict(list)
+    for row in rows:
+        payload={**(row["raw_payload"] or {})}
+        payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['id']}")
+        # Old M1 assertions may predate raw behavior fields.
+        payload.setdefault("behavior",row["behavior"])
+        row["details"]=metadata(payload,row["source_key"])
+        details=row["details"]
+        claims[(details["namespace"],details["origin"])].append(row)
+    desired=[]
+    for target,members in sorted(claims.items()):
+        canonical=[r for r in members if r["source_key"]==target[0]]
+        # Without a canonical record, deterministic peers validate only the
+        # supplied explicit relationship. Never search species/time/geometry.
+        references=canonical or members[:1]
+        for row in members:
+            details=row["details"]
+            explicit=details["basis"]=="explicit_origin_id"
+            authority=row["source_key"]==target[0]
+            reason=mismatch(row,references) if explicit and not authority else None
+            namespace,origin=target
+            basis=details["basis"]
+            status="explicit_verified" if explicit and (authority or canonical) else (
+                "explicit_unverified" if explicit else "provider_identity")
             if reason:
-                stamp=max(now,member["created_at"])
-                payload=member["raw_payload"] or {}
-                independent=await group_id(c,member["source_key"],payload.get("report_external_id") or member["external_id"],stamp)
-                await c.execute(text("UPDATE observation_report_group_members SET superseded_at=:stamp WHERE id=:id"),
-                                {"stamp":stamp,"id":member["membership_id"]})
-                await c.execute(text("""INSERT INTO observation_report_group_members
-                    (report_group_id,normalized_observation_id,link_basis,created_at)
-                    VALUES(:gid,:nid,'provider_identity',:stamp)"""),
-                    {"gid":independent,"nid":member["nid"],"stamp":stamp})
-                await c.execute(text("UPDATE normalized_observations SET origin_identity_status='origin_identity_mismatch' WHERE id=:nid"),
-                                {"nid":member["nid"]})
+                namespace,origin=details["local_namespace"],details["local_origin"]
+                basis,status="provider_identity","origin_identity_mismatch"
                 event("origin_identity_mismatch",code=reason)
-    await c.execute(text("""INSERT INTO observation_report_group_members(report_group_id,normalized_observation_id,
-        link_basis,created_at) VALUES(:gid,:nid,:basis,:now)"""),
-        {"gid": group, "nid": nid, "basis": basis, "now": now})
-    await c.execute(text("""UPDATE normalized_observations SET coordinate_uncertainty_meters=:uncertainty,
-        spatial_precision=:precision,credible=:credible,origin_identity_status=:status WHERE id=:nid"""),
-        {**details,"status":status,"nid":nid})
-    await c.execute(text("""INSERT INTO normalized_observation_behaviors
-        (normalized_observation_id,behavior_code,created_at) VALUES(:nid,:code,:now)"""),
-        [{"nid": nid, "code": code, "now": now} for code in details["behaviors"]])
-    event("report_group_created", code="identity_resolved")
+            desired.append(dict(nid=row["id"],namespace=namespace,origin=origin,
+                basis=basis,status=status,uncertainty=details["uncertainty"],
+                precision=details["precision"],credible=details["credible"],
+                stamp=max(now,row["fetched_at"],row["created_at"] or now),
+                behaviors=details["behaviors"]))
+    # Retire corrected/withdrawn assertions in bulk, even when enrichment lagged
+    # over multiple M1 commits. Historical cluster membership triples survive.
+    await c.execute(text("""UPDATE observation_report_group_members m
+        SET superseded_at=GREATEST(:now,m.created_at,n.superseded_at)
+        FROM normalized_observations n WHERE n.id=m.normalized_observation_id
+        AND n.superseded_at IS NOT NULL AND m.superseded_at IS NULL"""),{"now":now})
+    if not desired:
+        return
+    payload=json.dumps(desired,default=lambda value:value.isoformat(),allow_nan=False)
+    declaration="""nid bigint,namespace text,origin text,basis text,status text,
+        uncertainty float8,precision text,credible boolean,stamp timestamptz,behaviors jsonb"""
+    records=f"jsonb_to_recordset(CAST(:items AS jsonb)) AS p({declaration})"
+    params={"items":payload}
+    await c.execute(text(f"""INSERT INTO observation_report_groups
+        (origin_namespace,origin_external_id,created_at)
+        SELECT namespace,origin,min(stamp) FROM {records} GROUP BY namespace,origin
+        ON CONFLICT(origin_namespace,origin_external_id) DO NOTHING"""),params)
+    await c.execute(text(f"""UPDATE observation_report_group_members m
+        SET superseded_at=GREATEST(p.stamp,m.created_at)
+        FROM {records},observation_report_groups g
+        WHERE m.normalized_observation_id=p.nid AND m.superseded_at IS NULL
+        AND g.origin_namespace=p.namespace AND g.origin_external_id=p.origin
+        AND (m.report_group_id<>g.id OR m.link_basis<>p.basis)"""),params)
+    await c.execute(text(f"""INSERT INTO observation_report_group_members
+        (report_group_id,normalized_observation_id,link_basis,created_at)
+        SELECT g.id,p.nid,p.basis,p.stamp FROM {records}
+        JOIN observation_report_groups g ON g.origin_namespace=p.namespace AND g.origin_external_id=p.origin
+        WHERE NOT EXISTS(SELECT 1 FROM observation_report_group_members m
+            WHERE m.normalized_observation_id=p.nid AND m.superseded_at IS NULL)"""),params)
+    await c.execute(text(f"""UPDATE normalized_observations n
+        SET coordinate_uncertainty_meters=p.uncertainty,spatial_precision=p.precision,
+            credible=p.credible,origin_identity_status=p.status
+        FROM {records} WHERE n.id=p.nid AND
+        (n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,n.origin_identity_status)
+        IS DISTINCT FROM (p.uncertainty,p.precision,p.credible,p.status)"""),params)
+    await c.execute(text(f"""INSERT INTO normalized_observation_behaviors
+        (normalized_observation_id,behavior_code,created_at)
+        SELECT p.nid,b.code,p.stamp FROM {records}
+        CROSS JOIN LATERAL jsonb_array_elements_text(p.behaviors) AS b(code)
+        ON CONFLICT(normalized_observation_id,behavior_code) DO NOTHING"""),params)

@@ -10,7 +10,7 @@ from sqlalchemy import text
 
 from .. import CORE_VERSION
 from ..logging import event
-from . import clustering, episodes
+from . import clustering, episodes, identity as report_identity
 from .policy import canonical_hash
 
 
@@ -119,9 +119,20 @@ async def claim(c, aid, now, policies):
     return claimed
 
 
-async def prepare(c, aid, now, policies):
+async def server_bounds(c, budget):
+    for setting,fraction in (("lock_timeout",0.5),("statement_timeout",0.75),("transaction_timeout",0.9)):
+        await c.execute(text("SELECT set_config(:setting,:value,TRUE)"),
+            {"setting":setting,"value":str(max(1,int(budget*fraction*1000)))+"ms"})
+
+
+async def prepare(c, aid, now, policies, *, budget=1.0):
     # Assertions and source hashes must come from one MVCC snapshot even when
     # a collector commits a correction between the two input queries.
+    # Enrichment briefly writes M2 metadata on shared assertion rows. Bound
+    # backend lock lifetime too, so a stalled enrichment cannot strand a later
+    # M1 provider correction behind a terminated client connection.
+    await server_bounds(c,budget)
+    await report_identity.reconcile(c,now)
     rows, sources, identity = await clustering.load_inputs(c,now,policies)
     await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
                     {"aid":aid,"hash":canonical_hash(identity)})
@@ -136,13 +147,15 @@ class Analysis(dict):
     def __init__(self):
         super().__init__()
         self.rejections=[]
+        self.rejected_candidates=[]
 
 
 async def compute(c, rows, policies, now):
     # No M1 lock, row lock, episode mutation or publication writes.
     results, dispositions = Analysis(), []
     for policy in sorted(policies,key=lambda p:p.key):
-        items, reasons = await clustering.candidates(c,rows,policy,now,rejections=results.rejections)
+        items, reasons = await clustering.candidates(c,rows,policy,now,rejections=results.rejections,
+                                                     lineage=results.rejected_candidates)
         results[policy.key] = items
         dispositions.extend({"key":policy.key,"nid":nid,"disposition":value}
                             for nid,value in sorted(reasons.items()))
@@ -175,9 +188,7 @@ async def finish(c, aid, results, now, plan, *, budget=1.0):
     # Client cancellation alone cannot guarantee backend lock release. These
     # server-local bounds precede every pointer/registry lock and are reset at
     # transaction end. PG18's whole-transaction bound also covers many small SQLs.
-    for setting,fraction in (("lock_timeout",0.5),("statement_timeout",0.75),("transaction_timeout",0.9)):
-        await c.execute(text("SELECT set_config(:setting,:value,TRUE)"),
-            {"setting":setting,"value":str(max(1,int(budget*fraction*1000)))+"ms"})
+    await server_bounds(c,budget)
     current = (await c.execute(text("""SELECT assessment_run_id FROM assessment_current
         WHERE id=1 FOR UPDATE"""))).scalar_one_or_none()
     if current != aid or not await episodes.registry_matches(c,plan):
@@ -202,13 +213,14 @@ async def run(db, aid, now, policies):
         claimed = await db.pattern_transaction(lambda c: claim(c,aid,now,policies),write=True)
         if claimed is None:
             return
-        rows = await db.pattern_transaction(lambda c: prepare(c,aid,now,policies),write=True,repeatable=True)
+        finish_budget=min(1.0,db.pattern_timeout,db.timeout/3)
+        rows = await db.pattern_transaction(lambda c: prepare(c,aid,now,policies,budget=finish_budget),
+                                            write=True,repeatable=True,timeout=finish_budget)
         results, dispositions = await db.pattern_transaction(lambda c: compute(c,rows,policies,now))
         await db.pattern_transaction(lambda c: stage(c,aid,policies,results,dispositions,now),write=True)
         plan = await db.pattern_transaction(lambda c: episodes.prepare(c,results,policies,now,
-            rejected={row["phenomenon_key"] for row in results.rejections}))
+            rejected=results.rejected_candidates))
         # Bound time holding assessment_current independently of expensive work.
-        finish_budget=min(1.0,db.pattern_timeout,db.timeout/3)
         await db.pattern_transaction(lambda c: finish(c,aid,results,now,plan,budget=finish_budget),
                                      write=True,timeout=finish_budget)
     except asyncio.CancelledError:

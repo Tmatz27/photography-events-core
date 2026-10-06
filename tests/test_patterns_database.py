@@ -70,6 +70,8 @@ async def test_postgis_report_density_primitive(db):
     from pec.patterns import clustering
     await collect_fixture(db,data(sightings=records(3)))
     async with db.engine.begin() as c:
+        from pec.patterns.identity import reconcile
+        await reconcile(c,NOW)
         rows,_,_=await clustering.load_inputs(c,NOW,POLICIES)
         found,_=await clustering.candidates(c,rows,BEAR,NOW)
         assert len(found)==1 and found[0]["independent_report_count"]==3

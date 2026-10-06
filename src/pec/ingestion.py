@@ -94,7 +94,9 @@ async def collect_fixture(db, data):
                     if record.get("provider", "fixture_observations") not in report_identity.FIXTURE_PROVIDERS:
                         raise ValueError("Unknown fixture provider")
                     fields = validate_record(record)
-                    details = report_identity.metadata(record, key)
+                    # Validate the fixture contract here, but resolve identity
+                    # and behavior relationships only in shadow preparation.
+                    details = report_identity.metadata(record, key, enrich=False)
                 except (KeyError, ValueError, TypeError, OverflowError):
                     fields = dict(observed=None, valid=None, subject=None, lat=None, lon=None, count=None, behavior=None)
                     rejected += 1
@@ -121,7 +123,6 @@ async def collect_fixture(db, data):
                     "now": now, "payload": canonical(payload), "digest": digest, "sensitive": sensitive})).scalar_one()
                 if not changed:
                     continue
-                await report_identity.supersede(c, raw_id, now)
                 await c.execute(text("""UPDATE normalized_observations SET superseded_at=:now
                     WHERE raw_observation_id=:raw AND superseded_at IS NULL"""), {"now": now, "raw": raw_id})
                 # Automation can only raise protection, including historical
@@ -131,14 +132,13 @@ async def collect_fixture(db, data):
                         public_geometry=NULL,precision_class='withheld' WHERE raw_observation_id=:raw"""), {"raw": raw_id})
                 if fields["subject"] is None or details["withdrawn"]:
                     continue
-                nid = (await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,
+                await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,
                     subject_key,observed_at,analysis_geometry,public_geometry,reported_count,sensitive,
                     precision_class,valid_until,behavior,source_run_id,content_sha256)
                     VALUES(:raw,'species',:subject,:observed,ST_SetSRID(ST_MakePoint(:lon,:lat),4326),
-                    NULL,:count,:sensitive,'withheld',:valid,:behavior,:rid,:digest) RETURNING id"""),
+                    NULL,:count,:sensitive,'withheld',:valid,:behavior,:rid,:digest)"""),
                     {**fields, "raw": raw_id, "sensitive": sensitive, "rid": rid, "digest": digest,
-                     "valid": fields["valid"]})).scalar_one()
-                await report_identity.attach(c, nid, details, now)
+                     "valid": fields["valid"]})
             if key != "nws_alerts":
                 current = (await c.execute(text("""SELECT r.external_id,r.content_sha256,r.sensitive
                     FROM raw_observations r WHERE r.source_id=:sid ORDER BY r.external_id"""), {"sid": sid})).mappings()

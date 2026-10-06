@@ -208,7 +208,9 @@ async def test_f12_consistent_explicit_origin_still_collapses(db):
 
 async def test_f13_sql_loader_excludes_old_history_before_python_admission(db):
     await collect_fixture(db,data(sightings=[*records(3),record(99,observed_at=(NOW-timedelta(days=8)).isoformat())]))
-    async with db.engine.connect() as c:
+    async with db.engine.begin() as c:
+        from pec.patterns.identity import reconcile
+        await reconcile(c,NOW)
         rows,_,_=await clustering.load_inputs(c,NOW,POLICIES)
     assert len(await sql(db,"SELECT id FROM normalized_observations"))==4
     assert len(rows)==3 and all(row["observed_at"]>=NOW-timedelta(days=4) for row in rows)
@@ -255,8 +257,11 @@ async def test_server_limits_follow_smaller_shadow_finish_budget(db,monkeypatch)
 
 async def test_authoritative_arrival_rehomes_incompatible_earlier_mirror(db):
     await collect_fixture(db,data(sightings=[origin_claim(scientific_name=EAGLE.subject)]))
+    from pec.patterns.identity import reconcile
+    await db.pattern_transaction(lambda c: reconcile(c,NOW),write=True,repeatable=True)
     before=await sql(db,"SELECT id,report_group_id FROM observation_report_group_members")
     await collect_fixture(db,data(1,[record(0)]))
+    await db.pattern_transaction(lambda c: reconcile(c,NOW+timedelta(hours=1)),write=True,repeatable=True)
     links=await sql(db,"SELECT report_group_id FROM observation_report_group_members WHERE superseded_at IS NULL")
     assert len({row["report_group_id"] for row in links})==2
     assert (await sql(db,"SELECT superseded_at FROM observation_report_group_members WHERE id=:id",id=before[0]["id"]))[0]["superseded_at"] is not None

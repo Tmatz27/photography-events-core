@@ -119,7 +119,11 @@ async def prepare(c, clusters_by_policy, policies, now, rejected=()):
     for episode in existing:
         if episode["id"] not in outcomes:
             episode["status"] = "developing"
-            transition = "coherence_rejected" if episode["phenomenon_key"] in rejected else "unsupported"
+            policy=policy_by_key[episode["phenomenon_key"]]
+            related=any(candidate["phenomenon_key"]==policy.key and (
+                set(episode["previous_reports"]) & report_names(candidate)
+                or compatible(episode,candidate,policy,now)) for candidate in rejected)
+            transition = "coherence_rejected" if related else "unsupported"
             outcomes[episode["id"]] = (episode,None,transition)
     previous = {}
     for eid,(episode,cluster,transition) in outcomes.items():
