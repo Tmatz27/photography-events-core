@@ -226,9 +226,9 @@ async def test_legacy_raw_identity_survives_multiple_assertions_and_pruned_paylo
         await c.execute(text("UPDATE raw_observations SET external_id=NULL,raw_payload=NULL WHERE id=2"))
         await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,
             observed_at,analysis_geometry,sensitive,precision_class,valid_until,source_run_id,content_sha256)
-            SELECT raw_observation_id,subject_type,subject_key,observed_at,analysis_geometry,sensitive,
+            SELECT raw_observation_id,subject_type,:subject,observed_at,analysis_geometry,sensitive,
             precision_class,valid_until,source_run_id,content_sha256 FROM normalized_observations
-            WHERE raw_observation_id=2"""))
+            WHERE raw_observation_id=2"""),{"subject":EAGLE.subject})
     await reconcile(db)
     result=await sql(db,"""SELECT m.report_group_id,g.origin_external_id FROM observation_report_group_members m
         JOIN observation_report_groups g ON g.id=m.report_group_id JOIN normalized_observations n
