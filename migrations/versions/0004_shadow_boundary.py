@@ -17,4 +17,3 @@ def upgrade():
 
 def downgrade():
     raise RuntimeError("0004 is forward-only; restore a verified pre-upgrade backup to a new database")
-

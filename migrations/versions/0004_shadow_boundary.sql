@@ -9,4 +9,3 @@ ALTER TABLE pattern_generation_runs ALTER COLUMN started_at SET NOT NULL;
 ALTER TABLE pattern_generation_runs ADD CONSTRAINT ck_pattern_run_completion
  CHECK((status='running')=(completed_at IS NULL));
 CREATE INDEX ix_pattern_run_status ON pattern_generation_runs(status,started_at);
-
