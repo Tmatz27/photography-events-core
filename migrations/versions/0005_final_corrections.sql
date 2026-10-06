@@ -7,7 +7,7 @@ UPDATE normalized_observations n SET origin_identity_status='explicit_unverified
  WHERE m.normalized_observation_id=n.id AND m.superseded_at IS NULL AND m.link_basis='explicit_origin_id';
 CREATE TEMP TABLE origin_mismatches ON COMMIT DROP AS
  SELECT m.id AS membership_id,n.id AS nid,s.key AS namespace,
- COALESCE(NULLIF(r.raw_payload->>'report_external_id',''),r.external_id) AS origin,
+ COALESCE(NULLIF(r.raw_payload->>'report_external_id',''),r.external_id,'legacy-raw-'||r.id) AS origin,
  GREATEST(CURRENT_TIMESTAMP,m.created_at) AS corrected_at
  FROM observation_report_group_members m JOIN normalized_observations n ON n.id=m.normalized_observation_id
  JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id

@@ -463,7 +463,7 @@ async def test_explicit_unambiguous_merge_records_lineage(db):
 
 async def test_ambiguous_dbscan_border_is_deterministic_across_shuffles(db):
     policy=replace(BEAR,eps_meters=1000,min_independent_reports=4,minimum_observations=4,
-                   maximum_cluster_diameter_meters=4000)
+                   maximum_cluster_diameter_meters=4000,coherence_fallback_eps_meters=None)
     offsets=(-1780,-1740,-1700,-820,0,820,1700,1740,1780)
     rows=[record(i,longitude=-120.5+offset/91000) for i,offset in enumerate(offsets)]
     expected=None

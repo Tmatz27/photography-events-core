@@ -252,3 +252,47 @@ async def test_invalidated_episode_plan_is_superseded_without_registry_mutation(
     assert (await sql(db,"SELECT status FROM pattern_generation_runs WHERE assessment_run_id=:aid",
                       aid=result["assessment_id"]))[0]["status"]=="superseded"
     assert not await sql(db,"SELECT * FROM pattern_episode_snapshots WHERE assessment_run_id=:aid",aid=result["assessment_id"])
+
+
+
+@pytest.mark.parametrize("trigger,changes",[
+    ("COUNT_THRESHOLD",{"count_requirement":1}),
+    ("BEHAVIOR_REQUIRED",{"behaviors":("fishing",)}),
+])
+async def test_fallback_reapplies_required_evidence_gates(db,trigger,changes):
+    policy=replace(BEAR,trigger=trigger,**changes)
+    result=await publish(db,bear_bridge(),policies=(policy,))
+    assert not result.clusters and not result.items
+    assert result.coherence_rejections[0].fallback_result=="no_qualifying_core"
+
+
+async def test_no_configured_fallback_never_invents_epsilon(db):
+    result=await publish(db,bear_bridge(),policies=(replace(BEAR,coherence_fallback_eps_meters=None),))
+    assert not result.clusters and result.coherence_rejections[0].fallback_result=="not_configured"
+    assert not result.coherence_rejections[0].fallback_attempted
+
+
+async def test_fallback_never_performs_a_third_pass(db):
+    from sqlalchemy import event as sql_event
+    statements=[]
+    def inspect(c,cursor,statement,params,context,many):
+        if "ST_ClusterDBSCAN" in statement:
+            statements.append(statement)
+    sql_event.listen(db.pattern_engine.sync_engine,"before_cursor_execute",inspect)
+    try:
+        # A stricter second pass still chains these points and fails diameter.
+        result=await publish(db,[record(i,longitude=-120.5+i*0.018) for i in range(9)],
+                             policies=(replace(BEAR,coherence_fallback_eps_meters=2000),))
+        assert not result.clusters and len(statements)==2
+        assert result.coherence_rejections[0].fallback_result=="no_qualifying_core"
+    finally:
+        sql_event.remove(db.pattern_engine.sync_engine,"before_cursor_execute",inspect)
+
+
+async def test_coherence_diagnostics_obey_immediate_sensitive_raise(db):
+    from pec.patterns.api import read
+    first=await publish(db,bear_bridge())
+    assert first.coherence_rejections[0].metrics is not None
+    await collect_fixture(db,data(1,[{**row,"private_location":True} for row in bear_bridge()]))
+    result=await read(db,NOW+timedelta(hours=1))
+    assert result.coherence_rejections[0].redacted and result.coherence_rejections[0].metrics is None

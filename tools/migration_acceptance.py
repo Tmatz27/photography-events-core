@@ -65,6 +65,17 @@ async def main(mode):
         async with engine.begin() as c:
             assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0004"
             await c.execute(text("UPDATE normalized_observations SET behavior='bugling'"))
+            sid=(await c.execute(text("INSERT INTO sources(key,name,source_type) VALUES('fixture_mirror_a','Legacy mirror','fixture') RETURNING id"))).scalar_one()
+            for label,subject,stamp in (("subject","Ursus americanus",now),("time","Cervus canadensis nannodes",now-timedelta(days=2))):
+                raw=(await c.execute(text("""INSERT INTO raw_observations(source_id,external_id,observed_at,fetched_at,raw_payload,parser_version)
+                    VALUES(:sid,:eid,:stamp,:now,'{}','fixture-2') RETURNING id"""),
+                    {"sid":sid,"eid":"legacy-mirror-"+label,"stamp":stamp,"now":now})).scalar_one()
+                nid=(await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,
+                    observed_at,valid_until,precision_class) VALUES(:raw,'species',:subject,:stamp,:valid,'withheld') RETURNING id"""),
+                    {"raw":raw,"subject":subject,"stamp":stamp,"valid":stamp+timedelta(days=14)})).scalar_one()
+                await c.execute(text("""INSERT INTO observation_report_group_members(report_group_id,normalized_observation_id,link_basis,created_at)
+                    VALUES(1,:nid,'explicit_origin_id',:now)"""),{"nid":nid,"now":now})
+                await c.execute(text("INSERT INTO normalized_observation_behaviors VALUES(:nid,'presence',:now)"),{"nid":nid,"now":now})
         await engine.dispose()
     else:
         db = Database(settings)
@@ -82,14 +93,16 @@ async def main(mode):
             assert run["started_at"]==run["completed_at"]==run["calculated_at"]==now
             assert run["input_fingerprint"] is None and run["error_code"] is None
             assert (await c.execute(text("SELECT occurrence_key FROM opportunities WHERE id=1"))).scalar() == result.items[0].occurrence_key
-            assert (await c.execute(text("SELECT raw_payload->>'preserve' FROM raw_observations"))).scalar() == "provider data"
-            assert (await c.execute(text("SELECT sensitive AND analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()
+            assert (await c.execute(text("SELECT raw_payload->>'preserve' FROM raw_observations WHERE external_id='legacy-observation'"))).scalar() == "provider data"
+            assert (await c.execute(text("SELECT sensitive AND analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations WHERE raw_observation_id=1"))).scalar()
             assert (await c.execute(text("SELECT count(*) FROM legacy_observation_evidence"))).scalar() == 1
             assert (await c.execute(text("SELECT count(*) FROM legacy_context_evidence"))).scalar() == 1
             assert (await c.execute(text("SELECT count(*) FROM opportunity_revisions WHERE provenance_status='legacy_unscoped' AND assessment_run_id IS NULL"))).scalar() == 1
             assert (await c.execute(text("SELECT count(*) FROM opportunity_observation_evidence"))).scalar() == 0
-            assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NULL"))).scalar() == 1
-            assert (await c.execute(text("SELECT spatial_precision FROM normalized_observations"))).scalar() == "unknown"
+            assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NULL"))).scalar() == 3
+            assert (await c.execute(text("SELECT count(*) FROM normalized_observations WHERE origin_identity_status='origin_identity_mismatch'"))).scalar()==2
+            assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NOT NULL"))).scalar()==2
+            assert (await c.execute(text("SELECT spatial_precision FROM normalized_observations WHERE raw_observation_id=1"))).scalar() == "unknown"
             assert set((await c.execute(text("SELECT behavior_code FROM normalized_observation_behaviors"))).scalars()) == {"presence","rut"}
         await db.close()
         print("R20 passed: 0001 identity/provider data preserved, 0002 API reads conservative current generation")

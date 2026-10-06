@@ -181,6 +181,7 @@ async def snapshots(c, aid, outcomes, now, previous):
         material = {key: episode[key].isoformat() if hasattr(episode[key],"isoformat") else episode[key] for key in fields}
         material["metrics"] = ({key:cluster[key] for key in ("provider_record_count","observation_count",
             "independent_report_count","independent_source_count","max_single_report_count","behaviors")} if cluster else None)
+        material["coherence_rejected"] = transition=="coherence_rejected"
         digest = canonical_hash(material)
         values = {**episode,"aid":aid,"eid":episode["id"],"cid":cluster["id"] if cluster else None,
                   "transition":transition,"fingerprint":digest}
