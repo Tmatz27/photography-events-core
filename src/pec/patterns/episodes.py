@@ -1,4 +1,4 @@
-"""Episode registry mutations occur only in the winning M1 publication transaction."""
+"""Episode mutations occur only after the short shadow publication verifies its base."""
 import math
 from datetime import timedelta
 

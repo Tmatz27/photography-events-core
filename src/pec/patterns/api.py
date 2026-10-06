@@ -102,7 +102,7 @@ async def read(db, now, episode_key=None):
             raise AssessmentConflict()
         run = (await c.execute(text("SELECT * FROM pattern_generation_runs WHERE assessment_run_id=:aid"),
                                {"aid":aid})).mappings().first()
-        if run is None:
+        if run is None or run["status"] != "published":
             return PatternResponse(**empty,analysis_state="unassessed")
         rows = [dict(r) for r in (await c.execute(text("""SELECT c.*,
             (c.contains_sensitive_evidence OR COALESCE(protection.sensitive,FALSE)) AS protected,

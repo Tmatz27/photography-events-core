@@ -45,6 +45,7 @@ async def publish(db, sightings, hour=0, policies=None):
     if policies is not None:
         db.pattern_policies = policies
     await ingest_fixture(db,data(hour,sightings))
+    await db.wait_for_patterns()
     return await read(db,NOW+timedelta(hours=hour))
 
 
@@ -226,6 +227,7 @@ async def test_a21_core_restart(db):
     other=Database(Settings(URL,SETTINGS.api_token,patterns_mode="shadow"))
     try:
         await other.generate(data(1))
+        await other.wait_for_patterns()
         second=await read(other,NOW+timedelta(hours=1))
         assert second.items[0].episode_key==first.items[0].episode_key
     finally:
@@ -238,6 +240,7 @@ async def test_a22_determinism(db):
     assert first==second
     assert len(await sql(db,"SELECT * FROM pattern_episode_revisions"))==1
     await db.generate(data(1))
+    await db.wait_for_patterns()
     third=await read(db,NOW+timedelta(hours=1))
     assert third.items[0].episode_key==first.items[0].episode_key
     assert len(await sql(db,"SELECT * FROM pattern_episode_revisions"))==1
@@ -421,15 +424,19 @@ async def test_guarded_failure_rolls_back_episode_mutations(db,monkeypatch):
     async def fail(*args,**kwargs):
         raise KeyError("private diagnostic")
     monkeypatch.setattr(engine,"persist_clusters",fail)
-    from pec.database import GenerationFailed
-    with pytest.raises(GenerationFailed):
-        await db.generate(data(1))
+    generated = await db.generate(data(1))
+    await db.wait_for_patterns()
+    assert generated["status"] == "published"
+    assert (await read(db,NOW+timedelta(hours=1))).analysis_state == "unassessed"
+    assert (await sql(db,"SELECT status FROM pattern_generation_runs WHERE assessment_run_id=:aid",
+                      aid=generated["assessment_id"]))[0]["status"] == "failed"
     assert await sql(db,"SELECT * FROM pattern_episodes")==old
 
 
 async def test_older_concurrent_generation_never_changes_episodes(db):
     await publish(db,records(3))
     await asyncio.gather(db.generate(data(2)),db.generate(data(1)))
+    await db.wait_for_patterns()
     current=await read(db,NOW+timedelta(hours=2))
     assert current.analysis_state=="current"
     assert len(await sql(db,"SELECT * FROM pattern_episodes"))==1
@@ -484,6 +491,7 @@ async def test_multiple_assertions_in_one_documentation_event_count_once(db):
 async def test_old_collection_is_not_current_shadow_coverage(db):
     await publish(db,records(3))
     await db.generate(data(25))
+    await db.wait_for_patterns()
     result=await read(db,NOW+timedelta(hours=25))
     assert result.analysis_state=="outdated"
 
@@ -502,6 +510,7 @@ async def test_m2_future_admission_without_refetch(db):
     first=await publish(db,rows)
     assert not first.clusters
     await db.generate(data(1.1))
+    await db.wait_for_patterns()
     second=await read(db,NOW+timedelta(hours=1.1))
     assert second.items[0].metrics.independent_report_count==3
     assert len(await sql(db,"SELECT * FROM raw_observations"))==3

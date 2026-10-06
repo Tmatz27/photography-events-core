@@ -58,8 +58,8 @@ def main():
     try:
         compose("up", "-d", "--wait", "--wait-timeout", "150")
         results["startup"] = wait_ready()
-        assert results["startup"]["schema_version"] == "0003"
-        results["fresh_database_to_0003"] = "passed"
+        assert results["startup"]["schema_version"] == "0004"
+        results["fresh_database_to_0004"] = "passed"
         versions = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events", "-Atc", "SELECT version(),postgis_full_version()", capture_output=True, text=True).stdout
         results["database_versions"] = versions.strip()
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
@@ -70,10 +70,13 @@ def main():
         compose(*test_exec, "-m", "alembic", "upgrade", "0001")
         results["migration_0001_round_trip"] = "passed"
         compose(*test_exec, "tools/migration_acceptance.py", "seed")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0003")
+        compose(*test_exec, "tools/migration_acceptance.py", "seed-shadow")
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
-        results["migration_0001_0002_0003"] = "identity, memberships, behavior and held API verified"
+        results["migration_0001_0002_0003_0004"] = "identity, memberships, behavior and held API verified"
+        results["migration_0003_0004_shadow_history"] = "existing run hashes/timestamps preserved with published lifecycle"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
         with (EVIDENCE / "pytest.log").open("w") as log:

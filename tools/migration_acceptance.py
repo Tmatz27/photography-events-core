@@ -53,6 +53,13 @@ async def main(mode):
             await c.execute(text(f"""INSERT INTO opportunity_revisions(opportunity_id,recorded_at,{','.join(MATERIAL)})
                 VALUES(1,:now,{','.join(':'+key for key in MATERIAL)})"""), {**values, "now": now})
         await engine.dispose()
+    elif mode == "seed-shadow":
+        engine = create_async_engine(settings.database_url)
+        async with engine.begin() as c:
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0003"
+            await c.execute(text("""INSERT INTO pattern_generation_runs
+                VALUES(1,:hash,:hash,'shadow',:now,0,0)"""),{"hash":"a"*64,"now":now})
+        await engine.dispose()
     else:
         db = Database(settings)
         await db.ready()
@@ -63,7 +70,11 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0003"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0004"
+            run=(await c.execute(text("SELECT * FROM pattern_generation_runs WHERE assessment_run_id=1"))).mappings().one()
+            assert run["status"]=="published" and run["policy_hash"]==run["engine_hash"]=="a"*64
+            assert run["started_at"]==run["completed_at"]==run["calculated_at"]==now
+            assert run["input_fingerprint"] is None and run["error_code"] is None
             assert (await c.execute(text("SELECT occurrence_key FROM opportunities WHERE id=1"))).scalar() == result.items[0].occurrence_key
             assert (await c.execute(text("SELECT raw_payload->>'preserve' FROM raw_observations"))).scalar() == "provider data"
             assert (await c.execute(text("SELECT sensitive AND analysis_geometry IS NOT NULL AND public_geometry IS NULL FROM normalized_observations"))).scalar()

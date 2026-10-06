@@ -29,6 +29,7 @@ async def main():
     data={**base,"now":now.isoformat(),"sightings":[*base["sightings"],*wildlife]}
     try:
         await ingest_fixture(db,data)
+        await db.wait_for_patterns()
         async def measure(c):
             start=time.perf_counter()
             rows,sources,identity=await clustering.load_inputs(c)

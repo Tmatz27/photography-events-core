@@ -87,6 +87,8 @@ class Database:
         self.patterns_mode = settings.patterns_mode
         self.pattern_policies = POLICIES
         self.timeout = settings.database_timeout
+        self.pattern_timeout = settings.pattern_timeout
+        self._pattern_tasks = set()
         self.grace = timedelta(seconds=settings.evaluation_grace)
         # Perform readiness/ping SQL after checkout, where the deadline guard owns
         # the driver. An implicit pre-ping can hang before we can terminate it.
@@ -95,6 +97,11 @@ class Database:
             connect_args={"timeout": self.timeout, "command_timeout": self.timeout * 2,
                           "server_settings": {"statement_timeout": str(int(self.timeout * 2000))}})
         self.failed = False
+        # Shadow queries cannot consume the production pool or its deadline.
+        self.pattern_engine = create_async_engine(settings.database_url, pool_pre_ping=False, pool_size=1,
+            max_overflow=0, pool_timeout=self.pattern_timeout, hide_parameters=True,
+            connect_args={"timeout": self.pattern_timeout, "command_timeout": self.pattern_timeout * 2,
+                          "server_settings": {"statement_timeout": str(int(self.pattern_timeout * 2000))}})
 
         @sa_event.listens_for(self.engine.sync_engine, "checkout")
         def track_connection(connection, record, proxy):
@@ -107,11 +114,37 @@ class Database:
             active = _ACTIVE.get()
             if active is not None and connection is not None:
                 active.discard(connection.driver_connection)
+        sa_event.listen(self.pattern_engine.sync_engine, "checkout", track_connection)
+        sa_event.listen(self.pattern_engine.sync_engine, "checkin", untrack_connection)
 
     async def close(self):
+        tasks = tuple(self._pattern_tasks)
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        await self.pattern_engine.dispose()
         await self.engine.dispose()
 
-    async def _guard(self, operation):
+    def start_patterns(self, aid, now):
+        from .patterns.engine import run
+        task = asyncio.create_task(run(self, aid, now, tuple(self.pattern_policies)))
+        self._pattern_tasks.add(task)
+        task.add_done_callback(self._pattern_tasks.discard)
+
+    async def wait_for_patterns(self):
+        """Explicit developer/test drain; production generation never awaits it."""
+        while self._pattern_tasks:
+            await asyncio.gather(*tuple(self._pattern_tasks))
+
+    async def pattern_transaction(self, operation, *, write=False, timeout=None):
+        async def run():
+            async with self.pattern_engine.connect() as base:
+                connection = base if write else await base.execution_options(isolation_level="REPEATABLE READ")
+                async with connection.begin():
+                    return await operation(connection)
+        return await self._guard(run, timeout=timeout or self.pattern_timeout, isolated=True)
+
+    async def _guard(self, operation, *, timeout=None, isolated=False):
         drivers = set()
         async def tracked():
             token = _ACTIVE.set(drivers)
@@ -140,7 +173,7 @@ class Database:
                 event("database_unavailable", code="cleanup_deadline")
 
         try:
-            done, _ = await asyncio.wait({task}, timeout=self.timeout)
+            done, _ = await asyncio.wait({task}, timeout=timeout or self.timeout)
             if not done:
                 await abort()
                 raise TimeoutError()
@@ -152,11 +185,13 @@ class Database:
             event("schema_issue", code="schema_or_postgis_mismatch")
             raise
         except (SQLAlchemyError, OSError, TimeoutError):
+            if isolated:
+                raise DatabaseUnavailable() from None
             if not self.failed:
                 event("database_unavailable", code="request_failed")
             self.failed = True
             raise DatabaseUnavailable() from None
-        if self.failed:
+        if self.failed and not isolated:
             event("database_recovered")
             self.failed = False
         return result

@@ -1,7 +1,8 @@
-"""Persist shadow outputs inside the M1 atomic generation publication."""
+"""Compute shadow artifacts after M1 commit; publish only against its current base."""
+import asyncio
 import json
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 import hashlib
 from pathlib import Path
 
@@ -108,27 +109,90 @@ async def persist_clusters(c, aid, policies, results, now):
             :independent_report_count,:independent_source_count)"""),behaviors)
 
 
-async def run(c, aid, now, policies, rows, sources, *, published):
-    await c.execute(text("""INSERT INTO pattern_generation_runs VALUES(:aid,:hash,:engine_hash,'shadow',:now,0,0)"""),
-                    {"aid":aid,"hash":policy_hash(policies),"engine_hash":engine_hash(),"now":now})
+async def prepare(c, aid, now, policies):
+    claimed = (await c.execute(text("""INSERT INTO pattern_generation_runs
+        (assessment_run_id,policy_hash,engine_hash,mode,calculated_at,expected_clusters,expected_episodes,status,started_at)
+        VALUES(:aid,:hash,:engine,'shadow',:now,0,0,'running',:started)
+        ON CONFLICT(assessment_run_id) DO NOTHING RETURNING assessment_run_id"""),
+        {"aid":aid,"hash":policy_hash(policies),"engine":engine_hash(),"now":now,
+         "started":datetime.now(UTC)})).scalar_one_or_none()
+    if claimed is None:
+        return None
+    rows, sources, identity = await clustering.load_inputs(c)
+    await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
+                    {"aid":aid,"hash":canonical_hash(identity)})
     if sources:
         await c.execute(text("""INSERT INTO pattern_generation_sources
             (assessment_run_id,source_id,source_run_id,content_sha256) VALUES(:aid,:source_id,:source_run_id,:content_sha256)"""),
             [{"aid":aid,**source} for source in sources])
-    results = {}
+    return rows
+
+
+async def compute(c, rows, policies, now):
+    # No M1 lock, row lock, episode mutation or publication writes.
+    results, dispositions = {}, []
     for policy in sorted(policies,key=lambda p:p.key):
-        items, dispositions = await clustering.candidates(c,rows,policy,now)
-        for item in items:
+        items, reasons = await clustering.candidates(c,rows,policy,now)
+        results[policy.key] = items
+        dispositions.extend({"key":policy.key,"nid":nid,"disposition":value}
+                            for nid,value in sorted(reasons.items()))
+    return results, dispositions
+
+
+async def stage(c, aid, policies, results, dispositions, now):
+    # Bulk artifacts and destination checks also occur outside the M1 lock.
+    for policy in policies:
+        for item in results[policy.key]:
             item["public_location_id"] = await public_destination(c,policy,item)
             item["pattern_episode_id"] = None
-        results[policy.key] = items
-        if dispositions:
-            await c.execute(text("""INSERT INTO pattern_observation_dispositions VALUES(:aid,:key,:nid,:disposition)"""),
-                [{"aid":aid,"key":policy.key,"nid":nid,"disposition":value} for nid,value in sorted(dispositions.items())])
-    outcomes = await episodes.assign(c,results,policies,now) if published else {}
     await persist_clusters(c,aid,policies,results,now)
-    if published:
-        await episodes.snapshots(c,aid,outcomes,now)
-    count = sum(len(items) for items in results.values())
-    await c.execute(text("UPDATE pattern_generation_runs SET expected_clusters=:count,expected_episodes=:episodes WHERE assessment_run_id=:aid"),
-                    {"count":count,"episodes":len(outcomes),"aid":aid})
+    if dispositions:
+        await c.execute(text("""INSERT INTO pattern_observation_dispositions
+            VALUES(:aid,:key,:nid,:disposition)"""),[{"aid":aid,**row} for row in dispositions])
+    await c.execute(text("UPDATE pattern_generation_runs SET expected_clusters=:count WHERE assessment_run_id=:aid"),
+                    {"aid":aid,"count":sum(map(len,results.values()))})
+
+
+async def finish(c, aid, policies, results, now):
+    # Serialize only the short pointer check + episode/snapshot publication.
+    # NOWAIT yields to an active M1 publisher rather than queueing behind it.
+    current = (await c.execute(text("""SELECT assessment_run_id FROM assessment_current
+        WHERE id=1 FOR UPDATE NOWAIT"""))).scalar_one_or_none()
+    if current != aid:
+        await c.execute(text("""UPDATE pattern_generation_runs SET status='superseded',completed_at=:done
+            WHERE assessment_run_id=:aid"""),{"aid":aid,"done":datetime.now(UTC)})
+        return
+    outcomes = await episodes.assign(c,results,policies,now)
+    for items in results.values():
+        for item in items:
+            await c.execute(text("""UPDATE observation_clusters SET pattern_episode_id=:eid,
+                contains_sensitive_evidence=:sensitive WHERE id=:id"""),
+                {"id":item["id"],"eid":item["pattern_episode_id"],"sensitive":item["contains_sensitive_evidence"]})
+    await episodes.snapshots(c,aid,outcomes,now)
+    await c.execute(text("""UPDATE pattern_generation_runs SET status='published',expected_episodes=:count,
+        completed_at=:done WHERE assessment_run_id=:aid"""),
+        {"aid":aid,"count":len(outcomes),"done":datetime.now(UTC)})
+
+
+async def run(db, aid, now, policies):
+    # A failure is shadow-only; never call M1 record_failure or change its pointer.
+    try:
+        rows = await db.pattern_transaction(lambda c: prepare(c,aid,now,policies),write=True)
+        if rows is None:
+            return
+        results, dispositions = await db.pattern_transaction(lambda c: compute(c,rows,policies,now))
+        await db.pattern_transaction(lambda c: stage(c,aid,policies,results,dispositions,now),write=True)
+        # Bound time holding assessment_current independently of expensive work.
+        await db.pattern_transaction(lambda c: finish(c,aid,policies,results,now),
+                                     write=True,timeout=min(1.0,db.pattern_timeout))
+    except (Exception, asyncio.CancelledError) as exc:
+        code = "shadow_cancelled" if isinstance(exc,asyncio.CancelledError) else "shadow_failed"
+        event("pattern_failure",code=code)
+        async def failed(c):
+            await c.execute(text("""UPDATE pattern_generation_runs SET status='failed',error_code=:code,
+                completed_at=:done WHERE assessment_run_id=:aid AND status='running'"""),
+                {"aid":aid,"code":code,"done":datetime.now(UTC)})
+        try:
+            await db.pattern_transaction(failed,write=True,timeout=min(1.0,db.pattern_timeout))
+        except Exception:
+            event("pattern_failure",code="failure_record_unavailable")
