@@ -185,7 +185,7 @@ async def test_b4_recovered_core_retains_supported_episode(db):
 
 async def test_c1_canonical_time_correction_recollapses_without_mirror_redelivery(db):
     mirror=origin_claim(observed_at=(NOW-timedelta(days=2)).isoformat())
-    await publish(db,[record(0),mirror])
+    await publish(db,[record(0),mirror],policies=(replace(BEAR,min_independent_reports=1,minimum_observations=1),))
     before=await current_groups(db)
     mirror_id=next(row["id"] for row in before if row["provider"]=="fixture_mirror_a")
     old_mid=next(row["mid"] for row in before if row["id"]==mirror_id)
