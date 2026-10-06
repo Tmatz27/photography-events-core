@@ -69,7 +69,8 @@ Uvicorn; migration failure stops startup with a sanitized structured event.
 | `CORE_BIND_IP` / `CORE_PORT` | LAN binding; default `127.0.0.1:8099` |
 | `CORE_DATABASE_TIMEOUT` | Whole DB operation deadline, default 3 seconds |
 | `CORE_EVALUATION_GRACE` | Grace for materially newer relevant inputs; default 30 seconds, range 0–300 |
-| `CORE_PATTERNS_MODE` | `off` by default; `shadow` computes development intelligence, with no production promotion |
+| `CORE_PATTERNS_MODE` | `off` by default; `shadow` computes development intelligence after M1 commits, with no production promotion |
+| `CORE_PATTERN_TIMEOUT` | 30 seconds per shadow phase; separate from the M1 database deadline |
 | `DB_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-db` |
 | `CORE_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-core` |
 | `BACKUP_DIR` | Mounted Synology destination, no NAS credentials in Core |
@@ -86,7 +87,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0003`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0004`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -129,12 +130,13 @@ just because a fixture or provider record was fetched again.
 Revisions `0001` and `0002` remain unchanged. Revision `0002` provides immutable
 assessment generations ([schema](docs/SCHEMA_0002.md)); revision `0003` adds
 correctable report membership, canonical behavior, immutable analytical clusters
-and persistent episodes ([schema](docs/SCHEMA_0003.md)).
+and persistent episodes ([schema](docs/SCHEMA_0003.md)). Revision `0004` adds
+independent shadow-run lifecycle metadata ([schema](docs/SCHEMA_0004.md)).
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
 `python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
-upgrading. Revisions `0002` and `0003` are forward-only because earlier schemas
+upgrading. Revisions `0002`, `0003` and `0004` are forward-only because earlier schemas
 cannot represent their histories; rollback requires a verified pre-upgrade backup restored to a new DB
 and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
 check remains in CI. Migrated decisions stay incomplete/held until a fresh
@@ -276,8 +278,23 @@ for exact test counts and environments.
 
 ## Observation intelligence: explicit shadow mode
 
-Set `CORE_PATTERNS_MODE=shadow` in `.env` and recreate Core to compute M2 during
-an assessment. The default remains `off`. Nothing is seeded at startup. Use the
+The [required S1 correction review](IMPLEMENTATION_REVIEW_MILESTONE_2_CORRECTIONS.md)
+records the independent publication boundary. M1 generation returns after its
+own commit; its fingerprint excludes shadow policy/engine/input metadata. A
+background task uses a separate one-connection pool and shadow deadline. Input
+capture, clustering, destination checks and bulk artifacts run without the M1
+publication lock. A short transaction verifies the current assessment equals
+the base before publishing episode changes, otherwise marks the run superseded.
+Pending/failed runs expose no current shadow artifacts; M1 remains valid.
+
+For an explicit fixture script that needs completed shadow output, call
+`await db.wait_for_patterns()` after generation. Production generation does not
+await this drain. `db.close()` cancels outstanding tasks and disposes both pools.
+An abrupt process crash may leave a run marked running; no durable worker or
+automatic retry has been added. This affects shadow coverage only.
+
+Set `CORE_PATTERNS_MODE=shadow` in `.env` and recreate Core to compute M2 after
+an M1 assessment commits. The default remains `off`. Nothing is seeded at startup. Use the
 existing explicit synthetic fixture import to supply records; the M2 test
 fixtures construct local synthetic provider mirrors, never new live collectors.
 

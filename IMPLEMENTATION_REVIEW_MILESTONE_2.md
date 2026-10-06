@@ -1,3 +1,5 @@
+> **Required S1 correction:** The [correction review](IMPLEMENTATION_REVIEW_MILESTONE_2_CORRECTIONS.md) supersedes the original publication boundary below. M1 commits before shadow computation starts; migration 0004 records its separate lifecycle. Original code-freeze results remain historical receipts.
+
 # 1 EXECUTIVE SUMMARY
 
 Milestone 2 implements persistent observation intelligence on accepted M1: qualified report identity, controlled behavior evidence, ordered PostGIS clustering, immutable analytical generations, persistent episode identity/lineage, provenance, privacy-safe debug inspection and held opportunity previews. It remains off by default; only off/shadow modes exist. All 210 Core tests pass against real PostgreSQL/PostGIS; all HA validation jobs pass. A1–A38 are individually exercised.
@@ -19,7 +21,7 @@ Initial runs 37334266424 and 37334766321 failed on the shared PostGIS primitive 
 
 # 3 ARCHITECTURE ACTUALLY IMPLEMENTED
 
-The existing fixture ingestion transaction stores raw records, normalized assertions, explicit report memberships and canonical behavior rows. Assessment loads current assertions once, applies source-controlled policy admission, selects one representative per qualified report, and runs ordered metric PostGIS density analysis. The publication transaction persists batched cluster headers, memberships, behavior counts, source hashes and dispositions. Episode creation/continuation/ending and material revisions occur only in the winning M1 publication transaction.
+The existing fixture ingestion transaction stores raw records, normalized assertions, explicit report memberships and canonical behavior rows. Assessment loads current assertions once, applies source-controlled policy admission, selects one representative per qualified report, and runs ordered metric PostGIS density analysis. After M1 commits, separate shadow transactions capture inputs and persist batched analytical artifacts. Episode creation/continuation/ending and material revisions occur only in a short shadow publication transaction that verifies the current M1 pointer still equals its base assessment. See the correction review for lifecycle and deadline details.
 
 Modules: [policy](src/pec/patterns/policy.py), [identity](src/pec/patterns/identity.py), [clustering](src/pec/patterns/clustering.py), [episodes](src/pec/patterns/episodes.py), [engine](src/pec/patterns/engine.py), [API](src/pec/patterns/api.py). Database artifacts and current episode registry are authoritative across process restarts. Debug reads use the current published generation under the existing bounded repeatable-read guard.
 
@@ -98,7 +100,7 @@ DBSCAN can connect a long chain through short local links. After density members
 
 Cluster identity is generation + policy hash + logical member hash. Membership, behavior summaries, source provenance, policy version/hash, engine hash, geometry and counts are immutable analytical artifacts. A cluster can be assigned to an episode during its winning publication transaction; a partial unique index prevents multiple clusters for one episode/generation.
 
-Superseded evaluation attempts can retain isolated analytical artifacts but cannot mutate episode registry, published snapshots or current generation pointer. Rollback and concurrent older-publication tests exercise this boundary. Expected cluster/snapshot cardinality checks fail safe on incomplete current artifacts.
+Superseded shadow attempts can retain isolated analytical artifacts but cannot mutate episode registry, published snapshots or current M1 generation pointer. Rollback and concurrent older-publication tests exercise this boundary. Expected cluster/snapshot cardinality checks fail safe on incomplete current artifacts.
 
 # 14 CLUSTER PROVENANCE
 
@@ -182,7 +184,7 @@ Removing trusted origin mapping yields provider-local identity; A33 changes one 
 
 Configuration allows off/shadow only, default off. Off debug is disabled. Shadow calculates current-input analysis and authenticated list/detail inspection without normal opportunity promotion. Missing current analysis is unassessed; source/input, policy/engine, expiry or provisional24-hour collection-age changes mark it outdated.
 
-M1 generation locking, published pointer, bounded read guard, repeatable-read consistency, caches, source-health semantics and error handling are retained. M2 analytical fingerprints are included only for shadow. Debug scope is an analytical statement, not travel approval or a replacement complete M1 assessment.
+M1 generation locking, published pointer, bounded read guard, repeatable-read consistency, caches, source-health semantics and error handling are retained. M2 analytical fingerprints are stored independently and never participate in the M1 production fingerprint. Debug scope is an analytical statement, not travel approval or a replacement complete M1 assessment.
 
 # 28 PRODUCT SUPPRESSION
 
@@ -208,44 +210,44 @@ Each row names a separate real-DB test; input and expected/actual behavior summa
 
 | Scenario | Executed test | Input | Expected | Actual asserted result | Result |
 |---|---|---|---|---|---|
-| A1 | [test_a1_scattered_monarchs](tests/test_patterns_database.py#L78) | 40 scattered Monarch records | No concentration or individual product flood | 0 clusters/episodes; normal Core output ≤1 existing M1 row | PASS |
-| A2 | [test_a2_tight_monarch_concentration](tests/test_patterns_database.py#L85) | 12 tight Monarch records | One developing concentration | 1 developing episode; 12 independent reports | PASS |
-| A3 | [test_a3_same_record_redelivered](tests/test_patterns_database.py#L91) | Same provider record redelivered | One current provider/assertion/report | 1 raw row, 1 current assertion and membership | PASS |
-| A4 | [test_a4_explicit_cross_provider_mirror](tests/test_patterns_database.py#L104) | Three trusted mirrors with qualified common origin | One report, three providers | 1 density representative; counts 1 report / 3 sources / 3 records | PASS |
-| A5 | [test_a5_two_real_observers](tests/test_patterns_database.py#L111) | Two nearby real documentation events | Remain independent | 2 report groups and independent reports | PASS |
-| A6 | [test_a6_chain_link](tests/test_patterns_database.py#L117) | Seven chain-linked bear points | Reject incoherent candidate | 0 clusters; 7 incoherent dispositions | PASS |
-| A7 | [test_a7_bear_activity](tests/test_patterns_database.py#L124) | Four nearby bear reports | One activity pattern | 1 black_bear_activity episode | PASS |
-| A8 | [test_a8_bear_without_cubs](tests/test_patterns_database.py#L129) | Bear presence without cub tags | No cub inference | Presence-only summary; no sow_with_cubs evidence | PASS |
-| A9 | [test_a9_explicit_sow_cub](tests/test_patterns_database.py#L135) | Three explicit sow/cub + feeding reports | Queryable behavior support | sow_with_cubs summary counts 3 independent reports | PASS |
-| A10 | [test_a10_ordinary_bald_eagle](tests/test_patterns_database.py#L142) | One then six ordinary eagle presence records | No fishing pattern | 0 episodes in both generations | PASS |
-| A11 | [test_a11_bald_eagle_fishing](tests/test_patterns_database.py#L149) | Three explicit fishing reports | Behavior pattern | 1 bald_eagle_fishing episode with fishing evidence | PASS |
-| A12 | [test_a12_humpback_presence](tests/test_patterns_database.py#L155) | Four generic humpback reports | Activity without feeding claim | Only humpback_activity; presence-only behaviors | PASS |
-| A13 | [test_a13_humpback_feeding](tests/test_patterns_database.py#L161) | Four explicit lunge-feeding reports | Activity and feeding policies may share observations | 2 phenomena; 8 membership links; lunge-feeding retained | PASS |
-| A14 | [test_a14_episode_continuation](tests/test_patterns_database.py#L168) | Compatible next-generation shifted bear cluster | Continue identity | Same episode key | PASS |
-| A15 | [test_a15_episode_end_restart](tests/test_patterns_database.py#L175) | 49-hour support gap, then fresh reports at hour 50 | End and create a new story | Old episode ended; fresh episode key differs | PASS |
-| A16 | [test_a16_sensitive_cluster](tests/test_patterns_database.py#L185) | Three private records at sentinel coordinates | Internal analysis, public redaction | 3 reports internally; metrics omitted; coordinates absent from API/logs | PASS |
-| A17 | [test_a17_centroid_not_destination](tests/test_patterns_database.py#L194) | Cluster with one approved synthetic public viewpoint | Approved destination only; travel checks apply | Preview uses approved coordinates and stays held/ineligible | PASS |
-| A18 | [test_a18_expiring_evidence](tests/test_patterns_database.py#L202) | All reports beyond 4-day temporal window | Remove analytical support | 0 current clusters; episode ended | PASS |
-| A19 | [test_a19_provider_removes_behavior](tests/test_patterns_database.py#L208) | Provider removes fishing behavior | Current evidence withdrawn, history preserved | 0 new clusters; historical fishing summary unchanged | PASS |
-| A20 | [test_a20_rare_bird_bypass](tests/test_patterns_database.py#L217) | Single credible exceptional bird, then noncredible variant | Bypass density only with credibility | Credible singleton episode; noncredible variant hidden | PASS |
-| A21 | [test_a21_core_restart](tests/test_patterns_database.py#L224) | New Core database instance and actual container restart | Persistent identity | Same episode key; Compose process/DB restart also verified | PASS |
-| A22 | [test_a22_determinism](tests/test_patterns_database.py#L235) | Identical replay, then unchanged inputs in newer generation | Stable outcomes; no meaningless revisions | Same key/metrics; one material revision | PASS |
-| A23 | [test_a23_raw_flood](tests/test_patterns_database.py#L246) | 500 ordinary Common Raven records | No raw product flood | 0 patterns/previews; normal Core output ≤1 M1 row | PASS |
-| A24 | [test_a24_mirrors_do_not_supply_density](tests/test_patterns_database.py#L253) | Three mirrors under ordinary bear density policy | Mirrors cannot supply three density points | 1 report group; 0 qualifying clusters | PASS |
-| A25 | [test_a25_high_uncertainty](tests/test_patterns_database.py#L259) | Four precise Monarch reports plus 15-km-uncertainty record | Exclude imprecise record from centroid | 4 reports, 1 regional disposition; centroid unchanged | PASS |
-| A26 | [test_a26_area_observation](tests/test_patterns_database.py#L270) | Four precise points plus area-level report | Area does not act as a precise point | 4 reports; area record retained regionally | PASS |
-| A27 | [test_a27_clusters_approach_without_implicit_merge](tests/test_patterns_database.py#L277) | Two existing clusters approach one new cluster | Conservative deterministic identity | One cluster, two active stories; no implicit merge | PASS |
-| A28 | [test_a28_episode_split](tests/test_patterns_database.py#L288) | One episode splits into 3-report and 2-report clusters | Strongest continues; child lineage | Parent keeps 3 reports; other cluster gets new child episode | PASS |
-| A29 | [test_a29_coordinate_correction](tests/test_patterns_database.py#L298) | Provider moves a point outside local group | Recompute; preserve prior artifact | Current cluster uses 2 reports; historical centroid unchanged | PASS |
-| A30 | [test_a30_all_support_expires_without_refetch_renewal](tests/test_patterns_database.py#L307) | Old observations refetched at hour 120 | Fetch does not renew evidence | 0 clusters; episode ended | PASS |
-| A31 | [test_a31_regional_corroboration_not_density](tests/test_patterns_database.py#L313) | 12 high-uncertainty Monarch records | Regional retention cannot satisfy density | 12 regional dispositions; 0 clusters/episodes | PASS |
-| A32 | [test_a32_count_inflation](tests/test_patterns_database.py#L319) | Counts 10, 50, 100 in three reports | MAX descriptor, no total | max_single_report_count=100; no 160 or exact-population wording | PASS |
-| A33 | [test_a33_report_group_correction](tests/test_patterns_database.py#L326) | Trusted mirror origin mapping withdrawn | Correct current grouping; preserve old links | Report count changes 1→2; historical cluster retains one group | PASS |
-| A34 | [test_a34_no_approved_destination](tests/test_patterns_database.py#L341) | Strong private cluster without approved destination | No arbitrary nearest fallback | Internal episode; no destination or preview | PASS |
-| A35 | [test_a35_input_order_randomization](tests/test_patterns_database.py#L348) | Same five records shuffled over 8 fresh trials | Order-independent membership and identity | Identical cluster hashes, metrics, radii and episode keys | PASS |
-| A36 | [test_a36_policy_provenance](tests/test_patterns_database.py#L363) | New policy version/hash | Preserve old provenance; explicit compatibility | Old hash retained; old episode ended and new one started | PASS |
-| A37 | [test_a37_sensitive_metadata_redaction](tests/test_patterns_database.py#L374) | Private count/behavior plus tiny named site | Prevent metadata disclosure | Metrics/location/behavior omitted; no sensitive preview | PASS |
-| A38 | [test_a38_nonpattern_opportunity](tests/test_patterns_database.py#L383) | Existing Tule Elk deterministic opportunity | Nullable episode relationship | calendar_presence preserved; pattern_episode_id is NULL | PASS |
+| A1 | [test_a1_scattered_monarchs](tests/test_patterns_database.py#L79) | 40 scattered Monarch records | No concentration or individual product flood | 0 clusters/episodes; normal Core output ≤1 existing M1 row | PASS |
+| A2 | [test_a2_tight_monarch_concentration](tests/test_patterns_database.py#L86) | 12 tight Monarch records | One developing concentration | 1 developing episode; 12 independent reports | PASS |
+| A3 | [test_a3_same_record_redelivered](tests/test_patterns_database.py#L92) | Same provider record redelivered | One current provider/assertion/report | 1 raw row, 1 current assertion and membership | PASS |
+| A4 | [test_a4_explicit_cross_provider_mirror](tests/test_patterns_database.py#L105) | Three trusted mirrors with qualified common origin | One report, three providers | 1 density representative; counts 1 report / 3 sources / 3 records | PASS |
+| A5 | [test_a5_two_real_observers](tests/test_patterns_database.py#L112) | Two nearby real documentation events | Remain independent | 2 report groups and independent reports | PASS |
+| A6 | [test_a6_chain_link](tests/test_patterns_database.py#L118) | Seven chain-linked bear points | Reject incoherent candidate | 0 clusters; 7 incoherent dispositions | PASS |
+| A7 | [test_a7_bear_activity](tests/test_patterns_database.py#L125) | Four nearby bear reports | One activity pattern | 1 black_bear_activity episode | PASS |
+| A8 | [test_a8_bear_without_cubs](tests/test_patterns_database.py#L130) | Bear presence without cub tags | No cub inference | Presence-only summary; no sow_with_cubs evidence | PASS |
+| A9 | [test_a9_explicit_sow_cub](tests/test_patterns_database.py#L136) | Three explicit sow/cub + feeding reports | Queryable behavior support | sow_with_cubs summary counts 3 independent reports | PASS |
+| A10 | [test_a10_ordinary_bald_eagle](tests/test_patterns_database.py#L143) | One then six ordinary eagle presence records | No fishing pattern | 0 episodes in both generations | PASS |
+| A11 | [test_a11_bald_eagle_fishing](tests/test_patterns_database.py#L150) | Three explicit fishing reports | Behavior pattern | 1 bald_eagle_fishing episode with fishing evidence | PASS |
+| A12 | [test_a12_humpback_presence](tests/test_patterns_database.py#L156) | Four generic humpback reports | Activity without feeding claim | Only humpback_activity; presence-only behaviors | PASS |
+| A13 | [test_a13_humpback_feeding](tests/test_patterns_database.py#L162) | Four explicit lunge-feeding reports | Activity and feeding policies may share observations | 2 phenomena; 8 membership links; lunge-feeding retained | PASS |
+| A14 | [test_a14_episode_continuation](tests/test_patterns_database.py#L169) | Compatible next-generation shifted bear cluster | Continue identity | Same episode key | PASS |
+| A15 | [test_a15_episode_end_restart](tests/test_patterns_database.py#L176) | 49-hour support gap, then fresh reports at hour 50 | End and create a new story | Old episode ended; fresh episode key differs | PASS |
+| A16 | [test_a16_sensitive_cluster](tests/test_patterns_database.py#L186) | Three private records at sentinel coordinates | Internal analysis, public redaction | 3 reports internally; metrics omitted; coordinates absent from API/logs | PASS |
+| A17 | [test_a17_centroid_not_destination](tests/test_patterns_database.py#L195) | Cluster with one approved synthetic public viewpoint | Approved destination only; travel checks apply | Preview uses approved coordinates and stays held/ineligible | PASS |
+| A18 | [test_a18_expiring_evidence](tests/test_patterns_database.py#L203) | All reports beyond 4-day temporal window | Remove analytical support | 0 current clusters; episode ended | PASS |
+| A19 | [test_a19_provider_removes_behavior](tests/test_patterns_database.py#L209) | Provider removes fishing behavior | Current evidence withdrawn, history preserved | 0 new clusters; historical fishing summary unchanged | PASS |
+| A20 | [test_a20_rare_bird_bypass](tests/test_patterns_database.py#L218) | Single credible exceptional bird, then noncredible variant | Bypass density only with credibility | Credible singleton episode; noncredible variant hidden | PASS |
+| A21 | [test_a21_core_restart](tests/test_patterns_database.py#L225) | New Core database instance and actual container restart | Persistent identity | Same episode key; Compose process/DB restart also verified | PASS |
+| A22 | [test_a22_determinism](tests/test_patterns_database.py#L237) | Identical replay, then unchanged inputs in newer generation | Stable outcomes; no meaningless revisions | Same key/metrics; one material revision | PASS |
+| A23 | [test_a23_raw_flood](tests/test_patterns_database.py#L249) | 500 ordinary Common Raven records | No raw product flood | 0 patterns/previews; normal Core output ≤1 M1 row | PASS |
+| A24 | [test_a24_mirrors_do_not_supply_density](tests/test_patterns_database.py#L256) | Three mirrors under ordinary bear density policy | Mirrors cannot supply three density points | 1 report group; 0 qualifying clusters | PASS |
+| A25 | [test_a25_high_uncertainty](tests/test_patterns_database.py#L262) | Four precise Monarch reports plus 15-km-uncertainty record | Exclude imprecise record from centroid | 4 reports, 1 regional disposition; centroid unchanged | PASS |
+| A26 | [test_a26_area_observation](tests/test_patterns_database.py#L273) | Four precise points plus area-level report | Area does not act as a precise point | 4 reports; area record retained regionally | PASS |
+| A27 | [test_a27_clusters_approach_without_implicit_merge](tests/test_patterns_database.py#L280) | Two existing clusters approach one new cluster | Conservative deterministic identity | One cluster, two active stories; no implicit merge | PASS |
+| A28 | [test_a28_episode_split](tests/test_patterns_database.py#L291) | One episode splits into 3-report and 2-report clusters | Strongest continues; child lineage | Parent keeps 3 reports; other cluster gets new child episode | PASS |
+| A29 | [test_a29_coordinate_correction](tests/test_patterns_database.py#L301) | Provider moves a point outside local group | Recompute; preserve prior artifact | Current cluster uses 2 reports; historical centroid unchanged | PASS |
+| A30 | [test_a30_all_support_expires_without_refetch_renewal](tests/test_patterns_database.py#L310) | Old observations refetched at hour 120 | Fetch does not renew evidence | 0 clusters; episode ended | PASS |
+| A31 | [test_a31_regional_corroboration_not_density](tests/test_patterns_database.py#L316) | 12 high-uncertainty Monarch records | Regional retention cannot satisfy density | 12 regional dispositions; 0 clusters/episodes | PASS |
+| A32 | [test_a32_count_inflation](tests/test_patterns_database.py#L322) | Counts 10, 50, 100 in three reports | MAX descriptor, no total | max_single_report_count=100; no 160 or exact-population wording | PASS |
+| A33 | [test_a33_report_group_correction](tests/test_patterns_database.py#L329) | Trusted mirror origin mapping withdrawn | Correct current grouping; preserve old links | Report count changes 1→2; historical cluster retains one group | PASS |
+| A34 | [test_a34_no_approved_destination](tests/test_patterns_database.py#L344) | Strong private cluster without approved destination | No arbitrary nearest fallback | Internal episode; no destination or preview | PASS |
+| A35 | [test_a35_input_order_randomization](tests/test_patterns_database.py#L351) | Same five records shuffled over 8 fresh trials | Order-independent membership and identity | Identical cluster hashes, metrics, radii and episode keys | PASS |
+| A36 | [test_a36_policy_provenance](tests/test_patterns_database.py#L366) | New policy version/hash | Preserve old provenance; explicit compatibility | Old hash retained; old episode ended and new one started | PASS |
+| A37 | [test_a37_sensitive_metadata_redaction](tests/test_patterns_database.py#L377) | Private count/behavior plus tiny named site | Prevent metadata disclosure | Metrics/location/behavior omitted; no sensitive preview | PASS |
+| A38 | [test_a38_nonpattern_opportunity](tests/test_patterns_database.py#L386) | Existing Tule Elk deterministic opportunity | Nullable episode relationship | calendar_presence preserved; pattern_episode_id is NULL | PASS |
 
 Additional tests cover raw SQL primitive typing, token authorization, geometry-free list/detail, trusted namespaces, rollback and older concurrent publications, immediate privacy overlays, explicit merge, ambiguous DBSCAN border over six fresh shuffles, checklist grouping, collector/engine/policy freshness, future support, withdrawal and explicit MAX count thresholds. A35 runs eight fresh randomized trials inside one test; trial counts are not inflated into pytest totals.
 
