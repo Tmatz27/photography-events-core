@@ -1,6 +1,257 @@
+# FINAL HARDENING — N-A / N-B / N-C
+
+This section is the current hardening authority and supersedes the previous
+correction's ingestion-time enrichment and phenomenon-wide rejection reason.
+The accepted analytical engine, single-pass dense-core rescue, M1 publication
+boundary and privacy/destination policies are retained.
+Source of truth: [final hardening request](docs/FINAL_HARDENING_SPEC_MILESTONE_2.md).
+The independent reviewer supplied PASS FOR SHADOW EVALUATION / PROMOTION NOT READY;
+the results here are implementer verification, not final independent approval.
+
+## Actual repository receipts
+
+| Repository | Actual starting origin/main | Validated hardening code freeze |
+|---|---|---|
+| Core | 9ee41f1428ffe245f43e9dcc3763c9672cb80fb8 | 72939e39b3a17a44edf0fc7b34c65cde62ac3562 |
+| HA | c76726ece1e485ece03810087927da344289fba7 | unchanged |
+
+Clean main checkout and pull --ff-only preceded edits in both repositories.
+Core remains 0.1.0-dev; HA remains 0.16.1. No tags/releases, new live providers,
+production-default switch, promotion, production notification or M3 work.
+The final evidence/documentation commit cannot contain its own SHA. The external
+final submission receipt records that full SHA and its exact-SHA CI result.
+
+## Findings, root cause, architecture, files, actual results
+
+| Finding | Review finding / root cause | Architecture / files changed | Tests / actual result | Remaining limit |
+|---|---|---|---|---|
+| N-A | Reviewer measured approximately 2.7x OFF collection regression,500 records failing default 3 s; identity.attach/group/membership/behavior SQL executed per record inside M1 | Remove M2 SQL from ingestion.py. identity.reconcile resolves current claims and persists groups/members/metadata/behaviors in bulk during engine.prepare. Atomic enrichment+capture transaction precedes compute and holds no M1 publication/advisory lock. Existing shadow-only ledger/deadline semantics retained | P1–P7 PASS at default 3 s;500 OFF and SHADOW commit independently; failed/paused/backend-stalled enrichment cannot roll back M1. Batch query-count regression PASS. Benchmark below | Cheap contract validation, schema/index overhead and ordinary M1 per-record storage remain. Shared resources/short bounded assertion-row locks remain; no unlimited-volume SLA |
+| N-B | Any coherence rejection for a phenomenon could label every unsupported episode | Internal rejected-candidate lineage in clustering.py/engine.py; episodes.prepare uses prior qualified-report overlap OR unchanged spatial/temporal continuation compatibility, within that phenomenon/policy. No new biological inference or public geometry | B1–B4 PASS: unrelated150 km chain leaves A unsupported; own failed support labels A; only related B gets reason; recovered core remains continued | Association follows the already accepted continuation rules; biological threshold calibration remains separate |
+| N-C | Rehomed mirror was no longer in the canonical group's current member query, so canonical corrections did not retry its claim | identity.reconcile reads durable trusted raw claims independently of current group. Recompute desired current relationship against canonical taxon/time; retire only changed current memberships and insert replacements in bulk. Retention keeps small claim/report-alias metadata envelopes while removing bulk bodies. No schema or table added | C1–C5 PASS: valid canonical time/subject correction recollapses without mirror redelivery; remaining mismatch stays independent; valid-to-invalid splits; no-claim never fuzzy-collapses. Next-generation count/fingerprint and historical-link preservation verified | Provisional±1 h fixture tolerance. Previously destroyed payloads cannot retroactively restore a rejected claim whose target is no longer stored |
+
+Additional changed files: tests/test_hardening.py, two direct M2 test setups in
+tests/test_patterns_database.py and tests/test_final_corrections.py, tools/
+collection_benchmark.py, tools/acceptance.py, CI workflow, README and this packet.
+The two direct loader/identity test setups now explicitly reconcile after M1
+collection. Every original test name and assertion remains; no S3 gate or M1
+policy was relaxed.
+
+## Final transaction boundaries and enrichment currentness
+
+SOURCE FETCH → M1 COLLECTION TRANSACTION (source runs, raw/current corrections,
+normalized M1 assertions, original behavior field, protection raises) → COMMIT.
+Both OFF and SHADOW return from collection without any identity/group/behavior
+relationship SQL. Cheap validation of the existing fixture metadata contract
+still rejects invalid records truthfully; canonical behavior relationship
+resolution is not performed.
+
+M1 generation/publication continues on its accepted independent path.
+After M1 publication commits, a separate pattern run claims a running ledger:
+
+1. Atomic REPEATABLE READ enrichment+input capture: read current trusted fixture
+   assertions/claims, batch reconcile, load the policy-bounded input slice,
+   compute deterministic fingerprint and persist exact source-run/hash provenance.
+2. M2 clustering, artifact staging and spatial episode preparation outside M1's
+   publication lock.
+3. Existing short server-bounded publication: current M1 pointer and prepared
+   registry checksum recheck, then atomic shadow artifacts or superseded result.
+
+Running+NULL input_fingerprint means enrichment/capture is pending. Enrichment
+failure rolls back the entire phase, including membership/behavior changes and
+input provenance; the own run becomes failed. A committed fingerprint includes
+resolved group identity, link basis, origin-validation status, behaviors and
+the exact current assertions actually used. No half-reconciled input is accepted.
+M2 may legitimately lag a collection or capture a collection newer than its M1
+base; own consumed source provenance/freshness remains authoritative.
+
+Reconciliation is seven SQL statements for a nonempty batch, not per-record
+round trips. Report groups/memberships/behaviors are batched. Existing unchanged
+current membership IDs remain stable, and historical cluster membership triples
+are never rewritten. Full current trusted claims are revalidated, including
+previously rejected/rehomed mirrors; no geographic/species/time candidate search
+is used to discover identities.
+
+Enrichment briefly updates shared normalized metadata rows. Before work, server-
+local lock 500 ms / statement 750 ms / transaction 900 ms and a 1 s client bound are applied
+at defaults, scaled downward for smaller settings using the accepted budget
+min(1 s, shadow timeout, M1 timeout / 3). These protect later M1 corrections from a
+backend statement surviving client cancellation. A real pg_sleep(6) after
+enrichment writes proves rollback/lock release and successful M1 correction.
+No M1 collection deadline is shared or enlarged for this work. Expensive work
+never holds assessment_current or M1's collection/publication advisory lock.
+
+## N-C durable claims and retention
+
+Trusted claims already live in raw_payload; no redundant claim table or 0006 is
+created. The current grouping may reject a claim, but its target remains available.
+Canonical-first exact case-insensitive taxon/±1 h matching is unchanged. Without
+an authority, explicitly claimed peers remain deterministically unverified unless
+their definitive consistency fails; no fuzzy deduplication is introduced.
+
+After 90 days the sweep removes bulk provider text. Explicit-claim/aliased-report
+records keep only the existing adapter metadata contract plus a retained-envelope
+marker; ordinary records still become NULL. Sweeps remain bounded/idempotent.
+Existing normalized metadata/behaviors and an established explicit link survive
+ordinary already-pruned bodies. An already-destroyed rejected origin target cannot
+be reconstructed; it remains independent rather than guessing an identity.
+The new 100-day claim-pruning/canonical-correction test verifies retryability.
+
+## Separately named hardening tests
+
+| Scenario | Test / actual result |
+|---|---|
+| P1 | [test_p1_500_records_off_default_collection_deadline](tests/test_hardening.py#L46): 500 OFF collection commits below default 3 s; source accepted count500 |
+| P2 | [test_p2_500_records_shadow_default_collection_deadline](tests/test_hardening.py#L50): 500SHADOW collection commits below default 3 s without report-group work |
+| P3 | [test_p3_enrichment_failure_cannot_rollback_m1_collection](tests/test_hardening.py#L56):  Enrichment exception leaves truthful M1 collection/publication committed; own run failed, fingerprint NULL |
+| P4 | [test_p4_slow_enrichment_does_not_delay_collection](tests/test_hardening.py#L71):  Paused enrichment does not delay a new500-record collection |
+| P5 | [test_p5_off_collection_has_no_m2_sql_or_behavior_resolution](tests/test_hardening.py#L92):  OFF collection executes no group/member/behavior relationship SQL or canonical behavior resolution |
+| P6 | [test_p6_corrections_while_enrichment_lags_converge_current_assertions](tests/test_hardening.py#L111):  Multiple provider corrections before enrichment converge to current assertions/behavior, no stale current links |
+| P7 | [test_p7_large_collection_then_m1_generation_while_m2_catches_up](tests/test_hardening.py#L128): 500-record collection followed by M1 generations succeeds while enrichment catches up |
+| B1 | [test_b1_unrelated_rejected_chain_cannot_label_aging_episode](tests/test_hardening.py#L150):  Aging A remains unsupported despite unrelated150 km rejected chain |
+| B2 | [test_b2_rejected_candidate_with_prior_reports_labels_own_episode](tests/test_hardening.py#L160):  Own recent report-derived incoherent candidate labels its episode |
+| B3 | [test_b3_only_related_episode_receives_coherence_rejection](tests/test_hardening.py#L167):  Two same-phenomenon episodes: only related B receives rejection reason |
+| B4 | [test_b4_recovered_core_retains_supported_episode](tests/test_hardening.py#L179):  Recovered six-report core remains continued |
+| C1 | [test_c1_canonical_time_correction_recollapses_without_mirror_redelivery](tests/test_hardening.py#L186):  Canonical time correction collapses unchanged mirror; next generation uses one report |
+| C2 | [test_c2_canonical_still_incompatible_keeps_mirror_independent](tests/test_hardening.py#L207):  Remaining time contradiction stays independent |
+| C3 | [test_c3_canonical_becomes_incompatible_splits_valid_mirror](tests/test_hardening.py#L214):  Canonical valid-to-invalid correction splits current link; historical triples byte-unchanged |
+| C4 | [test_c4_canonical_subject_correction_retries_rejected_claim](tests/test_hardening.py#L224):  Canonical taxon correction retries rejected explicit claim |
+| C5 | [test_c5_no_explicit_claim_never_fuzzily_collapses](tests/test_hardening.py#L232):  No explicit claim: canonical correction never fuzzy-collapses |
+
+All 16 P/B/C tests PASS. Additional 3 tests PASS: constant batch-query count and
+idempotent history; real stalled enrichment releases shared rows;100day retained
+claim reconciles without mirror redelivery. [Full test source](tests/test_hardening.py).
+Actual measured P1/P2 and retained F1/F14 latency properties are in tests.xml.
+
+## N-A performance receipt
+
+Default production collection timeout: **3s**, unchanged for every measurement.
+
+| Records | Implementation | Collection seconds (two trials) | Per-record ms | SQL statements attempted | Result |
+|---|---|---|---|---|---|
+| 100 | accepted_m1 | 0.196208, 0.183652 | 1.962, 1.837 | 410, 410 | both complete |
+| 100 | pre_fix_m2_off | 0.466810, 0.467303 | 4.668, 4.673 | 1110, 1110 | both complete |
+| 100 | corrected_m2_off | 0.166335, 0.177418 | 1.663, 1.774 | 410, 410 | both complete |
+| 100 | corrected_m2_shadow | 0.184688, 0.185131 | 1.847, 1.851 | 410, 410 | both complete |
+| 500 | accepted_m1 | 0.822626, 0.841077 | 1.645, 1.682 | 2010, 2010 | both complete |
+| 500 | pre_fix_m2_off | 2.328487, 2.280850 | 4.657, 4.562 | 5510, 5510 | both complete |
+| 500 | corrected_m2_off | 0.845493, 0.836376 | 1.691, 1.673 | 2010, 2010 | both complete |
+| 500 | corrected_m2_shadow | 0.838197, 0.796487 | 1.676, 1.593 | 2010, 2010 | both complete |
+| 1000 | accepted_m1 | 1.601271, 1.623960 | 1.601, 1.624 | 4010, 4010 | both complete |
+| 1000 | pre_fix_m2_off | 3.001125, 3.001020 | unknown, unknown | 7139, 7171 | both TIMEOUT; zero committed assertions |
+| 1000 | corrected_m2_off | 1.610673, 1.636741 | 1.611, 1.637 | 4010, 4010 | both complete |
+| 1000 | corrected_m2_shadow | 1.665655, 1.565905 | 1.666, 1.566 | 4010, 4010 | both complete |
+
+At 500 records, pre-fix/accepted M1 is **2.771x**; corrected OFF/accepted
+M1 is **1.011x** on this instance. P1 OFF = 0.873260 s;
+P2 SHADOW = 0.889703 s at default 3 s. SQL count drops 5510 → 2010,
+matching the historical M1 collection's count. No benchmark failure is hidden.
+
+
+These are two fresh-table trials on the same current-schema PostgreSQL instance.
+Historical implementation sources were read from pinned Git commits:
+accepted M1=52db568d6b28cc7716c9329be396786906f65072,
+pre-fix M2=9ee41f1428ffe245f43e9dcc3763c9672cb80fb8.
+This compares historical collection behavior on the common current schema,
+not separate deployment hardware/schema. No production planner/autovacuum
+change or timing-only ANALYZE was added.
+
+CI is faster than the reviewer's environment: its pre-fix 500-record case completes,
+so that specific old failure is not claimed reproduced here. The excessive
+SQL/per-record cost is reproduced; pre-fix1000 timeouts are disclosed. Corrected
+OFF/SHADOW 500-record collections succeed at the default 3 s, and practical capacity no
+longer suffers the severe enrichment regression. SHADOW timings are M1 collection
+only; M2 enrichment is intentionally deferred. Failed per-record values are
+unknown (not claimed complete). Cursor counts exclude driver-level BEGIN/COMMIT.
+
+## Regression, privacy, migrations, Compose, backup/restore
+
+[Code-freeze CI37519541315](https://github.com/Tmatz27/photography-events-core/actions/runs/37519541315):
+**SUCCESS** at72939e39b3a17a44edf0fc7b34c65cde62ac3562.
+[Unedited machine evidence](docs/validation/milestone-2-hardening/README.md),
+artifact11439266182, verified SHA256
+bb97acdfa4dfcd96e01b5358259182fa800ae03bbf0420ef4ba501331fab1a7f.
+
+- **260 passed**, zero failures/errors/skips, 51.51 s: original 241 plus19 hardening
+  tests; all 38 A-tests and14 F-tests pass. Linux portable96 passed / 164 DB skips,
+  Windows 91 passed / 169 skips (164 DB + 5 POSIX); realDB/Linux covers local skips.
+  Ruff, compile and schema checks pass.
+- Pinned4905e35c0668c37737d84685e65d2a806f7c92f7 HA oracle: both legacy fixture
+  recaptures byte-identical,9 pipeline cases / 14 steps and evaluator 15 cases / 24 fields;
+  **18,000 comparisons / zero mismatches**. No M1 fixture/policy changes.
+- S1/S1-R1, cancellation, S3 dense-core rescue,150 randomized DBSCAN comparisons,
+  count/uncertainty/privacy/destination controls remain green. F1/F14 default 3 s
+  M1 under 6 s backend stall=0.757233/0.762185s. No leaked pools.
+- PostgreSQL18.6/PostGIS3.6.4. Fresh/chain/repeat, Compose and actual operator
+  backup/restore pass. Custom dump 291,904 bytes, restored owner photography_events,
+  head 0005, M1 API and exact report-group identity/episode state preserved.
+  Restored debug state **outdated**, matching pre-backup scope.
+- [Unchanged exact-SHA HA CI](https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/37334287547)
+  all four jobs green; portable 485 + card 127, real HA environments 90 each.
+
+New currentness/identity fields enter the internal fingerprint only, with no new
+debug geometry or HA raw observation payload. Internal rejected-candidate geometry/
+report lineage is neither persisted in the public diagnostic table nor serialized.
+All prior privacy, immediate protection raise, sensitive metrics/radius suppression,
+curated destination and held/ineligible preview assertions pass.
+
+Schema head remains 0005, 32 application tables. Committed0001–0005 are unchanged.
+Fresh DB→head, seeded0001→0002→0003→0004→0005 and repeated upgrade pass.
+The existing bugling backfill and legacy identity/private/shadow-history receipts
+remain verified.
+
+No local Docker/PostGIS binary is available; real acceptance ran through CI.
+Compose config/build, DB/Core starts, schema, live/ready, M1 and M2 shadow requests,
+Core/DB restarts and frozen/stopped DB recovery all pass.
+Actual operator scripts executed pg_dump -Fc, clean PostGIS target and restore.
+Verification covers application ownership (including identity/episode tables),
+migration head, M1 API, M2 debug mode/state, exact current/historical report-group
+membership digest and episode identity/state. Outdated debug scope is preserved
+truthfully, not reported current merely because restoration succeeded.
+
+## Intermediate outcomes, not hidden or waived
+
+- 37518778235 at 9fefc9e:259 passed, full acceptance/benchmarks green, before retained-claim test.
+- 37519055624 at a56499e:258 passed / two failed retention tests. SQLAlchemy interpreted
+  JSON literal ':true' as a bind parameter.88f1b46 fixes the literal; no assertion waived.
+- 37519101293 at 88f1b46:260 passed, full acceptance/benchmarks green.
+- 37519447265 at 7d58863:259 passed/one failed new C1 next-generation assertion.
+  The identity correctly became one report, but that fixture still used the
+  two-report density minimum.72939e3 uses an explicitly configured single-report
+  policy for this identity test; default analytical thresholds remain unchanged.
+Final code-freeze and exact-submission CI receipts above/external receipt are the
+acceptance basis. Historical earlier M2 evidence remains preserved below.
+
+## Remaining limits and readiness
+
+All biological/product/operational limitations in the previous correction's
+complete list remain; this pass does not approve thresholds, live sources,
+public destinations, HA presentation, production volume/retention or promotion.
+N-A's engineering prerequisite is fixed, but live provider identity contracts
+and integration validation are absent. Further live adapters belong to separately
+authorized future work, after independent engineering acceptance.
+
+New explicit limits: enrichment waits until a shadow run; it scans the current
+trusted fixture set, not an unlimited-volume/indexed change feed. Very small
+server budgets or large batches can fail shadow safely; no durable retry/worker,
+global volume SLA or zero shared-resource contention is claimed. Shared assertion
+locks are briefly server-bounded, not nonexistent. Claims permanently deleted
+before this fix cannot be retroactively recovered; retained metadata/history still
+needs production retention policy. Baseline timing is machine-dependent/common-
+schema evidence, not a universal throughput promise.
+
+**SHADOW SAFE = YES** for tested fixture evaluation.
+**LIVE ADAPTER READY = NO** as an operational claim: no live contracts/integrations
+or final independent acceptance supplied; N-A's collection boundary is corrected.
+**PROMOTION READY = NO**; ecological thresholds, provider contracts, destination
+validation, HA presentation and volume/retention gates remain outside this pass.
+Engineering implementation/testing is submitted for final independent Claude
+review; M2 engineering closure still requires that review to return PASS.
+
+---
+
 # FINAL INDEPENDENT CORRECTION PASS
 
-This is the current correction authority. The earlier 39-section implementation
+This records the previous correction authority. The earlier 39-section implementation
 packet and S1 correction receipt below are retained historical evidence. This
 section supersedes their client-only finish, swallowed cancellation, all-or-nothing
 coherence rejection, unbounded-input and missing identity/backfill behavior.
@@ -161,7 +412,7 @@ fallback, exactly two DBSCAN passes, and smaller finish budgets.
 | F11 | [test_f11_incompatible_claimed_observation_time_does_not_collapse](tests/test_final_corrections.py#L195) | Mirror claims the same origin with a two-day incompatible time | Two independent groups; mismatch marker | PASS |
 | F12 | [test_f12_consistent_explicit_origin_still_collapses](tests/test_final_corrections.py#L202) | Consistent qualified origin/taxon/time | One report, two contributing providers | PASS |
 | F13 | [test_f13_sql_loader_excludes_old_history_before_python_admission](tests/test_final_corrections.py#L209) | Three recent assertions plus eight-day-old current history | Four stored assertions, only three loaded by SQL | PASS |
-| F14 | [test_f14_default_m1_latency_bounded_while_server_finish_stalls](tests/test_final_corrections.py#L217) | M1 publication while locked server finish is stalled | M1 publishes in 0.761711 s < default 3 s; both pools healthy | PASS |
+| F14 | [test_f14_default_m1_latency_bounded_while_server_finish_stalls](tests/test_final_corrections.py#L219) | M1 publication while locked server finish is stalled | M1 publishes in 0.761711 s < default 3 s; both pools healthy | PASS |
 
 ## Regression, migration and restore receipts
 
@@ -481,44 +732,44 @@ Each row names a separate real-DB test; input and expected/actual behavior summa
 
 | Scenario | Executed test | Input | Expected | Actual asserted result | Result |
 |---|---|---|---|---|---|
-| A1 | [test_a1_scattered_monarchs](tests/test_patterns_database.py#L79) | 40 scattered Monarch records | No concentration or individual product flood | 0 clusters/episodes; normal Core output ≤1 existing M1 row | PASS |
-| A2 | [test_a2_tight_monarch_concentration](tests/test_patterns_database.py#L86) | 12 tight Monarch records | One developing concentration | 1 developing episode; 12 independent reports | PASS |
-| A3 | [test_a3_same_record_redelivered](tests/test_patterns_database.py#L92) | Same provider record redelivered | One current provider/assertion/report | 1 raw row, 1 current assertion and membership | PASS |
-| A4 | [test_a4_explicit_cross_provider_mirror](tests/test_patterns_database.py#L105) | Three trusted mirrors with qualified common origin | One report, three providers | 1 density representative; counts 1 report / 3 sources / 3 records | PASS |
-| A5 | [test_a5_two_real_observers](tests/test_patterns_database.py#L112) | Two nearby real documentation events | Remain independent | 2 report groups and independent reports | PASS |
-| A6 | [test_a6_chain_link](tests/test_patterns_database.py#L118) | Seven chain-linked bear points | Reject incoherent candidate | 0 clusters; 7 incoherent dispositions | PASS |
-| A7 | [test_a7_bear_activity](tests/test_patterns_database.py#L125) | Four nearby bear reports | One activity pattern | 1 black_bear_activity episode | PASS |
-| A8 | [test_a8_bear_without_cubs](tests/test_patterns_database.py#L130) | Bear presence without cub tags | No cub inference | Presence-only summary; no sow_with_cubs evidence | PASS |
-| A9 | [test_a9_explicit_sow_cub](tests/test_patterns_database.py#L136) | Three explicit sow/cub + feeding reports | Queryable behavior support | sow_with_cubs summary counts 3 independent reports | PASS |
-| A10 | [test_a10_ordinary_bald_eagle](tests/test_patterns_database.py#L143) | One then six ordinary eagle presence records | No fishing pattern | 0 episodes in both generations | PASS |
-| A11 | [test_a11_bald_eagle_fishing](tests/test_patterns_database.py#L150) | Three explicit fishing reports | Behavior pattern | 1 bald_eagle_fishing episode with fishing evidence | PASS |
-| A12 | [test_a12_humpback_presence](tests/test_patterns_database.py#L156) | Four generic humpback reports | Activity without feeding claim | Only humpback_activity; presence-only behaviors | PASS |
-| A13 | [test_a13_humpback_feeding](tests/test_patterns_database.py#L162) | Four explicit lunge-feeding reports | Activity and feeding policies may share observations | 2 phenomena; 8 membership links; lunge-feeding retained | PASS |
-| A14 | [test_a14_episode_continuation](tests/test_patterns_database.py#L169) | Compatible next-generation shifted bear cluster | Continue identity | Same episode key | PASS |
-| A15 | [test_a15_episode_end_restart](tests/test_patterns_database.py#L176) | 49-hour support gap, then fresh reports at hour 50 | End and create a new story | Old episode ended; fresh episode key differs | PASS |
-| A16 | [test_a16_sensitive_cluster](tests/test_patterns_database.py#L186) | Three private records at sentinel coordinates | Internal analysis, public redaction | 3 reports internally; metrics omitted; coordinates absent from API/logs | PASS |
-| A17 | [test_a17_centroid_not_destination](tests/test_patterns_database.py#L195) | Cluster with one approved synthetic public viewpoint | Approved destination only; travel checks apply | Preview uses approved coordinates and stays held/ineligible | PASS |
-| A18 | [test_a18_expiring_evidence](tests/test_patterns_database.py#L203) | All reports beyond 4-day temporal window | Remove analytical support | 0 current clusters; episode ended | PASS |
-| A19 | [test_a19_provider_removes_behavior](tests/test_patterns_database.py#L209) | Provider removes fishing behavior | Current evidence withdrawn, history preserved | 0 new clusters; historical fishing summary unchanged | PASS |
-| A20 | [test_a20_rare_bird_bypass](tests/test_patterns_database.py#L218) | Single credible exceptional bird, then noncredible variant | Bypass density only with credibility | Credible singleton episode; noncredible variant hidden | PASS |
-| A21 | [test_a21_core_restart](tests/test_patterns_database.py#L225) | New Core database instance and actual container restart | Persistent identity | Same episode key; Compose process/DB restart also verified | PASS |
-| A22 | [test_a22_determinism](tests/test_patterns_database.py#L237) | Identical replay, then unchanged inputs in newer generation | Stable outcomes; no meaningless revisions | Same key/metrics; one material revision | PASS |
-| A23 | [test_a23_raw_flood](tests/test_patterns_database.py#L249) | 500 ordinary Common Raven records | No raw product flood | 0 patterns/previews; normal Core output ≤1 M1 row | PASS |
-| A24 | [test_a24_mirrors_do_not_supply_density](tests/test_patterns_database.py#L256) | Three mirrors under ordinary bear density policy | Mirrors cannot supply three density points | 1 report group; 0 qualifying clusters | PASS |
-| A25 | [test_a25_high_uncertainty](tests/test_patterns_database.py#L262) | Four precise Monarch reports plus 15-km-uncertainty record | Exclude imprecise record from centroid | 4 reports, 1 regional disposition; centroid unchanged | PASS |
-| A26 | [test_a26_area_observation](tests/test_patterns_database.py#L273) | Four precise points plus area-level report | Area does not act as a precise point | 4 reports; area record retained regionally | PASS |
-| A27 | [test_a27_clusters_approach_without_implicit_merge](tests/test_patterns_database.py#L280) | Two existing clusters approach one new cluster | Conservative deterministic identity | One cluster, two active stories; no implicit merge | PASS |
-| A28 | [test_a28_episode_split](tests/test_patterns_database.py#L291) | One episode splits into 3-report and 2-report clusters | Strongest continues; child lineage | Parent keeps 3 reports; other cluster gets new child episode | PASS |
-| A29 | [test_a29_coordinate_correction](tests/test_patterns_database.py#L301) | Provider moves a point outside local group | Recompute; preserve prior artifact | Current cluster uses 2 reports; historical centroid unchanged | PASS |
-| A30 | [test_a30_all_support_expires_without_refetch_renewal](tests/test_patterns_database.py#L310) | Old observations refetched at hour 120 | Fetch does not renew evidence | 0 clusters; episode ended | PASS |
-| A31 | [test_a31_regional_corroboration_not_density](tests/test_patterns_database.py#L316) | 12 high-uncertainty Monarch records | Regional retention cannot satisfy density | 12 regional dispositions; 0 clusters/episodes | PASS |
-| A32 | [test_a32_count_inflation](tests/test_patterns_database.py#L322) | Counts 10, 50, 100 in three reports | MAX descriptor, no total | max_single_report_count=100; no 160 or exact-population wording | PASS |
-| A33 | [test_a33_report_group_correction](tests/test_patterns_database.py#L329) | Trusted mirror origin mapping withdrawn | Correct current grouping; preserve old links | Report count changes 1→2; historical cluster retains one group | PASS |
-| A34 | [test_a34_no_approved_destination](tests/test_patterns_database.py#L344) | Strong private cluster without approved destination | No arbitrary nearest fallback | Internal episode; no destination or preview | PASS |
-| A35 | [test_a35_input_order_randomization](tests/test_patterns_database.py#L351) | Same five records shuffled over 8 fresh trials | Order-independent membership and identity | Identical cluster hashes, metrics, radii and episode keys | PASS |
-| A36 | [test_a36_policy_provenance](tests/test_patterns_database.py#L366) | New policy version/hash | Preserve old provenance; explicit compatibility | Old hash retained; old episode ended and new one started | PASS |
-| A37 | [test_a37_sensitive_metadata_redaction](tests/test_patterns_database.py#L377) | Private count/behavior plus tiny named site | Prevent metadata disclosure | Metrics/location/behavior omitted; no sensitive preview | PASS |
-| A38 | [test_a38_nonpattern_opportunity](tests/test_patterns_database.py#L386) | Existing Tule Elk deterministic opportunity | Nullable episode relationship | calendar_presence preserved; pattern_episode_id is NULL | PASS |
+| A1 | [test_a1_scattered_monarchs](tests/test_patterns_database.py#L81) | 40 scattered Monarch records | No concentration or individual product flood | 0 clusters/episodes; normal Core output ≤1 existing M1 row | PASS |
+| A2 | [test_a2_tight_monarch_concentration](tests/test_patterns_database.py#L88) | 12 tight Monarch records | One developing concentration | 1 developing episode; 12 independent reports | PASS |
+| A3 | [test_a3_same_record_redelivered](tests/test_patterns_database.py#L94) | Same provider record redelivered | One current provider/assertion/report | 1 raw row, 1 current assertion and membership | PASS |
+| A4 | [test_a4_explicit_cross_provider_mirror](tests/test_patterns_database.py#L107) | Three trusted mirrors with qualified common origin | One report, three providers | 1 density representative; counts 1 report / 3 sources / 3 records | PASS |
+| A5 | [test_a5_two_real_observers](tests/test_patterns_database.py#L114) | Two nearby real documentation events | Remain independent | 2 report groups and independent reports | PASS |
+| A6 | [test_a6_chain_link](tests/test_patterns_database.py#L120) | Seven chain-linked bear points | Reject incoherent candidate | 0 clusters; 7 incoherent dispositions | PASS |
+| A7 | [test_a7_bear_activity](tests/test_patterns_database.py#L127) | Four nearby bear reports | One activity pattern | 1 black_bear_activity episode | PASS |
+| A8 | [test_a8_bear_without_cubs](tests/test_patterns_database.py#L132) | Bear presence without cub tags | No cub inference | Presence-only summary; no sow_with_cubs evidence | PASS |
+| A9 | [test_a9_explicit_sow_cub](tests/test_patterns_database.py#L138) | Three explicit sow/cub + feeding reports | Queryable behavior support | sow_with_cubs summary counts 3 independent reports | PASS |
+| A10 | [test_a10_ordinary_bald_eagle](tests/test_patterns_database.py#L145) | One then six ordinary eagle presence records | No fishing pattern | 0 episodes in both generations | PASS |
+| A11 | [test_a11_bald_eagle_fishing](tests/test_patterns_database.py#L152) | Three explicit fishing reports | Behavior pattern | 1 bald_eagle_fishing episode with fishing evidence | PASS |
+| A12 | [test_a12_humpback_presence](tests/test_patterns_database.py#L158) | Four generic humpback reports | Activity without feeding claim | Only humpback_activity; presence-only behaviors | PASS |
+| A13 | [test_a13_humpback_feeding](tests/test_patterns_database.py#L164) | Four explicit lunge-feeding reports | Activity and feeding policies may share observations | 2 phenomena; 8 membership links; lunge-feeding retained | PASS |
+| A14 | [test_a14_episode_continuation](tests/test_patterns_database.py#L171) | Compatible next-generation shifted bear cluster | Continue identity | Same episode key | PASS |
+| A15 | [test_a15_episode_end_restart](tests/test_patterns_database.py#L178) | 49-hour support gap, then fresh reports at hour 50 | End and create a new story | Old episode ended; fresh episode key differs | PASS |
+| A16 | [test_a16_sensitive_cluster](tests/test_patterns_database.py#L188) | Three private records at sentinel coordinates | Internal analysis, public redaction | 3 reports internally; metrics omitted; coordinates absent from API/logs | PASS |
+| A17 | [test_a17_centroid_not_destination](tests/test_patterns_database.py#L197) | Cluster with one approved synthetic public viewpoint | Approved destination only; travel checks apply | Preview uses approved coordinates and stays held/ineligible | PASS |
+| A18 | [test_a18_expiring_evidence](tests/test_patterns_database.py#L205) | All reports beyond 4-day temporal window | Remove analytical support | 0 current clusters; episode ended | PASS |
+| A19 | [test_a19_provider_removes_behavior](tests/test_patterns_database.py#L211) | Provider removes fishing behavior | Current evidence withdrawn, history preserved | 0 new clusters; historical fishing summary unchanged | PASS |
+| A20 | [test_a20_rare_bird_bypass](tests/test_patterns_database.py#L220) | Single credible exceptional bird, then noncredible variant | Bypass density only with credibility | Credible singleton episode; noncredible variant hidden | PASS |
+| A21 | [test_a21_core_restart](tests/test_patterns_database.py#L227) | New Core database instance and actual container restart | Persistent identity | Same episode key; Compose process/DB restart also verified | PASS |
+| A22 | [test_a22_determinism](tests/test_patterns_database.py#L239) | Identical replay, then unchanged inputs in newer generation | Stable outcomes; no meaningless revisions | Same key/metrics; one material revision | PASS |
+| A23 | [test_a23_raw_flood](tests/test_patterns_database.py#L251) | 500 ordinary Common Raven records | No raw product flood | 0 patterns/previews; normal Core output ≤1 M1 row | PASS |
+| A24 | [test_a24_mirrors_do_not_supply_density](tests/test_patterns_database.py#L258) | Three mirrors under ordinary bear density policy | Mirrors cannot supply three density points | 1 report group; 0 qualifying clusters | PASS |
+| A25 | [test_a25_high_uncertainty](tests/test_patterns_database.py#L264) | Four precise Monarch reports plus 15-km-uncertainty record | Exclude imprecise record from centroid | 4 reports, 1 regional disposition; centroid unchanged | PASS |
+| A26 | [test_a26_area_observation](tests/test_patterns_database.py#L275) | Four precise points plus area-level report | Area does not act as a precise point | 4 reports; area record retained regionally | PASS |
+| A27 | [test_a27_clusters_approach_without_implicit_merge](tests/test_patterns_database.py#L282) | Two existing clusters approach one new cluster | Conservative deterministic identity | One cluster, two active stories; no implicit merge | PASS |
+| A28 | [test_a28_episode_split](tests/test_patterns_database.py#L293) | One episode splits into 3-report and 2-report clusters | Strongest continues; child lineage | Parent keeps 3 reports; other cluster gets new child episode | PASS |
+| A29 | [test_a29_coordinate_correction](tests/test_patterns_database.py#L303) | Provider moves a point outside local group | Recompute; preserve prior artifact | Current cluster uses 2 reports; historical centroid unchanged | PASS |
+| A30 | [test_a30_all_support_expires_without_refetch_renewal](tests/test_patterns_database.py#L312) | Old observations refetched at hour 120 | Fetch does not renew evidence | 0 clusters; episode ended | PASS |
+| A31 | [test_a31_regional_corroboration_not_density](tests/test_patterns_database.py#L318) | 12 high-uncertainty Monarch records | Regional retention cannot satisfy density | 12 regional dispositions; 0 clusters/episodes | PASS |
+| A32 | [test_a32_count_inflation](tests/test_patterns_database.py#L324) | Counts 10, 50, 100 in three reports | MAX descriptor, no total | max_single_report_count=100; no 160 or exact-population wording | PASS |
+| A33 | [test_a33_report_group_correction](tests/test_patterns_database.py#L331) | Trusted mirror origin mapping withdrawn | Correct current grouping; preserve old links | Report count changes 1→2; historical cluster retains one group | PASS |
+| A34 | [test_a34_no_approved_destination](tests/test_patterns_database.py#L346) | Strong private cluster without approved destination | No arbitrary nearest fallback | Internal episode; no destination or preview | PASS |
+| A35 | [test_a35_input_order_randomization](tests/test_patterns_database.py#L353) | Same five records shuffled over 8 fresh trials | Order-independent membership and identity | Identical cluster hashes, metrics, radii and episode keys | PASS |
+| A36 | [test_a36_policy_provenance](tests/test_patterns_database.py#L368) | New policy version/hash | Preserve old provenance; explicit compatibility | Old hash retained; old episode ended and new one started | PASS |
+| A37 | [test_a37_sensitive_metadata_redaction](tests/test_patterns_database.py#L379) | Private count/behavior plus tiny named site | Prevent metadata disclosure | Metrics/location/behavior omitted; no sensitive preview | PASS |
+| A38 | [test_a38_nonpattern_opportunity](tests/test_patterns_database.py#L388) | Existing Tule Elk deterministic opportunity | Nullable episode relationship | calendar_presence preserved; pattern_episode_id is NULL | PASS |
 
 Additional tests cover raw SQL primitive typing, token authorization, geometry-free list/detail, trusted namespaces, rollback and older concurrent publications, immediate privacy overlays, explicit merge, ambiguous DBSCAN border over six fresh shuffles, checklist grouping, collector/engine/policy freshness, future support, withdrawal and explicit MAX count thresholds. A35 runs eight fresh randomized trials inside one test; trial counts are not inflated into pytest totals.
 
