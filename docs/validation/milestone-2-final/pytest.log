@@ -1,0 +1,13 @@
+........................................................................ [ 29%]
+........................................................................ [ 59%]
+........................................................................ [ 89%]
+.........................                                                [100%]
+=============================== warnings summary ===============================
+tests/test_final_corrections.py::test_f1_slow_locked_finish_cannot_block_new_high_wind_m1
+  ../home/runner/work/photography-events-core/photography-events-core/tests/test_final_corrections.py:49: PytestWarning: record_property is incompatible with junit_family 'xunit2' (use 'legacy' or 'xunit1')
+
+tests/test_final_corrections.py::test_f14_default_m1_latency_bounded_while_server_finish_stalls
+  ../home/runner/work/photography-events-core/photography-events-core/tests/test_final_corrections.py:217: PytestWarning: record_property is incompatible with junit_family 'xunit2' (use 'legacy' or 'xunit1')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+241 passed, 2 warnings in 43.59s

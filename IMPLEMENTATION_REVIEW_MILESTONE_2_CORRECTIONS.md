@@ -1,3 +1,5 @@
+> Historical S1 correction receipt. The [FINAL INDEPENDENT CORRECTION PASS](IMPLEMENTATION_REVIEW_MILESTONE_2.md#final-independent-correction-pass) supersedes the client-only finish boundary and cancellation behavior described here.
+
 # Milestone 2 required correction review — S1
 
 ## Verdict and scope

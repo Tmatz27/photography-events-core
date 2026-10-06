@@ -87,7 +87,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0004`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0005`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -131,12 +131,14 @@ Revisions `0001` and `0002` remain unchanged. Revision `0002` provides immutable
 assessment generations ([schema](docs/SCHEMA_0002.md)); revision `0003` adds
 correctable report membership, canonical behavior, immutable analytical clusters
 and persistent episodes ([schema](docs/SCHEMA_0003.md)). Revision `0004` adds
-independent shadow-run lifecycle metadata ([schema](docs/SCHEMA_0004.md)).
+independent shadow-run lifecycle metadata ([schema](docs/SCHEMA_0004.md)). Revision
+`0005` adds final identity/behavior corrections and coherence diagnostics
+([schema](docs/SCHEMA_0005.md)).
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
 `python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
-upgrading. Revisions `0002`, `0003` and `0004` are forward-only because earlier schemas
+upgrading. Revisions `0002` through `0005` are forward-only because earlier schemas
 cannot represent their histories; rollback requires a verified pre-upgrade backup restored to a new DB
 and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
 check remains in CI. Migrated decisions stay incomplete/held until a fresh
@@ -277,6 +279,32 @@ mismatches. See the correction review section and its committed CI artifacts
 for exact test counts and environments.
 
 ## Observation intelligence: explicit shadow mode
+
+The [FINAL INDEPENDENT CORRECTION PASS](IMPLEMENTATION_REVIEW_MILESTONE_2.md#final-independent-correction-pass)
+is the current boundary review. Episode matching and prior revision reads are
+prepared before locking the M1 pointer. Final publication rechecks the registry
+and uses transaction-local lock_timeout=500ms, statement_timeout=750ms and
+PostgreSQL18 transaction_timeout=900ms at default settings, plus a one-second
+client guard. Smaller settings scale all server bounds below the finish budget,
+which is capped by one third of the M1 deadline. Cancellation
+propagates after bounded cleanup. M2 source provenance records inputs actually
+consumed, which may have been collected after its base M1 assessment committed.
+
+Bear fixture policy explicitly configures a stricter 1,000 m coherence fallback
+(primary 3,000 m). Only a rejected candidate gets one second DBSCAN pass; every
+normal gate is reapplied. No implicit epsilon, third pass or recursion exists.
+Authenticated debug records coherence_rejected and fallback outcome. Nonsensitive
+candidate counts/radius/diameter may be inspected; protected metrics are withheld,
+and no centroid/point geometry is emitted.
+
+SQL input admission has a policy-derived broad temporal bound before narrower
+Python filtering. Count requirements must be positive; NULL is unknown.
+Qualified mirror claims are validated against taxon/time; mismatches keep
+independent identity and sanitized provenance. The fixture time tolerance is one
+hour and is not fuzzy deduplication or geographic proof. Historical bugling is
+backfilled to canonical rut by migration0005. Policies remain fixture-only and
+biologically unvalidated; M2 remains default-off/shadow-only.
+
 
 The [required S1 correction review](IMPLEMENTATION_REVIEW_MILESTONE_2_CORRECTIONS.md)
 records the independent publication boundary. M1 generation returns after its

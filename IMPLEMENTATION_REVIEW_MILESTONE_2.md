@@ -1,3 +1,274 @@
+# FINAL INDEPENDENT CORRECTION PASS
+
+This is the current correction authority. The earlier 39-section implementation
+packet and S1 correction receipt below are retained historical evidence. This
+section supersedes their client-only finish, swallowed cancellation, all-or-nothing
+coherence rejection, unbounded-input and missing identity/backfill behavior.
+
+The source of truth is the [final reconciled request](docs/FINAL_CORRECTION_SPEC_MILESTONE_2.md).
+Reviewer reproductions/verdicts are supplied by that request; the executed
+results below are this implementer's evidence, not a new independent approval.
+No Milestone 3, new source, release, promotion or production notification is added.
+
+## Actual repository receipts
+
+| Repository | Actual clean starting origin/main | Validated correction implementation |
+|---|---|---|
+| Core | 9194e9787b11312d63b6ee9fe5ba83e55ef0d7b0 | 1a2410f0578bef261c066bed542991dd78a7212f |
+| HA | c76726ece1e485ece03810087927da344289fba7 | unchanged |
+
+Checkout main and pull --ff-only were executed for both before edits. Main-only
+normal commits/pushes. Core version remains 0.1.0-dev and HA remains 0.16.1.
+The final documentation/report-format commit cannot contain its own hash;
+the external final submission receipt supplies its full SHA and exact-SHA CI.
+HA is untouched; [its existing exact-SHA CI](https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/37334287547)
+remains green (portable 485 + card 127, both real HA environments 90 each, HACS).
+
+## Findings: reproduction, fix, executed test, actual result
+
+| Finding / reviewer reproduction | Implemented fix | Test / result |
+|---|---|---|
+| S1-R1: pg_sleep(6) after pointer lock survives a one-second client abort and blocks new safety publication | Prepare spatial matching, proposed episode actions and previous revision fingerprints before locking. Recheck pointer and full active-registry fingerprint; atomically apply only prepared actions. PostgreSQL-local lock/statement/whole-transaction limits plus client guard | F1/F2/F3/F4/F14 PASS; new High Wind state published; zero leaked pools |
+| Cancellation was swallowed after recording | Separate CancelledError handler, bounded best-effort cleanup, then raise; no BaseException catch | F5 and retained shutdown test PASS |
+| Post-commit input capture can observe sources newer than base M1 | Preserve exact consumed source-run FKs/content hashes and consistent capture; document actual timing rather than inventing base-time provenance | Retained S1 snapshot race test PASS; no forced historical input fiction |
+| S3: six valid bear reports disappear after five bridge reports link all eleven | Persist primary rejection; optional stricter policy epsilon runs one additional DBSCAN on only that rejected component. Reapply every original gate; no recursion/third pass or implicit eps/2 | F6/F7/F8 PASS; core survives, mega-cluster never accepted; true chain remains rejected |
+| NULL count could be coerced to zero at a zero threshold | Positive integer requirement only; explicit non-NULL count before comparison; MAX semantics unchanged | F9 and retained MAX-count tests PASS |
+| Explicit mirror origin claim could contradict taxon/time | Exact adapter identity-consistency hook; canonical origin-provider assertions take precedence, ±1-hour fixture time profile. Mismatches keep independent provider-qualified identity and sanitized marker; canonical late arrivals rehome invalid current links | F10/F11/F12 and late-arrival test PASS; no geographic or fuzzy proof |
+| Loader read unlimited historical current assertions | SQL observed-time/validity range derived from maximum active policy windows; current-observed partial index; narrower per-phenomenon gates follow | F13 and retained future-admission tests PASS |
+| Legacy bugling lacked canonical rut backfill | Append-only0005 conflict-safe bugling→rut data correction; preserve original behavior/raw/private history | Real seeded0004→0005 verification PASS |
+| Historical bad mirror claims predate the new hook |0005 validates current explicit claims against canonical subject/time, appends independent links and supersedes old memberships; historical cluster triples remain valid | Seeded taxon/time mismatches repaired;3 current memberships/2 superseded; marker count2 |
+| Stale planner statistics after bulk loading/truncation | Record [operations backlog](docs/PERFORMANCE_BACKLOG.md); no planner/autovacuum redesign or timing-only production ANALYZE | Reviewer-provided0.13–0.20 s constant-statistics observation recorded separately from measurements here |
+
+## S1-R1 boundary and server budgets
+
+M1's existing publication/fingerprint commits and returns before M2 starts.
+Input capture, ordered density, destination checks, bulk artifact staging,
+spatial episode matching and previous fingerprint reads happen outside the M1
+pointer lock. Preparation allocates symbolic new-episode IDs without database
+mutation. The prepared active-registry checksum covers all authoritative episode
+fields, not just spatial centers.
+
+The final shadow transaction first applies PostgreSQL-local settings using
+set_config(...,TRUE), equivalent to SET LOCAL, before pointer lock acquisition.
+Default bounds:
+
+| Layer | Default bound |
+|---|---|
+| PostgreSQL lock_timeout |500 ms |
+| PostgreSQL statement_timeout |750 ms |
+| PostgreSQL 18 transaction_timeout |900 ms |
+| Python final-phase guard |1 s |
+
+Finish budget = min(1 s, shadow phase timeout, M1 timeout / 3). Server limits are50%,
+75% and90% of that budget, rounded down to at least1 ms; supported minimum
+settings keep them below the client bound. The0.2 s regression observes100/150/
+180 ms server limits. A deliberately small configuration may fail shadow
+publication; it cannot silently enlarge its lock window.
+
+The whole-transaction server limit is defense against many short statements or
+an idle/stalled client; statement_timeout handles an actively executing slow
+SQL, and lock_timeout yields safely when M1 owns the row. The old shadow-pool
+global60-second statement setting is not the effective locked-phase bound.
+All local settings reset at transaction end.
+
+After locking, verify current assessment=base and registry checksum unchanged.
+On either mismatch mark superseded; do not recompute spatial work under lock.
+Otherwise insert/update prepared episodes, link staged clusters and persist
+snapshots/revisions atomically. Server cancellation/timeout rolls back this
+phase and only the shadow ledger fails. M1 pointer/status/fingerprint, production
+failure flag and safety result are not rewritten by shadow failure.
+
+Cancellation propagates after bounded recording. Database.close deliberately
+gathers cancellation results during orderly shutdown; an explicit caller awaiting
+the cancelled task still receives CancelledError.
+
+## Shadow input timing and freshness
+
+Base M1 assessment identity is a publication anchor, **not a claim that every
+M2 input existed at base-assessment time**. Capture starts after M1 commits and
+can consume a later collection. pattern_generation_sources records precisely
+the source runs/content hashes used; assertions and sources share a REPEATABLE
+READ capture. M2's own provenance/freshness determines analytical scope.
+
+SQL uses the broad maximum temporal window/future tolerance from the configured
+active policy tuple, and valid_until>=evaluation time. Default broad range is
+four days back/one hour forward. Old history remains stored but is not loaded.
+An empty policy tuple loads no assertions. Phenomenon-specific admission still
+enforces its own temporal, precision, operating-region, credibility and behavior
+conditions. This does not change M1's existing14-day slice or source policy.
+
+## S3 exact one-pass rescue and diagnostics
+
+Bear fixture explicitly sets primary eps3000 m, fallback1000 m, max diameter9000m.
+No other policy silently receives a fallback. Configured fallback must be finite,
+positive and strictly smaller than primary epsilon.
+
+Primary ordered DBSCAN remains unchanged. Each incoherent component is recorded
+with candidate observation/report counts, enclosing radius/diameter, maximum,
+primary/fallback epsilon, policy version/hash, attempted flag, outcome and
+recovered-cluster count. Only that component's admitted representatives are
+used in the one second pass. Count/behavior/report/observation/precision/coherence/
+privacy gates are all retained. Rejected/noise remainder is not promoted and
+retains its primary incoherence disposition. A still-incoherent second candidate
+is rejected without another pass.
+
+No recovered cluster yields coherence_rejected episode transition rather than
+ordinary unsupported when applicable; candidate diagnostics exist even without
+an episode. Material revision fingerprints distinguish this analytical reason.
+Recovered coherent subclusters continue/split episodes through the accepted
+deterministic matching logic.
+
+Authenticated diagnostics expose only whitelisted nonsensitive scalar metrics.
+Protected candidate metrics are NULL; no point, centroid, enclosing-circle center
+or raw member IDs are serialized. Immediate protection raises and cumulative
+sensitive episode state also suppress diagnostics. All previews remain held/
+ineligible, and sensitive previews remain entirely suppressed.
+
+## Migration0005
+
+[Complete schema/data inventory](docs/SCHEMA_0005.md) reproduces the exact SQL.
+New diagnostic table brings the application table count to32. One origin status
+column, one current-observed index, canonical rut backfill, historical identity
+repair and the coherence_rejected snapshot check are added. The temporary
+migration repair table is dropped on commit.0001/0002/0003/0004 are byte-unchanged.
+No original raw behavior or old cluster-membership triple is rewritten.
+
+Fresh installation and seeded0001→0002→0003→0004→0005 pass; repeat head upgrade
+passes. The0004 seed includes bugling and contradictory subject/time mirrors.
+Legacy identity/private geometry/raw data/held API and0003/0004 shadow hashes/
+timestamps survive. Forward-only rollback uses a verified pre-upgrade backup
+restored into a fresh DB.
+
+## Executed F1–F14 matrix
+
+Every row is a separately named real-DB test in tests/test_final_corrections.py.
+Additional tests cover sensitive diagnostics/immediate raises, canonical late
+arrival, invalidated prepared registry, all fallback gates, no configured
+fallback, exactly two DBSCAN passes, and smaller finish budgets.
+
+| Scenario | Test | Input / attack | Actual asserted result | Result |
+|---|---|---|---|---|
+| F1 | [test_f1_slow_locked_finish_cannot_block_new_high_wind_m1](tests/test_final_corrections.py#L49) | Server pg_sleep(6) after the pointer lock, then collect High Wind and publish M1 #3 | M1 published complete/unsafe High Wind; shadow failed; 0.753955 s < default 3 s | PASS |
+| F2 | [test_f2_server_lock_timeout_yields_to_m1_publication](tests/test_final_corrections.py#L69) | M1 holds the publication lock while shadow finish attempts it | Shadow fails under its server lock bound; M1 succeeds; pools recover | PASS |
+| F3 | [test_f3_server_statement_bound_aborts_and_releases_pointer](tests/test_final_corrections.py#L100) | Server slow statement in the locked phase | 750 ms statement and 500 ms lock limits observed; transaction aborted; pointer lock reacquired safely | PASS |
+| F4 | [test_f4_no_shadow_pool_leak_after_server_timeout](tests/test_final_corrections.py#L113) | Server-side timeout, then reuse both pools | Zero checkouts; shadow ping and M1 readiness succeed | PASS |
+| F5 | [test_f5_cancelled_error_propagates_after_bounded_cleanup](tests/test_final_corrections.py#L122) | Cancel the background run during paused compute | CancelledError propagates; bounded shadow_cancelled recording; no leaked connections | PASS |
+| F6 | [test_f6_dense_bear_core_survives_sparse_bridge](tests/test_final_corrections.py#L144) | Six tight bear reports plus five 2.7 km stepping bridge reports | Six-report qualified core and same episode survive; eleven-report candidate rejected and traced | PASS |
+| F7 | [test_f7_pure_sparse_chain_has_no_false_cluster](tests/test_final_corrections.py#L156) | Pure seven-report sparse chain | No cluster, episode or preview; no_qualifying_core diagnostic | PASS |
+| F8 | [test_f8_debug_and_snapshot_distinguish_coherence_rejected](tests/test_final_corrections.py#L163) | Move a valid core into a chain in a later generation | Snapshot/debug transition is coherence_rejected, not unsupported | PASS |
+| F9 | [test_f9_unknown_animal_count_cannot_satisfy_count_gate](tests/test_final_corrections.py#L173) | Count-required policy with NULL counts; attempt zero requirement | No qualifying cluster; zero policy requirement rejected | PASS |
+| F10 | [test_f10_incompatible_claimed_taxon_does_not_collapse](tests/test_final_corrections.py#L186) | Mirror claims a bear origin with incompatible eagle taxon | Two independent groups; origin_identity_mismatch persists/logs without raw taxon disclosure | PASS |
+| F11 | [test_f11_incompatible_claimed_observation_time_does_not_collapse](tests/test_final_corrections.py#L195) | Mirror claims the same origin with a two-day incompatible time | Two independent groups; mismatch marker | PASS |
+| F12 | [test_f12_consistent_explicit_origin_still_collapses](tests/test_final_corrections.py#L202) | Consistent qualified origin/taxon/time | One report, two contributing providers | PASS |
+| F13 | [test_f13_sql_loader_excludes_old_history_before_python_admission](tests/test_final_corrections.py#L209) | Three recent assertions plus eight-day-old current history | Four stored assertions, only three loaded by SQL | PASS |
+| F14 | [test_f14_default_m1_latency_bounded_while_server_finish_stalls](tests/test_final_corrections.py#L217) | M1 publication while locked server finish is stalled | M1 publishes in 0.761711 s < default 3 s; both pools healthy | PASS |
+
+## Regression, migration and restore receipts
+
+[Code-freeze CI37419845716](https://github.com/Tmatz27/photography-events-core/actions/runs/37419845716)
+is SUCCESS at `1a2410f0578bef261c066bed542991dd78a7212f`.
+[Machine evidence](docs/validation/milestone-2-final/README.md).
+
+- **241 passed**, zero failures/skips,43.59 s; original218 names retained, plus23
+  correction DB tests including parameterized cases. All38 A-tests pass.
+- Linux portable96 pass/145 DB skips; Windows91 pass/150 skips (145DB+fivePOSIX).
+  RealDB/Linux execution covers these local skips; Ruff/compile/offline Alembic pass.
+- Pinned HA oracle4905e35c0668c37737d84685e65d2a806f7c92f7:15 evaluator cases×24
+  fields and nine pipeline cases/14 steps remain byte-identical;18000 seeded
+  comparisons/zero mismatches. Retained150 randomized DBSCAN comparisons and
+  six ambiguous-border shuffles pass. No M1 policy/fixture changes.
+- PostgreSQL 18.6/PostGIS3.6.4; fresh/head, migration chain, repeated head, Core/DB
+  restart, stopped/frozen DB and actual operator backup/restore pass.
+- Custom PGDMP archive286760bytes, restored owner photography_events; fresh
+  restored head0005 ready, M1 API readable, episode key/state and debug mode/state
+  preserved. Restored debug was **outdated**, consistently with pre-backup fixture
+  analytical scope; it is not falsely reported current.
+- Eight warm/eight cold frozen calls: max warm2.0079s/cold2.0050 s at2 s guard,
+  zero leaked checkouts and recovery=true.
+
+First run37417732471 failed one border-order fixture whose custom primary
+epsilon equaled the new inherited fallback. The fixture explicitly disables
+fallback to retain its original DBSCAN test; strict fallback validation was not
+relaxed.234 other tests, including F1–F14, passed. Later complete runs passed.
+The code-freeze report has two pytest timing-property/xunit2 compatibility
+warnings; the measured properties were verified in XML. The final test reporter
+selects compatible legacy JUnit format; no assertion was weakened.
+
+## Separate timing measurements
+
+Real1000-report synthetic fixture, default M1 deadline3 s, no production planner
+or autovacuum changes:
+
+| Phase | Measured seconds |
+|---|---|
+| M1 generation/publication off |0.029195,0.025477,0.025604 |
+| M1 generation/publication shadow |0.027751,0.043069,0.023855 |
+| M2 compute across policies |0.045585,0.024551,0.025338,0.024442 |
+| Episode preparation outside pointer lock |0.001905,0.007758,0.007603,0.007326 |
+| M2 finish transaction body |0.008597,0.004194,0.003883,0.004243 |
+| Explicit shadow completion including M1 |0.183589,0.204393,0.175234 |
+| F1 new High Wind M1 under server stall |0.753955 |
+| F14 M1 under server stall |0.761711 |
+
+Finish body instrumentation excludes connection/commit overhead; overall shadow
+completion includes the full pipeline. Compute/preparation run outside the
+pointer lock. Individual F1/F14 properties are in tests.xml. This is a small
+warm synthetic sample, not a global-volume SLA or assertion that total M2 must
+fit the M1 deadline. The decisive attack assertions use real backend SQL and
+default production deadline. Full untruncated query plans remain in the artifact.
+
+## Every remaining known limitation
+
+- Trusted local fixture namespaces only; no live source onboarding, ecological
+  threshold validation or real production observation dataset certification.
+- Exact case-insensitive taxonomy/finite explicit behavior vocabulary; no full
+  taxonomic synonym system or free-text biological inference.
+- Identity validation uses a provisional one-hour fixture tolerance. A claim
+  without a canonical origin provider can remain explicitly unverified; it
+  does not certify independent observers. Geographic proximity is never proof.
+- One configured rescue pass only. It can still miss a meaningful core under
+  other distributions/thresholds; no recursive/adaptive epsilon or guarantee
+  of recall. All numeric thresholds require separate biological review.
+- Only validated EPSG3310/California box, projected approximate distances; no
+  habitat/country geometry filter, additional CRS or geodesic exactness claim.
+- Area/unknown/high-uncertainty evidence is regional only; no polygon analytics,
+  probabilistic uncertainty weighting or regional confidence promotion.
+- Provider count means contributing providers; report IDs do not certify real
+  observer independence. MAX animal count is a descriptor, not population.
+- Provisional24-hour freshness; conservative provider-content materiality and
+  all policy-hash changes restart episodes rather than silently continue.
+- Privacy is conservative: sensitive previews always suppressed; same-phenomenon
+  diagnostics may be withheld when any relevant protected support exists.
+- Raw provider bodies retain accepted M1 upsert semantics, not complete raw-body
+  version archive; normalized evidence/memberships/source hashes survive.
+- The SQL temporal window is bounded, not a row-volume cap. Modest-scale loading,
+  per-record ingestion and individual episode writes remain; no unbounded-volume
+  SLA, multi-replica certification, history pagination or automatic retention.
+- Heavy work and prepared matching share DB/OS/event-loop resources. Server bounds
+  protect the final lock on the tested PostgreSQL 18 stack; other versions and
+  extreme workloads require validation. Deadlines assume responsive client scheduling.
+- Phase deadlines are not a whole-run limit. Failure recording is best effort;
+  crash can leave running ledger entries; no automatic retry/durable worker.
+  Extremely small budgets may safely fail shadow publication.
+- Default LAN HTTP requires operator HTTPS; readiness is not a full integrity
+  scan. No external penetration test, actual Unraid/NAS deployment, scheduled
+  backup rollout or pinned container-image digest certification is claimed.
+- No production promotion/HA consumption or episode follow/skip/notification
+  transfer across split/merge. Live/forecast confirmation gates remain reserved
+  and reject execution. Other accepted M1 collector/travel/Condor limitations remain.
+- Stale planner statistics after bulk loading/truncation remain an operations
+  backlog item; no performance behavior is masked or redesign implemented.
+
+## Acceptance and release boundary
+
+**Shadow-safe: YES** for evaluation on the tested stack and documented scope,
+with M1 authoritative. **Promotion-ready: NO**: final independent review and
+biological thresholds for intended live use remain outstanding. No tag/release,
+production-default switch, notification, new source, map, vision, ML, fuzzy
+dedupe, Redis/Celery/broker or Milestone 3 work was performed.
+
+---
+
 > **Required S1 correction:** The [correction review](IMPLEMENTATION_REVIEW_MILESTONE_2_CORRECTIONS.md) supersedes the original publication boundary below. M1 commits before shadow computation starts; migration 0004 records its separate lifecycle. Original code-freeze results remain historical receipts.
 
 # 1 EXECUTIVE SUMMARY

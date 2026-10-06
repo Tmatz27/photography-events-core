@@ -1,0 +1,17 @@
+{
+  "repository": "Tmatz27/photography-events-core",
+  "sha": "1a2410f0578bef261c066bed542991dd78a7212f",
+  "run_id": 37419845716,
+  "job_id": 112126533454,
+  "conclusion": "success",
+  "artifact_id": 11393255167,
+  "artifact_sha256": "1e57b9d90c244020ff9121b64baf48dc21c4ba058173e0019c31f9f7c466b8c4",
+  "full_tests": {
+    "passed": 241,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 2,
+    "seconds": 43.59
+  },
+  "note": "Two timing-property reporter warnings; final reporter uses compatible legacy JUnit. Final documentation/report-format SHA recorded externally."
+}
