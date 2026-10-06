@@ -196,6 +196,12 @@ async def test_c1_canonical_time_correction_recollapses_without_mirror_redeliver
     assert len({r["report_group_id"] for r in after})==1
     assert next(row["id"] for row in after if row["provider"]=="fixture_mirror_a")==mirror_id
     assert (await sql(db,"SELECT superseded_at FROM observation_report_group_members WHERE id=:id",id=old_mid))[0]["superseded_at"] is not None
+    generated=await db.generate(data(1))
+    await db.wait_for_patterns()
+    assert (await sql(db,"SELECT status,input_fingerprint FROM pattern_generation_runs WHERE assessment_run_id=:aid",
+                      aid=generated["assessment_id"]))[0]["status"]=="published"
+    assert (await sql(db,"SELECT independent_report_count FROM observation_clusters WHERE assessment_run_id=:aid",
+                      aid=generated["assessment_id"]))[0]["independent_report_count"]==1
 
 
 async def test_c2_canonical_still_incompatible_keeps_mirror_independent(db):

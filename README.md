@@ -326,7 +326,23 @@ an M1 assessment commits. The default remains `off`. Nothing is seeded at startu
 existing explicit synthetic fixture import to supply records; the M2 test
 fixtures construct local synthetic provider mirrors, never new live collectors.
 
-The pipeline is current normalized assertions → qualified report identity →
+M1 collection persists raw/normalized assertions and commits without report-group,
+membership or behavior-relationship work, in both OFF and SHADOW modes. It retains
+cheap fixture-contract validation and the original M1 behavior field. Enrichment
+is deferred until a shadow pattern run captures its inputs. That bounded repeatable-
+read transaction reconciles current trusted claims and behaviors in batches, then
+records the deterministic input fingerprint and consumed source-run provenance.
+An enrichment failure rolls back that shadow phase and marks the run failed;
+it cannot roll back M1 collection. A running run with no input fingerprint has not
+completed enrichment/capture. No partially reconciled set is used for clustering.
+Server-local enrichment limits also bound locks on shared assertion metadata.
+
+Rejected explicit origin claims remain in the raw metadata contract and are retried
+when either side changes, even without mirror redelivery. Retention removes bulk
+provider text but preserves a small metadata envelope for explicit claims/report
+aliases. Historical membership links used by clusters remain immutable.
+
+The pipeline is current normalized assertions → atomic M2 enrichment → qualified report identity →
 policy-specific temporal/precision admission → report-level DBSCAN → coherent
 clusters → continuing pattern episodes → held developer opportunity previews.
 Same provider ID upserts once; only trusted fixture-adapter qualified origin IDs
@@ -341,6 +357,9 @@ One deterministic representative per independent report enters ordered DBSCAN.
 Unknown accuracy, area locations and excessive uncertainty stay outside density
 and centroid calculations. Regional signals cannot satisfy tight thresholds.
 Incoherent candidates exceeding the enclosing-circle diameter limit are rejected.
+Their episode transition applies only to related prior support or a candidate
+passing the existing spatial/temporal continuation test, never every episode of
+the same phenomenon. The configured single dense-core rescue remains unchanged.
 Animal counts use the largest single report, never a sum or an exact population.
 
 Clusters and episode snapshots are generation-scoped; previous history survives
