@@ -30,6 +30,22 @@ async def main():
     try:
         await ingest_fixture(db,data)
         await db.wait_for_patterns()
+        # Measure the production response separately from explicit shadow drain.
+        # Default M1 deadline is restored after the large fixture ingestion.
+        db.timeout=3
+        publication={"off":[],"shadow":[]}
+        completions=[]
+        for index,mode in enumerate(("off","shadow")*3,1):
+            db.patterns_mode=mode
+            start=time.perf_counter()
+            generated=await db.generate({**data,"now":(now+timedelta(seconds=index)).isoformat()})
+            elapsed=time.perf_counter()-start
+            assert generated["status"]=="published" and elapsed<db.timeout
+            publication[mode].append(round(elapsed,6))
+            await db.wait_for_patterns()
+            if mode=="shadow":
+                completions.append(round(time.perf_counter()-start,6))
+        db.timeout=30
         async def measure(c):
             start=time.perf_counter()
             rows,sources,identity=await clustering.load_inputs(c)
@@ -51,6 +67,9 @@ async def main():
                     "candidate_clusters":len(candidates),"policy":asdict(policy),"input_plan":input_plan,
                     "clustering_plan":density_plan}
         report=await db.transaction(measure)
+        report["m1_publication_seconds"]=publication
+        report["shadow_completed_seconds"]=completions
+        report["m1_publication_deadline_seconds"]=3
         Path("/tmp/m2-performance.json").write_text(json.dumps(report,indent=2)+"\n")
         print("M2 smoke passed: 1000 synthetic reports, one immutable shadow cluster; query plans captured.")
     finally:
