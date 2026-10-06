@@ -12,7 +12,7 @@ the results here are implementer verification, not final independent approval.
 
 | Repository | Actual starting origin/main | Validated hardening code freeze |
 |---|---|---|
-| Core | 9ee41f1428ffe245f43e9dcc3763c9672cb80fb8 | 72939e39b3a17a44edf0fc7b34c65cde62ac3562 |
+| Core | 9ee41f1428ffe245f43e9dcc3763c9672cb80fb8 | 5943bdd17f1613315bd5b3ca6ce772a12d099c0e |
 | HA | c76726ece1e485ece03810087927da344289fba7 | unchanged |
 
 Clean main checkout and pull --ff-only preceded edits in both repositories.
@@ -114,38 +114,38 @@ The new 100-day claim-pruning/canonical-correction test verifies retryability.
 | C1 | [test_c1_canonical_time_correction_recollapses_without_mirror_redelivery](tests/test_hardening.py#L186):  Canonical time correction collapses unchanged mirror; next generation uses one report |
 | C2 | [test_c2_canonical_still_incompatible_keeps_mirror_independent](tests/test_hardening.py#L207):  Remaining time contradiction stays independent |
 | C3 | [test_c3_canonical_becomes_incompatible_splits_valid_mirror](tests/test_hardening.py#L214):  Canonical valid-to-invalid correction splits current link; historical triples byte-unchanged |
-| C4 | [test_c4_canonical_subject_correction_retries_rejected_claim](tests/test_hardening.py#L224):  Canonical taxon correction retries rejected explicit claim |
-| C5 | [test_c5_no_explicit_claim_never_fuzzily_collapses](tests/test_hardening.py#L232):  No explicit claim: canonical correction never fuzzy-collapses |
+| C4 | [test_c4_canonical_subject_correction_retries_rejected_claim](tests/test_hardening.py#L240):  Canonical taxon correction retries rejected explicit claim |
+| C5 | [test_c5_no_explicit_claim_never_fuzzily_collapses](tests/test_hardening.py#L248):  No explicit claim: canonical correction never fuzzy-collapses |
 
-All 16 P/B/C tests PASS. Additional 3 tests PASS: constant batch-query count and
+All 16 P/B/C tests PASS. Additional 4 tests PASS: constant batch-query count and
 idempotent history; real stalled enrichment releases shared rows;100day retained
-claim reconciles without mirror redelivery. [Full test source](tests/test_hardening.py).
+claim reconciles without mirror redelivery; legacy multi-species assertions share
+the accepted raw-report identity after payload pruning. [Full test source](tests/test_hardening.py).
 Actual measured P1/P2 and retained F1/F14 latency properties are in tests.xml.
 
 ## N-A performance receipt
 
-Default production collection timeout: **3s**, unchanged for every measurement.
+Default production collection timeout: **3 s**, unchanged for every measurement.
 
 | Records | Implementation | Collection seconds (two trials) | Per-record ms | SQL statements attempted | Result |
 |---|---|---|---|---|---|
-| 100 | accepted_m1 | 0.196208, 0.183652 | 1.962, 1.837 | 410, 410 | both complete |
-| 100 | pre_fix_m2_off | 0.466810, 0.467303 | 4.668, 4.673 | 1110, 1110 | both complete |
-| 100 | corrected_m2_off | 0.166335, 0.177418 | 1.663, 1.774 | 410, 410 | both complete |
-| 100 | corrected_m2_shadow | 0.184688, 0.185131 | 1.847, 1.851 | 410, 410 | both complete |
-| 500 | accepted_m1 | 0.822626, 0.841077 | 1.645, 1.682 | 2010, 2010 | both complete |
-| 500 | pre_fix_m2_off | 2.328487, 2.280850 | 4.657, 4.562 | 5510, 5510 | both complete |
-| 500 | corrected_m2_off | 0.845493, 0.836376 | 1.691, 1.673 | 2010, 2010 | both complete |
-| 500 | corrected_m2_shadow | 0.838197, 0.796487 | 1.676, 1.593 | 2010, 2010 | both complete |
-| 1000 | accepted_m1 | 1.601271, 1.623960 | 1.601, 1.624 | 4010, 4010 | both complete |
-| 1000 | pre_fix_m2_off | 3.001125, 3.001020 | unknown, unknown | 7139, 7171 | both TIMEOUT; zero committed assertions |
-| 1000 | corrected_m2_off | 1.610673, 1.636741 | 1.611, 1.637 | 4010, 4010 | both complete |
-| 1000 | corrected_m2_shadow | 1.665655, 1.565905 | 1.666, 1.566 | 4010, 4010 | both complete |
+| 100 | accepted_m1 | 0.186768, 0.174203 | 1.868, 1.742 | 410, 410 | both complete |
+| 100 | pre_fix_m2_off | 0.446576, 0.446955 | 4.466, 4.470 | 1110, 1110 | both complete |
+| 100 | corrected_m2_off | 0.162490, 0.156506 | 1.625, 1.565 | 410, 410 | both complete |
+| 100 | corrected_m2_shadow | 0.164680, 0.173567 | 1.647, 1.736 | 410, 410 | both complete |
+| 500 | accepted_m1 | 0.817034, 0.823367 | 1.634, 1.647 | 2010, 2010 | both complete |
+| 500 | pre_fix_m2_off | 2.219428, 2.196582 | 4.439, 4.393 | 5510, 5510 | both complete |
+| 500 | corrected_m2_off | 0.761793, 0.783813 | 1.524, 1.568 | 2010, 2010 | both complete |
+| 500 | corrected_m2_shadow | 0.781188, 0.750952 | 1.562, 1.502 | 2010, 2010 | both complete |
+| 1000 | accepted_m1 | 1.532458, 1.631642 | 1.532, 1.632 | 4010, 4010 | both complete |
+| 1000 | pre_fix_m2_off | 3.001523, 3.001290 | unknown, unknown | 7306, 7174 | both TIMEOUT; zero committed assertions |
+| 1000 | corrected_m2_off | 1.604128, 1.540798 | 1.604, 1.541 | 4010, 4010 | both complete |
+| 1000 | corrected_m2_shadow | 1.476662, 1.604676 | 1.477, 1.605 | 4010, 4010 | both complete |
 
-At 500 records, pre-fix/accepted M1 is **2.771x**; corrected OFF/accepted
-M1 is **1.011x** on this instance. P1 OFF = 0.873260 s;
-P2 SHADOW = 0.889703 s at default 3 s. SQL count drops 5510 → 2010,
+At 500 records, pre-fix/accepted M1 is **2.692x**; corrected OFF/accepted
+M1 is **0.942x** on this instance. P1 OFF = 0.801848 s;
+P2 SHADOW = 0.801157 s at default 3 s. SQL count drops 5510 → 2010,
 matching the historical M1 collection's count. No benchmark failure is hidden.
-
 
 These are two fresh-table trials on the same current-schema PostgreSQL instance.
 Historical implementation sources were read from pinned Git commits:
@@ -165,24 +165,24 @@ unknown (not claimed complete). Cursor counts exclude driver-level BEGIN/COMMIT.
 
 ## Regression, privacy, migrations, Compose, backup/restore
 
-[Code-freeze CI37519541315](https://github.com/Tmatz27/photography-events-core/actions/runs/37519541315):
-**SUCCESS** at72939e39b3a17a44edf0fc7b34c65cde62ac3562.
-[Unedited machine evidence](docs/validation/milestone-2-hardening/README.md),
-artifact11439266182, verified SHA256
-bb97acdfa4dfcd96e01b5358259182fa800ae03bbf0420ef4ba501331fab1a7f.
+[Code-freeze CI37521223766](https://github.com/Tmatz27/photography-events-core/actions/runs/37521223766):
+**SUCCESS** at 5943bdd17f1613315bd5b3ca6ce772a12d099c0e.
+[Unedited machine evidence](docs/validation/milestone-2-hardening-final/README.md),
+artifact11440211751, verified SHA256
+749170d849a5dbb8dac25fbde09cd647fa8a39dec0db48b5024f5fab7fbd07d8.
 
-- **260 passed**, zero failures/errors/skips, 51.51 s: original 241 plus19 hardening
-  tests; all 38 A-tests and14 F-tests pass. Linux portable96 passed / 164 DB skips,
-  Windows 91 passed / 169 skips (164 DB + 5 POSIX); realDB/Linux covers local skips.
+- **261 passed**, zero failures/errors/skips, 50.98 s: original 241 plus 20 hardening
+  tests; all 38 A-tests and 14 F-tests pass. Linux portable 96 passed / 165 DB skips,
+  Windows 91 passed / 170 skips (165 DB + 5 POSIX); real DB/Linux covers local skips.
   Ruff, compile and schema checks pass.
 - Pinned4905e35c0668c37737d84685e65d2a806f7c92f7 HA oracle: both legacy fixture
   recaptures byte-identical,9 pipeline cases / 14 steps and evaluator 15 cases / 24 fields;
   **18,000 comparisons / zero mismatches**. No M1 fixture/policy changes.
 - S1/S1-R1, cancellation, S3 dense-core rescue,150 randomized DBSCAN comparisons,
   count/uncertainty/privacy/destination controls remain green. F1/F14 default 3 s
-  M1 under 6 s backend stall=0.757233/0.762185s. No leaked pools.
+  M1 under 6 s backend stall=0.755123 / 0.761666 s. No leaked pools.
 - PostgreSQL18.6/PostGIS3.6.4. Fresh/chain/repeat, Compose and actual operator
-  backup/restore pass. Custom dump 291,904 bytes, restored owner photography_events,
+  backup/restore pass. Custom dump 291,906 bytes, restored owner photography_events,
   head 0005, M1 API and exact report-group identity/episode state preserved.
   Restored debug state **outdated**, matching pre-backup scope.
 - [Unchanged exact-SHA HA CI](https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/37334287547)
@@ -209,6 +209,17 @@ membership digest and episode identity/state. Outdated debug scope is preserved
 truthfully, not reported current merely because restoration succeeded.
 
 ## Intermediate outcomes, not hidden or waived
+
+- Final implementation includes a legacy fallback correction: use raw-observation
+  ID, as migration 0003 does, rather than normalized-assertion ID. The new legacy
+  test uses two species on one checklist; it verifies one shared report group.
+- 37520739039 at bf92016 and 37520808107 at 177eeb9 failed the late-added legacy test
+  setup (260 other cases passed): duplicate same-species current assertion violated
+  the retained ux_normalized_current constraint. 5943bdd uses a valid multi-species
+  checklist; the constraint and assertions remain intact.
+- 37519541315 at 72939e3 and 37520403739 at cb72128: 260 passed, complete acceptance green
+  before the additional legacy fallback regression. Their earlier archived
+  [evidence](docs/validation/milestone-2-hardening/README.md) remains preserved.
 
 - 37518778235 at 9fefc9e:259 passed, full acceptance/benchmarks green, before retained-claim test.
 - 37519055624 at a56499e:258 passed / two failed retention tests. SQLAlchemy interpreted

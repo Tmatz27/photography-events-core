@@ -1,0 +1,29 @@
+{
+  "repository": "Tmatz27/photography-events-core",
+  "starting_sha": "9ee41f1428ffe245f43e9dcc3763c9672cb80fb8",
+  "code_freeze_sha": "5943bdd17f1613315bd5b3ca6ce772a12d099c0e",
+  "run_id": 37521223766,
+  "conclusion": "success",
+  "job_id": 112466812700,
+  "run_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/37521223766",
+  "artifact": {
+    "id": 11440211751,
+    "name": "core-milestone-evidence",
+    "size_in_bytes": 13522,
+    "url": "https://api.github.com/repos/Tmatz27/photography-events-core/actions/artifacts/11440211751",
+    "archive_download_url": "https://api.github.com/repos/Tmatz27/photography-events-core/actions/artifacts/11440211751/zip",
+    "expired": false,
+    "created_at": "2026-10-06T19:47:34Z",
+    "expires_at": "2027-01-04T19:44:20Z",
+    "updated_at": "2026-10-06T19:47:34Z",
+    "digest": "sha256:749170d849a5dbb8dac25fbde09cd647fa8a39dec0db48b5024f5fab7fbd07d8",
+    "workflow_run": {
+      "id": 37521223766,
+      "repository_id": 1400145037,
+      "head_repository_id": 1400145037,
+      "head_branch": "main",
+      "head_sha": "5943bdd17f1613315bd5b3ca6ce772a12d099c0e"
+    }
+  },
+  "ha_sha": "c76726ece1e485ece03810087927da344289fba7"
+}
