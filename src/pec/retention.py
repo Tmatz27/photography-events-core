@@ -15,10 +15,10 @@ async def sweep(connection, now, batch_size=500):
         THEN (SELECT jsonb_object_agg(key,value) FROM jsonb_each(r.raw_payload)
             WHERE key IN ('external_id','origin_namespace','origin_external_id','report_external_id',
                 'coordinate_uncertainty_meters','spatial_precision','credible','withdrawn','behavior','behaviors'))
-            || '{"_m2_retained_metadata":true}'::jsonb
+            || '{"_m2_retained_metadata": true}'::jsonb
         ELSE NULL END
         WHERE id IN (SELECT id FROM raw_observations WHERE COALESCE(observed_at,fetched_at) < :cutoff AND raw_payload IS NOT NULL
-        AND NOT raw_payload @> '{"_m2_retained_metadata":true}'::jsonb
+        AND NOT raw_payload @> '{"_m2_retained_metadata": true}'::jsonb
         ORDER BY fetched_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
         {"cutoff": now - timedelta(days=90), "batch": batch_size})
     runs = await connection.execute(text("""DELETE FROM source_runs WHERE id IN (
