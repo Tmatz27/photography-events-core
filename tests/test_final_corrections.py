@@ -234,6 +234,25 @@ async def test_sensitive_coherence_diagnostics_never_disclose_candidate_metrics(
     assert "-120.5" not in encoded and '"candidate_radius_meters"' not in encoded
 
 
+
+async def test_server_limits_follow_smaller_shadow_finish_budget(db,monkeypatch):
+    await publish(db,records(3))
+    limits={}
+    async def stall(c,*args):
+        for setting in ("lock_timeout","statement_timeout","transaction_timeout"):
+            limits[setting]=(await c.execute(text("SHOW "+setting))).scalar_one()
+        await c.execute(text("SELECT pg_sleep(1)"))
+    monkeypatch.setattr(episodes,"assign",stall)
+    db.timeout=3
+    db.pattern_timeout=0.2
+    generated=await db.generate(data(1))
+    await db.wait_for_patterns()
+    assert limits=={"lock_timeout":"100ms","statement_timeout":"150ms","transaction_timeout":"180ms"}
+    assert (await sql(db,"SELECT status FROM pattern_generation_runs WHERE assessment_run_id=:aid",
+                      aid=generated["assessment_id"]))[0]["status"]=="failed"
+    await assert_healthy(db)
+
+
 async def test_authoritative_arrival_rehomes_incompatible_earlier_mirror(db):
     await collect_fixture(db,data(sightings=[origin_claim(scientific_name=EAGLE.subject)]))
     before=await sql(db,"SELECT id,report_group_id FROM observation_report_group_members")

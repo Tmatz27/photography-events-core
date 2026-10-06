@@ -168,16 +168,16 @@ async def stage(c, aid, policies, results, dispositions, now):
             [{"aid":aid,**row} for row in results.rejections])
 
 
-async def finish(c, aid, results, now, plan):
+async def finish(c, aid, results, now, plan, *, budget=1.0):
     # Serialize only the short pointer check + episode/snapshot publication.
     # The separate one-second guard bounds both lock waiting and publication;
     # a brief concurrent M1 commit must not drop a valid current shadow result.
     # Client cancellation alone cannot guarantee backend lock release. These
     # server-local bounds precede every pointer/registry lock and are reset at
     # transaction end. PG18's whole-transaction bound also covers many small SQLs.
-    await c.execute(text("SET LOCAL lock_timeout='500ms'"))
-    await c.execute(text("SET LOCAL statement_timeout='750ms'"))
-    await c.execute(text("SET LOCAL transaction_timeout='900ms'"))
+    for setting,fraction in (("lock_timeout",0.5),("statement_timeout",0.75),("transaction_timeout",0.9)):
+        await c.execute(text("SELECT set_config(:setting,:value,TRUE)"),
+            {"setting":setting,"value":str(max(1,int(budget*fraction*1000)))+"ms"})
     current = (await c.execute(text("""SELECT assessment_run_id FROM assessment_current
         WHERE id=1 FOR UPDATE"""))).scalar_one_or_none()
     if current != aid or not await episodes.registry_matches(c,plan):
@@ -208,8 +208,9 @@ async def run(db, aid, now, policies):
         plan = await db.pattern_transaction(lambda c: episodes.prepare(c,results,policies,now,
             rejected={row["phenomenon_key"] for row in results.rejections}))
         # Bound time holding assessment_current independently of expensive work.
-        await db.pattern_transaction(lambda c: finish(c,aid,results,now,plan),
-                                     write=True,timeout=min(1.0,db.pattern_timeout))
+        finish_budget=min(1.0,db.pattern_timeout,db.timeout/3)
+        await db.pattern_transaction(lambda c: finish(c,aid,results,now,plan,budget=finish_budget),
+                                     write=True,timeout=finish_budget)
     except asyncio.CancelledError:
         await record_failure(db,aid,"shadow_cancelled")
         raise
