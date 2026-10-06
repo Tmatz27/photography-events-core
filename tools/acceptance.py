@@ -142,6 +142,7 @@ def main():
         backup_result = run("sh", "scripts/backup.sh", env={**os.environ, "BACKUP_DIR": str(EVIDENCE / "backups")},
                             capture_output=True, text=True)
         backup = Path(backup_result.stdout.strip())
+        before_restore=check("/api/v1/debug/patterns")
         assert backup.read_bytes()[:5] == b"PGDMP"
         results["backup_bytes"] = backup.stat().st_size
         run("sh", "scripts/restore.sh", str(backup), "photography_events_restore_test")
@@ -152,9 +153,16 @@ def main():
         results["restored_application_owner"] = owners
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
-        wait_ready(8100)
+        restored_ready=wait_ready(8100)
+        assert restored_ready["schema_version"]=="0005"
         assert check("/api/v1/opportunities/" + key, port=8100)["occurrence_key"] == key
-        assert check("/api/v1/debug/patterns", port=8100)["items"][0]["episode_key"] == episode_key
+        restored_debug=check("/api/v1/debug/patterns", port=8100)
+        assert restored_debug["items"][0]["episode_key"] == episode_key
+        assert restored_debug["mode"]==before_restore["mode"]
+        assert restored_debug["analysis_state"]==before_restore["analysis_state"]
+        assert restored_debug["items"][0]["state"]==before_restore["items"][0]["state"]
+        results["restored_migration_head"]=restored_ready["schema_version"]
+        results["restored_m2_debug_state"]=restored_debug["analysis_state"]
         results["M2_restore"] = "episode identity and generation artifacts preserved"
         results["restore"] = "clean DB, extension, pg_restore, migrations, Core readiness and data passed"
     finally:
