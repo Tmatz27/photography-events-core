@@ -181,3 +181,34 @@ async def test_s1_preserves_150_randomized_dbscan_point_sets(db):
             found=(await c.execute(text(query),params)).mappings().all()
             actual={frozenset(int(key) for key in row["reports"]) for row in found}
             assert actual==reference_dbscan(coords,600,4),trial
+
+
+
+async def test_s1_input_capture_keeps_assertions_and_source_hash_in_one_snapshot(db,monkeypatch):
+    await collect_fixture(db,data(sightings=records(3)))
+    captured,release=asyncio.Event(),asyncio.Event()
+    original=clustering.load_inputs
+    expected=(await sql(db,"SELECT max(id) AS id FROM source_runs"))[0]["id"]
+    async def interleave(c):
+        assert (await c.execute(text("SHOW transaction_isolation"))).scalar_one()=="repeatable read"
+        before=(await c.execute(text("SELECT max(id) FROM source_runs"))).scalar_one()
+        assert before==expected
+        captured.set()
+        await release.wait()
+        rows,sources,identity=await original(c)
+        assert all(source["source_run_id"]<=expected for source in sources)
+        assert len(rows)==3
+        return rows,sources,identity
+    monkeypatch.setattr(clustering,"load_inputs",interleave)
+    db.patterns_mode="shadow"
+    generated=await db.generate(data())
+    await asyncio.wait_for(captured.wait(),2)
+    try:
+        await collect_fixture(db,data(1,records(4)))
+    finally:
+        release.set()
+        await db.wait_for_patterns()
+    assert (await sql(db,"SELECT status FROM pattern_generation_runs WHERE assessment_run_id=:aid",
+                      aid=generated["assessment_id"]))[0]["status"]=="published"
+    assert all(row["source_run_id"]<=expected for row in await sql(db,
+        "SELECT source_run_id FROM pattern_generation_sources WHERE assessment_run_id=:aid",aid=generated["assessment_id"]))

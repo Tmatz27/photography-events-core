@@ -109,15 +109,19 @@ async def persist_clusters(c, aid, policies, results, now):
             :independent_report_count,:independent_source_count)"""),behaviors)
 
 
-async def prepare(c, aid, now, policies):
+async def claim(c, aid, now, policies):
     claimed = (await c.execute(text("""INSERT INTO pattern_generation_runs
         (assessment_run_id,policy_hash,engine_hash,mode,calculated_at,expected_clusters,expected_episodes,status,started_at)
         VALUES(:aid,:hash,:engine,'shadow',:now,0,0,'running',:started)
         ON CONFLICT(assessment_run_id) DO NOTHING RETURNING assessment_run_id"""),
         {"aid":aid,"hash":policy_hash(policies),"engine":engine_hash(),"now":now,
          "started":datetime.now(UTC)})).scalar_one_or_none()
-    if claimed is None:
-        return None
+    return claimed
+
+
+async def prepare(c, aid):
+    # Assertions and source hashes must come from one MVCC snapshot even when
+    # a collector commits a correction between the two input queries.
     rows, sources, identity = await clustering.load_inputs(c)
     await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
                     {"aid":aid,"hash":canonical_hash(identity)})
@@ -177,9 +181,10 @@ async def finish(c, aid, policies, results, now):
 async def run(db, aid, now, policies):
     # A failure is shadow-only; never call M1 record_failure or change its pointer.
     try:
-        rows = await db.pattern_transaction(lambda c: prepare(c,aid,now,policies),write=True)
-        if rows is None:
+        claimed = await db.pattern_transaction(lambda c: claim(c,aid,now,policies),write=True)
+        if claimed is None:
             return
+        rows = await db.pattern_transaction(lambda c: prepare(c,aid),write=True,repeatable=True)
         results, dispositions = await db.pattern_transaction(lambda c: compute(c,rows,policies,now))
         await db.pattern_transaction(lambda c: stage(c,aid,policies,results,dispositions,now),write=True)
         # Bound time holding assessment_current independently of expensive work.

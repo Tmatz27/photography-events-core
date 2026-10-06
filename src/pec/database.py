@@ -136,10 +136,10 @@ class Database:
         while self._pattern_tasks:
             await asyncio.gather(*tuple(self._pattern_tasks))
 
-    async def pattern_transaction(self, operation, *, write=False, timeout=None):
+    async def pattern_transaction(self, operation, *, write=False, timeout=None, repeatable=False):
         async def run():
             async with self.pattern_engine.connect() as base:
-                connection = base if write else await base.execution_options(isolation_level="REPEATABLE READ")
+                connection = base if write and not repeatable else await base.execution_options(isolation_level="REPEATABLE READ")
                 async with connection.begin():
                     return await operation(connection)
         return await self._guard(run, timeout=timeout or self.pattern_timeout, isolated=True)
