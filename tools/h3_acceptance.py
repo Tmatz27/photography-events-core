@@ -30,7 +30,7 @@ async def main():
     import sys
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tests"))
     from test_database import NOW
-    from test_h3 import data, generate, records, reset, seed_history
+    from test_h3 import data, records, reset, seed_history, sql
     db=Database(Settings.from_env())
     assert db.engine.url.database.endswith("_test"),"Disposable DB only"
     assert db.timeout==3 and db.pattern_timeout==30
@@ -62,12 +62,18 @@ async def main():
                 return found
             identity.working_set=counted
             try:
-                result,run,elapsed=await generate(db)
+                db.patterns_mode="shadow"
+                start=time.perf_counter()
+                result=await db.generate(data())
+                await db.wait_for_patterns()
+                elapsed=time.perf_counter()-start
+                run=(await sql(db,"SELECT * FROM pattern_generation_runs WHERE assessment_run_id=:aid",
+                               aid=result["assessment_id"]))[0]
             finally:
                 identity.working_set=original
             case={"retained_old":size,"old_enrichment":baseline,"shadow_status":run["status"],
                   "shadow_completion_seconds":round(elapsed,6),"working_set_rows":prepared}
-            if size in (0,10000,25000):
+            if size in (0,2000,5000,10000,25000):
                 async with db.engine.begin() as c:
                     rows=await identity.working_set(c,NOW,POLICIES)
                     keys=json.dumps([dict(namespace=ns,origin=origin)
