@@ -58,8 +58,8 @@ def main():
     try:
         compose("up", "-d", "--wait", "--wait-timeout", "150")
         results["startup"] = wait_ready()
-        assert results["startup"]["schema_version"] == "0005"
-        results["fresh_database_to_0005"] = "passed"
+        assert results["startup"]["schema_version"] == "0006"
+        results["fresh_database_to_0006"] = "passed"
         versions = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events", "-Atc", "SELECT version(),postgis_full_version()", capture_output=True, text=True).stdout
         results["database_versions"] = versions.strip()
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
@@ -77,7 +77,7 @@ def main():
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
-        results["migration_0001_0002_0003_0004_0005"] = "identity, memberships, behavior and held API verified"
+        results["migration_0001_0002_0003_0004_0005_0006"] = "identity, memberships, behavior and held API verified"
         results["migration_0003_0004_shadow_history"] = "existing run hashes/timestamps preserved with published lifecycle"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
@@ -178,7 +178,7 @@ def main():
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         restored_ready=wait_ready(8100)
-        assert restored_ready["schema_version"]=="0005"
+        assert restored_ready["schema_version"]=="0006"
         assert check("/api/v1/opportunities/" + key, port=8100)["occurrence_key"] == key
         restored_debug=check("/api/v1/debug/patterns", port=8100)
         assert restored_debug["items"][0]["episode_key"] == episode_key

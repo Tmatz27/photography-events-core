@@ -99,20 +99,25 @@ SELECT q.id FROM keys k CROSS JOIN LATERAL (
  OFFSET 0
 ) q
 UNION
-SELECT n.id FROM keys k JOIN observation_report_groups g
-ON g.origin_namespace=k.namespace AND g.origin_external_id=k.origin
-JOIN observation_report_group_members m ON m.report_group_id=g.id AND m.superseded_at IS NULL
-JOIN normalized_observations n ON n.id=m.normalized_observation_id
-JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id
-WHERE n.superseded_at IS NULL AND n.subject_type='species' AND r.raw_payload IS NULL
-AND m.link_basis='explicit_origin_id'
-AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')"""
+SELECT q.id FROM keys k CROSS JOIN LATERAL (
+ SELECT n.id FROM observation_report_groups g
+ JOIN observation_report_group_members m ON m.report_group_id=g.id AND m.superseded_at IS NULL
+ JOIN normalized_observations n ON n.id=m.normalized_observation_id
+ JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id
+ WHERE g.origin_namespace=k.namespace AND g.origin_external_id=k.origin
+ AND n.superseded_at IS NULL AND n.subject_type='species' AND r.raw_payload IS NULL
+ AND m.link_basis='explicit_origin_id'
+ AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
+ OFFSET 0
+) q"""
 
-RETIRE_SQL = """UPDATE observation_report_group_members m
+RETIRE_SQL = """WITH retired AS MATERIALIZED (
+ SELECT id,superseded_at FROM normalized_observations
+ WHERE raw_observation_id=ANY(CAST(:raw_ids AS bigint[])) AND superseded_at IS NOT NULL
+)
+UPDATE observation_report_group_members m
  SET superseded_at=GREATEST(:now,m.created_at,n.superseded_at)
- FROM normalized_observations n WHERE n.id=m.normalized_observation_id
- AND n.raw_observation_id=ANY(CAST(:raw_ids AS bigint[]))
- AND n.superseded_at IS NOT NULL AND m.superseded_at IS NULL"""
+ FROM retired n WHERE n.id=m.normalized_observation_id AND m.superseded_at IS NULL"""
 
 
 def details_for(row):
@@ -233,7 +238,8 @@ async def reconcile(c, now, policies=POLICIES):
         CROSS JOIN LATERAL jsonb_array_elements_text(p.behaviors) AS b(code)
         ON CONFLICT(normalized_observation_id,behavior_code) DO NOTHING"""),params)
     by_id={r["id"]:r for r in rows}
-    return [dict(provider=by_id[d["nid"]]["source_key"],record=d["origin"],namespace=d["namespace"],
+    return [dict(provider=by_id[d["nid"]]["source_key"],provider_record=by_id[d["nid"]]["external_id"],
+        local_report=by_id[d["nid"]]["details"]["local_origin"],record=d["origin"],namespace=d["namespace"],
         claimed_namespace=by_id[d["nid"]]["details"]["namespace"],
         claimed_origin=by_id[d["nid"]]["details"]["origin"],
         subject=by_id[d["nid"]]["subject_key"],observed_at=by_id[d["nid"]]["observed_at"].isoformat(),

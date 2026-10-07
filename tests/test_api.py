@@ -54,7 +54,7 @@ async def get(app, path, token=TOKEN):
 
 
 @pytest.mark.parametrize("path", ["/api/v1/opportunities", "/api/v1/opportunities/test", "/api/v1/sources/health"])
-@pytest.mark.parametrize("token", [None, "wrong", "nonascii-é"])
+@pytest.mark.parametrize("token", [None, "wrong", "nonascii-Ã©"])
 async def test_auth(app, path, token):
     r = await get(app, path, token)
     assert r.status_code == 401
@@ -67,7 +67,7 @@ async def test_health_metadata(app, path):
     r = await get(app, path, None)
     assert r.status_code == 200
     assert r.json()["api_version"] == "v1"
-    assert r.json()["schema_version"] == "0005"
+    assert r.json()["schema_version"] == "0006"
 
 
 @pytest.mark.parametrize("path", ["/health/ready", "/api/v1/opportunities", "/api/v1/opportunities/test", "/api/v1/sources/health"])

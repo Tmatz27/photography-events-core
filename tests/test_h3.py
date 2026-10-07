@@ -185,3 +185,30 @@ async def test_h3_no_enabled_policies_loads_no_history(db):
     async with db.engine.begin() as c:
         assert await identity.reconcile(c,NOW,())==[]
     assert not await sql(db,"SELECT * FROM observation_report_group_members")
+
+
+async def test_h3_outside_canonical_report_alias_is_found_by_exact_dependency(db):
+    old=NOW-timedelta(days=4,minutes=15)
+    await collect_fixture(db,data(sightings=[record(0,observed_at=old.isoformat(),report_external_id="aliased-report"),
+        origin_claim(origin_external_id="aliased-report",
+                     observed_at=(old+timedelta(minutes=30)).isoformat())]))
+    assert len(await working(db))==2
+    await db.pattern_transaction(lambda c: identity.reconcile(c,NOW,POLICIES),write=True,repeatable=True)
+    links=await current_groups(db)
+    assert len({r["report_group_id"] for r in links})==1
+    assert all(r["origin_external_id"]=="aliased-report" for r in links)
+
+
+async def test_h3_active_canonical_invalidates_outside_window_claimant(db):
+    old=NOW-timedelta(days=4,minutes=15)
+    await collect_fixture(db,data(-97,[record(0,observed_at=old.isoformat()),origin_claim(observed_at=old.isoformat())]))
+    await db.pattern_transaction(lambda c: identity.reconcile(c,NOW-timedelta(hours=97),POLICIES),
+                                 write=True,repeatable=True)
+    assert len({r["report_group_id"] for r in await current_groups(db)})==1
+    await collect_fixture(db,data(sightings=[record(0,subject=EAGLE.subject,
+        observed_at=(old+timedelta(minutes=30)).isoformat())]))
+    assert len(await working(db))==2
+    await db.pattern_transaction(lambda c: identity.reconcile(c,NOW,POLICIES),write=True,repeatable=True)
+    links=await current_groups(db)
+    assert len({r["report_group_id"] for r in links})==2
+    assert next(r for r in links if r["provider"]=="fixture_mirror_a")["origin_identity_status"]=="origin_identity_mismatch"

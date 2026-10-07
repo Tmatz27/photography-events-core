@@ -26,6 +26,15 @@ def historical():
     return module
 
 
+def visited_assertion_rows(node):
+    """Actual leaf visits, including rows discarded by scan/join rechecks."""
+    own=0
+    if node.get("Relation Name") in ("raw_observations","normalized_observations"):
+        own=(node.get("Actual Rows",0)+node.get("Rows Removed by Filter",0)+
+             node.get("Rows Removed by Index Recheck",0))*node.get("Actual Loops",0)
+    return own+sum(visited_assertion_rows(child) for child in node.get("Plans",[]))
+
+
 async def main():
     import sys
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tests"))
@@ -86,9 +95,15 @@ async def main():
                     ):
                         plans[name]=(await c.execute(text("EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+query),params)).scalar_one()
                     case["plans"]=plans
+                    case["assertion_row_visits"]={
+                        name:visited_assertion_rows(plan[0]["Plan"]) for name,plan in plans.items()}
             results["cases"].append(case)
             OUT.write_text(json.dumps(results,indent=2)+"\n")
         assert all(c["working_set_rows"]==[4] and c["shadow_status"]=="published" for c in results["cases"])
+        # Allow planner choice in tiny/stale-statistics tables; in retained-history
+        # cases a four-row graph must not cause a full assertion scan.
+        assert all(max(c["assertion_row_visits"].values())<200
+                   for c in results["cases"] if c["retained_old"]>=10000),results
         print("H3: 4-row working set publishes with 0/2000/5000/10000/25000 old assertions; full plans saved.")
     finally:
         OUT.write_text(json.dumps(results,indent=2)+"\n")

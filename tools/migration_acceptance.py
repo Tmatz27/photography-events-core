@@ -87,7 +87,9 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0005"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0006"
+            for name in ("ix_raw_local_report_identity","ix_raw_explicit_origin","ix_normalized_superseded_raw"):
+                assert (await c.execute(text("SELECT to_regclass(:name)"),{"name":name})).scalar() is not None
             run=(await c.execute(text("SELECT * FROM pattern_generation_runs WHERE assessment_run_id=1"))).mappings().one()
             assert run["status"]=="published" and run["policy_hash"]==run["engine_hash"]=="a"*64
             assert run["started_at"]==run["completed_at"]==run["calculated_at"]==now
