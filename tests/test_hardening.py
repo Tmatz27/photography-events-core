@@ -2,7 +2,7 @@
 import asyncio
 import time
 from dataclasses import replace
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import text
 
@@ -307,9 +307,9 @@ async def test_retained_explicit_claim_retries_after_raw_body_pruning(db):
     async with db.engine.begin() as c:
         assert (await sweep(c,NOW))["payloads_redacted"]==0
     await collect_fixture(db,data(1,[record(0,observed_at=mirror["observed_at"])]))
-    # This retention contract deliberately evaluates 100-day-old claims. Its
-    # explicit test policy keeps those records relevant; normal policies do not.
-    await db.pattern_transaction(lambda c: identity.reconcile(c,NOW+timedelta(hours=1),
-        (replace(BEAR,temporal_window_seconds=101*86400),)),write=True,repeatable=True)
+    # Exercise the retained contract at its observation time. Both sides are
+    # now 100 days old and expired, so a normal current run must ignore them.
+    await db.pattern_transaction(lambda c: identity.reconcile(c,
+        datetime.fromisoformat(mirror["observed_at"]),(BEAR,)),write=True,repeatable=True)
     assert len({r["report_group_id"] for r in await current_groups(db)})==1
     assert next(r for r in await current_groups(db) if r["provider"]=="fixture_mirror_a")["origin_identity_status"]=="explicit_verified"

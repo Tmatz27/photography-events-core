@@ -112,7 +112,7 @@ async def test_h3_4_irrelevant_history_excluded_fingerprint_and_members_unchange
                             aid=first["assessment_id"]))[0]["pattern_episode_id"]
     assert (await sql(db,"SELECT pattern_episode_id FROM observation_clusters WHERE assessment_run_id=:aid",
                       aid=second["assessment_id"]))[0]["pattern_episode_id"]==first_episode
-    assert (await sql(db,"SELECT transition_code FROM pattern_episode_revisions WHERE assessment_run_id=:aid",
+    assert (await sql(db,"SELECT transition_code FROM pattern_episode_snapshots WHERE assessment_run_id=:aid",
                       aid=second["assessment_id"]))[0]["transition_code"]=="continued"
     assert original_members==await sql(db,"""SELECT m.normalized_observation_id,m.report_group_id,m.membership_id
         FROM cluster_members m JOIN observation_clusters c ON c.id=m.cluster_id
@@ -196,8 +196,8 @@ async def test_h3_no_enabled_policies_loads_no_history(db):
 async def test_h3_outside_canonical_report_alias_is_found_by_exact_dependency(db):
     old=NOW-timedelta(days=4,minutes=15)
     await collect_fixture(db,data(sightings=[record(0,observed_at=old.isoformat(),report_external_id="aliased-report"),
-        origin_claim(origin_external_id="aliased-report",
-                     observed_at=(old+timedelta(minutes=30)).isoformat())]))
+        {**origin_claim(observed_at=(old+timedelta(minutes=30)).isoformat()),
+         "origin_external_id":"aliased-report"}]))
     assert len(await working(db))==2
     await db.pattern_transaction(lambda c: identity.reconcile(c,NOW,POLICIES),write=True,repeatable=True)
     links=await current_groups(db)
