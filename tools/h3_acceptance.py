@@ -103,7 +103,9 @@ async def main():
         # Allow planner choice in tiny/stale-statistics tables; in retained-history
         # cases a four-row graph must not cause a full assertion scan.
         assert all(max(c["assertion_row_visits"].values())<200
-                   for c in results["cases"] if c["retained_old"]>=10000),results
+                   for c in results["cases"] if c["retained_old"]>=10000),[
+                       {k:c[k] for k in ("retained_old","shadow_status","assertion_row_visits")}
+                       for c in results["cases"]]
         print("H3: 4-row working set publishes with 0/2000/5000/10000/25000 old assertions; full plans saved.")
     finally:
         OUT.write_text(json.dumps(results,indent=2)+"\n")

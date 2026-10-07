@@ -108,6 +108,12 @@ async def test_h3_4_irrelevant_history_excluded_fingerprint_and_members_unchange
     assert len(found)==4 and all(not r["external_id"].startswith("historical-") for r in found)
     second,second_run,_=await generate(db,1)
     assert first_run["input_fingerprint"]==second_run["input_fingerprint"]
+    first_episode=(await sql(db,"SELECT pattern_episode_id FROM observation_clusters WHERE assessment_run_id=:aid",
+                            aid=first["assessment_id"]))[0]["pattern_episode_id"]
+    assert (await sql(db,"SELECT pattern_episode_id FROM observation_clusters WHERE assessment_run_id=:aid",
+                      aid=second["assessment_id"]))[0]["pattern_episode_id"]==first_episode
+    assert (await sql(db,"SELECT transition_code FROM pattern_episode_revisions WHERE assessment_run_id=:aid",
+                      aid=second["assessment_id"]))[0]["transition_code"]=="continued"
     assert original_members==await sql(db,"""SELECT m.normalized_observation_id,m.report_group_id,m.membership_id
         FROM cluster_members m JOIN observation_clusters c ON c.id=m.cluster_id
         WHERE c.assessment_run_id=:aid ORDER BY m.normalized_observation_id""",aid=second["assessment_id"])
