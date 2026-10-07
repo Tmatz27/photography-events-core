@@ -28,7 +28,7 @@ async def seed_history(db,size):
             INSERT INTO raw_observations(source_id,source_run_id,external_id,observed_at,fetched_at,
                 raw_payload,parser_version,content_sha256)
             SELECT :sid,:rid,'historical-'||i,:old,:old,
-                jsonb_build_object('external_id','historical-'||i,'scientific_name',:subject),
+                jsonb_build_object('external_id','historical-'||i,'scientific_name',CAST(:subject AS text)),
                 'fixture-2',repeat('a',64) FROM generate_series(1,CAST(:size AS integer)) i RETURNING id
         ) INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,observed_at,
             analysis_geometry,sensitive,precision_class,valid_until,source_run_id,content_sha256)
