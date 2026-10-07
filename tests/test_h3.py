@@ -196,7 +196,8 @@ async def test_h3_outside_canonical_report_alias_is_found_by_exact_dependency(db
     await db.pattern_transaction(lambda c: identity.reconcile(c,NOW,POLICIES),write=True,repeatable=True)
     links=await current_groups(db)
     assert len({r["report_group_id"] for r in links})==1
-    assert all(r["origin_external_id"]=="aliased-report" for r in links)
+    assert (await sql(db,"SELECT origin_external_id FROM observation_report_groups WHERE id=:id",
+                      id=links[0]["report_group_id"]))[0]["origin_external_id"]=="aliased-report"
 
 
 async def test_h3_active_canonical_invalidates_outside_window_claimant(db):

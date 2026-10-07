@@ -171,6 +171,13 @@ def main():
             ('observation_report_groups','observation_report_group_members','pattern_episodes','normalized_observations')""",
             capture_output=True,text=True).stdout.strip()
         assert m2_owners=="photography_events",m2_owners
+        restored_indexes=compose("exec","-T","photography-events-db","psql","-U","postgres",
+            "-d","photography_events_restore_test","-Atc","""SELECT count(*) FROM pg_indexes
+            WHERE schemaname='public' AND indexname IN
+            ('ix_raw_local_report_identity','ix_raw_explicit_origin','ix_normalized_superseded_raw')""",
+            capture_output=True,text=True).stdout.strip()
+        assert restored_indexes=="3",restored_indexes
+        results["restored_h3_indexes"]="all three 0006 indexes present"
         restored_identity=compose("exec","-T","photography-events-db","psql","-U","postgres",
             "-d","photography_events_restore_test","-Atc",identity_sql,capture_output=True,text=True).stdout.strip()
         assert restored_identity==before_identity
