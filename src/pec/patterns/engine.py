@@ -132,8 +132,13 @@ async def prepare(c, aid, now, policies, *, budget=1.0):
     # backend lock lifetime too, so a stalled enrichment cannot strand a later
     # M1 provider correction behind a terminated client connection.
     await server_bounds(c,budget)
-    await report_identity.reconcile(c,now)
+    dependencies=await report_identity.reconcile(c,now,policies)
     rows, sources, identity = await clustering.load_inputs(c,now,policies)
+    identity["identity_dependencies"]=dependencies
+    providers={row["source_key"] for row in rows} | {row["provider"] for row in dependencies}
+    # Full source content hashes remain exact consumed provenance below. The
+    # logical fingerprint must not change for an unrelated old provider row.
+    identity["sources"]=[{k:s[k] for k in ("key","status")} for s in sources if s["key"] in providers]
     await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
                     {"aid":aid,"hash":canonical_hash(identity)})
     if sources:

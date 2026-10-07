@@ -81,6 +81,11 @@ def main():
         results["migration_0003_0004_shadow_history"] = "existing run hashes/timestamps preserved with published lifecycle"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
+        compose("cp",str(EVIDENCE / "collection-baselines"),"photography-events-core:/tmp/collection-baselines")
+        try:
+            compose(*test_exec,"tools/h3_acceptance.py")
+        finally:
+            compose("cp","photography-events-core:/tmp/h3-performance.json",str(EVIDENCE / "h3-performance.json"))
         with (EVIDENCE / "pytest.log").open("w") as log:
             try:
                 compose(*test_exec, "tools/database_tests.py", stdout=log, stderr=subprocess.STDOUT)

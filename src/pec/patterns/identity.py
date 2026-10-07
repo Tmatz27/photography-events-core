@@ -7,7 +7,7 @@ from datetime import timedelta
 from sqlalchemy import text
 
 from ..logging import event
-from .policy import behavior_codes
+from .policy import POLICIES, behavior_codes
 
 FIXTURE_PROVIDERS = frozenset(("fixture_observations", "fixture_mirror_a", "fixture_mirror_b"))
 ORIGIN_TIME_TOLERANCE = timedelta(hours=1)
@@ -54,45 +54,117 @@ def mismatch(assertion, references):
     return None
 
 
-async def reconcile(c, now):
-    """Atomically resolve the current fixture set before shadow input capture.
 
-    Claims survive rejection in raw_payload. Read every current trusted claim,
-    including independent/rehomed mirrors, so either side's correction retries
-    the same validator. No M1 lock or per-record SQL is used. A concurrent provider
-    correction either precedes this MVCC snapshot or aborts this shadow-only
-    transaction; clustering never consumes half-reconciled memberships.
+ROW_SELECT = """SELECT n.id,n.subject_key,n.observed_at,n.origin_identity_status,
+ n.behavior,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,
+ ARRAY(SELECT behavior_code FROM normalized_observation_behaviors b
+       WHERE b.normalized_observation_id=n.id ORDER BY behavior_code) AS behaviors,
+ r.id AS raw_observation_id,r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
+ m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at,
+ g.origin_namespace,g.origin_external_id
+ FROM normalized_observations n JOIN raw_observations r ON r.id=n.raw_observation_id
+ JOIN sources s ON s.id=r.source_id LEFT JOIN observation_report_group_members m
+ ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
+ LEFT JOIN observation_report_groups g ON g.id=m.report_group_id
+ WHERE n.superseded_at IS NULL AND n.subject_type='species'
+ AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')"""
+ROW_ORDER = " ORDER BY s.key,r.external_id,n.subject_key,n.id"
+ACTIVE_SQL = ROW_SELECT + """
+ AND n.observed_at BETWEEN :window_start AND :window_end AND n.valid_until>=:now""" + ROW_ORDER
+ROWS_SQL = ROW_SELECT + " AND n.id=ANY(CAST(:ids AS bigint[]))" + ROW_ORDER
+
+# OFFSET 0 preserves the per-qualified-key index lookup rather than flattening
+# a tiny key set into a scan of every retained provider body. This is bulk SQL,
+# not one network round trip per observation. Both sides of rejected claims are
+# found from their durable adapter contract, independent of current membership.
+DEPENDENCY_SQL = """WITH keys AS MATERIALIZED (
+ SELECT * FROM jsonb_to_recordset(CAST(:keys AS jsonb)) AS k(namespace text,origin text)
+)
+SELECT n.id FROM keys k JOIN sources s ON s.key=k.namespace
+CROSS JOIN LATERAL (
+ SELECT r.id FROM raw_observations r WHERE r.source_id=s.id
+ AND COALESCE(r.raw_payload->>'report_external_id',r.external_id,'legacy-raw-'||r.id)=k.origin
+ OFFSET 0
+) r JOIN normalized_observations n ON n.raw_observation_id=r.id
+WHERE n.superseded_at IS NULL AND n.subject_type='species'
+UNION
+SELECT n.id FROM keys k CROSS JOIN LATERAL (
+ SELECT r.id,r.source_id FROM raw_observations r
+ WHERE r.raw_payload ? 'origin_namespace' AND r.raw_payload ? 'origin_external_id'
+ AND r.raw_payload->>'origin_namespace'=k.namespace AND r.raw_payload->>'origin_external_id'=k.origin
+ OFFSET 0
+) r JOIN sources s ON s.id=r.source_id
+JOIN normalized_observations n ON n.raw_observation_id=r.id
+WHERE n.superseded_at IS NULL AND n.subject_type='species'
+AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
+UNION
+SELECT n.id FROM keys k JOIN observation_report_groups g
+ON g.origin_namespace=k.namespace AND g.origin_external_id=k.origin
+JOIN observation_report_group_members m ON m.report_group_id=g.id AND m.superseded_at IS NULL
+JOIN normalized_observations n ON n.id=m.normalized_observation_id
+JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id
+WHERE n.superseded_at IS NULL AND n.subject_type='species' AND r.raw_payload IS NULL
+AND m.link_basis='explicit_origin_id'
+AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')"""
+
+RETIRE_SQL = """UPDATE observation_report_group_members m
+ SET superseded_at=GREATEST(:now,m.created_at,n.superseded_at)
+ FROM normalized_observations n WHERE n.id=m.normalized_observation_id
+ AND n.raw_observation_id=ANY(CAST(:raw_ids AS bigint[]))
+ AND n.superseded_at IS NOT NULL AND m.superseded_at IS NULL"""
+
+
+def details_for(row):
+    payload={**(row["raw_payload"] or {})}
+    payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['raw_observation_id']}")
+    payload.setdefault("behavior",row["behavior"])
+    if row["raw_payload"] is None:
+        payload.update(coordinate_uncertainty_meters=row["coordinate_uncertainty_meters"],
+            spatial_precision=row["spatial_precision"],credible=row["credible"],behaviors=list(row["behaviors"]))
+        if row["link_basis"]=="explicit_origin_id":
+            payload.update(origin_namespace=row["origin_namespace"],origin_external_id=row["origin_external_id"])
+    return metadata(payload,row["source_key"])
+
+
+def dependency_keys(rows):
+    return {(d["namespace"],d["origin"]) for d in (r["details"] for r in rows)} | {
+        (d["local_namespace"],d["local_origin"]) for d in (r["details"] for r in rows)}
+
+
+async def working_set(c, now, policies):
+    """Active policy window plus transitive explicit identity dependencies only."""
+    if not policies:
+        return []
+    from .clustering import input_window
+    rows=[dict(r) for r in (await c.execute(text(ACTIVE_SQL),input_window(now,policies))).mappings()]
+    found={r["id"]:r for r in rows}
+    for row in rows:
+        row["details"]=details_for(row)
+    visited=set()
+    pending=dependency_keys(rows)
+    while pending:
+        visited.update(pending)
+        keys=json.dumps([dict(namespace=ns,origin=origin) for ns,origin in sorted(pending)])
+        ids=set((await c.execute(text(DEPENDENCY_SQL),{"keys":keys})).scalars())-found.keys()
+        if not ids:
+            break
+        batch=[dict(r) for r in (await c.execute(text(ROWS_SQL),{"ids":sorted(ids)})).mappings()]
+        for row in batch:
+            row["details"]=details_for(row)
+            found[row["id"]]=row
+        pending=dependency_keys(batch)-visited
+    return sorted(found.values(),key=lambda r:(r["source_key"],r["external_id"] or "",r["subject_key"],r["id"]))
+
+
+async def reconcile(c, now, policies=POLICIES):
+    """Resolve only this run's active set and explicit dependency closure.
+
+    All reads/writes share capture's MVCC snapshot. Old unrelated assertions are
+    neither loaded nor retired. A failed reconciliation rolls back shadow only.
     """
-    rows=[dict(row) for row in (await c.execute(text("""SELECT n.id,n.subject_key,n.observed_at,
-        n.behavior,n.coordinate_uncertainty_meters,n.spatial_precision,n.credible,
-        ARRAY(SELECT behavior_code FROM normalized_observation_behaviors b
-            WHERE b.normalized_observation_id=n.id ORDER BY behavior_code) AS behaviors,
-        r.id AS raw_observation_id,r.external_id,r.raw_payload,r.fetched_at,s.key AS source_key,
-        m.id AS membership_id,m.report_group_id,m.link_basis,m.created_at,
-        g.origin_namespace,g.origin_external_id
-        FROM normalized_observations n JOIN raw_observations r ON r.id=n.raw_observation_id
-        JOIN sources s ON s.id=r.source_id LEFT JOIN observation_report_group_members m
-        ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
-        LEFT JOIN observation_report_groups g ON g.id=m.report_group_id
-        WHERE n.superseded_at IS NULL AND n.subject_type='species'
-        AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
-        ORDER BY s.key,r.external_id,n.id"""))).mappings()]
+    rows=await working_set(c,now,policies)
     claims=defaultdict(list)
     for row in rows:
-        payload={**(row["raw_payload"] or {})}
-        payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['raw_observation_id']}")
-        # Old M1 assertions may predate raw behavior fields.
-        payload.setdefault("behavior",row["behavior"])
-        if row["raw_payload"] is None:
-            # Ordinary old provider bodies may have been pruned already. Keep
-            # established normalized metadata and an existing explicit link;
-            # never invent an origin claim from species, time or geometry.
-            payload.update(coordinate_uncertainty_meters=row["coordinate_uncertainty_meters"],
-                           spatial_precision=row["spatial_precision"],credible=row["credible"],
-                           behaviors=list(row["behaviors"]))
-            if row["link_basis"]=="explicit_origin_id":
-                payload.update(origin_namespace=row["origin_namespace"],origin_external_id=row["origin_external_id"])
-        row["details"]=metadata(payload,row["source_key"])
         details=row["details"]
         claims[(details["namespace"],details["origin"])].append(row)
     desired=[]
@@ -113,20 +185,20 @@ async def reconcile(c, now):
             if reason:
                 namespace,origin=details["local_namespace"],details["local_origin"]
                 basis,status="provider_identity","origin_identity_mismatch"
-                event("origin_identity_mismatch",code=reason)
+                if row["origin_identity_status"]!=status:
+                    event("origin_identity_mismatch",code=reason)
+            elif row["origin_identity_status"]=="origin_identity_mismatch":
+                event("origin_identity_resolved",code=status)
             desired.append(dict(nid=row["id"],namespace=namespace,origin=origin,
                 basis=basis,status=status,uncertainty=details["uncertainty"],
                 precision=details["precision"],credible=details["credible"],
                 stamp=max(now,row["fetched_at"],row["created_at"] or now),
                 behaviors=details["behaviors"]))
-    # Retire corrected/withdrawn assertions in bulk, even when enrichment lagged
-    # over multiple M1 commits. Historical cluster membership triples survive.
-    await c.execute(text("""UPDATE observation_report_group_members m
-        SET superseded_at=GREATEST(:now,m.created_at,n.superseded_at)
-        FROM normalized_observations n WHERE n.id=m.normalized_observation_id
-        AND n.superseded_at IS NOT NULL AND m.superseded_at IS NULL"""),{"now":now})
     if not desired:
-        return
+        return []
+    # Only retire superseded history belonging to a selected provider record.
+    # Irrelevant old current assertions are never superseded by their age.
+    await c.execute(text(RETIRE_SQL),{"now":now,"raw_ids":sorted({r["raw_observation_id"] for r in rows})})
     payload=json.dumps(desired,default=lambda value:value.isoformat(),allow_nan=False)
     declaration="""nid bigint,namespace text,origin text,basis text,status text,
         uncertainty float8,precision text,credible boolean,stamp timestamptz,behaviors jsonb"""
@@ -159,3 +231,9 @@ async def reconcile(c, now):
         SELECT p.nid,b.code,p.stamp FROM {records}
         CROSS JOIN LATERAL jsonb_array_elements_text(p.behaviors) AS b(code)
         ON CONFLICT(normalized_observation_id,behavior_code) DO NOTHING"""),params)
+    by_id={r["id"]:r for r in rows}
+    return [dict(provider=by_id[d["nid"]]["source_key"],record=d["origin"],namespace=d["namespace"],
+        claimed_namespace=by_id[d["nid"]]["details"]["namespace"],
+        claimed_origin=by_id[d["nid"]]["details"]["origin"],
+        subject=by_id[d["nid"]]["subject_key"],observed_at=by_id[d["nid"]]["observed_at"].isoformat(),
+        status=d["status"]) for d in desired]

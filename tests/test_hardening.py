@@ -191,7 +191,10 @@ async def test_c1_canonical_time_correction_recollapses_without_mirror_redeliver
     old_mid=next(row["mid"] for row in before if row["id"]==mirror_id)
     assert len({r["report_group_id"] for r in before})==2
     await collect_fixture(db,data(1,[record(0,observed_at=mirror["observed_at"])]))
-    await reconcile(db,1)
+    # This retention contract deliberately evaluates 100-day-old claims. Its
+    # explicit test policy keeps those records relevant; normal policies do not.
+    await db.pattern_transaction(lambda c: identity.reconcile(c,NOW+timedelta(hours=1),
+        (replace(BEAR,temporal_window_seconds=101*86400),)),write=True,repeatable=True)
     after=await current_groups(db)
     assert len({r["report_group_id"] for r in after})==1
     assert next(row["id"] for row in after if row["provider"]=="fixture_mirror_a")==mirror_id

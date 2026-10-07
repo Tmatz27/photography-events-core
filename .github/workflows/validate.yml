@@ -46,6 +46,7 @@ jobs:
           git show 52db568d6b28cc7716c9329be396786906f65072:src/pec/ingestion.py > evidence/collection-baselines/m1-ingestion.py
           git show 9ee41f1428ffe245f43e9dcc3763c9672cb80fb8:src/pec/ingestion.py > evidence/collection-baselines/m2-ingestion.py
           git show 9ee41f1428ffe245f43e9dcc3763c9672cb80fb8:src/pec/patterns/identity.py > evidence/collection-baselines/m2-identity.py
+          git show c1db87e6c7a828d33e19a8ee91683998b4f3bb58:src/pec/patterns/identity.py > evidence/collection-baselines/h3-identity.py
           python tools/acceptance.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -59,4 +60,5 @@ jobs:
             evidence/frozen-database.json
             evidence/m2-performance.json
             evidence/collection-performance.json
+            evidence/h3-performance.json
           if-no-files-found: warn
