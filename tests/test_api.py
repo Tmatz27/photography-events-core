@@ -54,7 +54,7 @@ async def get(app, path, token=TOKEN):
 
 
 @pytest.mark.parametrize("path", ["/api/v1/opportunities", "/api/v1/opportunities/test", "/api/v1/sources/health"])
-@pytest.mark.parametrize("token", [None, "wrong", "nonascii-Ã©"])
+@pytest.mark.parametrize("token", [None, "wrong", "nonascii-é"])
 async def test_auth(app, path, token):
     r = await get(app, path, token)
     assert r.status_code == 401
