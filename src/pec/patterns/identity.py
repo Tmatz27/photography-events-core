@@ -80,24 +80,32 @@ ROWS_SQL = ROW_SELECT + " AND n.id=ANY(CAST(:ids AS bigint[]))" + ROW_ORDER
 DEPENDENCY_SQL = """WITH keys AS MATERIALIZED (
  SELECT * FROM jsonb_to_recordset(CAST(:keys AS jsonb)) AS k(namespace text,origin text)
 )
-SELECT q.id FROM keys k JOIN sources s ON s.key=k.namespace
+SELECT n.id FROM keys k JOIN sources s ON s.key=k.namespace
 CROSS JOIN LATERAL (
- SELECT n.id FROM raw_observations r JOIN normalized_observations n ON n.raw_observation_id=r.id
+ SELECT r.id FROM raw_observations r
  WHERE r.source_id=s.id
  AND COALESCE(r.raw_payload->>'report_external_id',r.external_id,'legacy-raw-'||r.id::text)=k.origin
- AND n.superseded_at IS NULL AND n.subject_type='species'
  OFFSET 0
-) q
+) r
+CROSS JOIN LATERAL (
+ SELECT id FROM normalized_observations
+ WHERE raw_observation_id=r.id AND superseded_at IS NULL AND subject_type='species'
+ OFFSET 0
+) n
 UNION
-SELECT q.id FROM keys k CROSS JOIN LATERAL (
- SELECT n.id FROM raw_observations r JOIN normalized_observations n ON n.raw_observation_id=r.id
+SELECT n.id FROM keys k CROSS JOIN LATERAL (
+ SELECT r.id FROM raw_observations r
  JOIN sources s ON s.id=r.source_id
  WHERE r.raw_payload ? 'origin_namespace' AND r.raw_payload ? 'origin_external_id'
  AND r.raw_payload->>'origin_namespace'=k.namespace AND r.raw_payload->>'origin_external_id'=k.origin
- AND n.superseded_at IS NULL AND n.subject_type='species'
  AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
  OFFSET 0
-) q
+) r
+CROSS JOIN LATERAL (
+ SELECT id FROM normalized_observations
+ WHERE raw_observation_id=r.id AND superseded_at IS NULL AND subject_type='species'
+ OFFSET 0
+) n
 UNION
 SELECT q.id FROM keys k CROSS JOIN LATERAL (
  SELECT n.id FROM observation_report_groups g
