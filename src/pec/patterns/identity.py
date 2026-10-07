@@ -88,10 +88,11 @@ CROSS JOIN LATERAL (
  OFFSET 0
 ) r
 CROSS JOIN LATERAL (
- SELECT id FROM normalized_observations
- WHERE raw_observation_id=r.id AND superseded_at IS NULL AND subject_type='species'
+ SELECT id,subject_type FROM normalized_observations
+ WHERE raw_observation_id=r.id AND superseded_at IS NULL
  OFFSET 0
 ) n
+WHERE n.subject_type='species'
 UNION
 SELECT n.id FROM keys k CROSS JOIN LATERAL (
  SELECT r.id FROM raw_observations r
@@ -102,15 +103,19 @@ SELECT n.id FROM keys k CROSS JOIN LATERAL (
  OFFSET 0
 ) r
 CROSS JOIN LATERAL (
- SELECT id FROM normalized_observations
- WHERE raw_observation_id=r.id AND superseded_at IS NULL AND subject_type='species'
+ SELECT id,subject_type FROM normalized_observations
+ WHERE raw_observation_id=r.id AND superseded_at IS NULL
  OFFSET 0
 ) n
+WHERE n.subject_type='species'
 UNION
 SELECT q.id FROM keys k CROSS JOIN LATERAL (
  SELECT n.id FROM observation_report_groups g
  JOIN observation_report_group_members m ON m.report_group_id=g.id AND m.superseded_at IS NULL
- JOIN normalized_observations n ON n.id=m.normalized_observation_id
+ CROSS JOIN LATERAL (
+  SELECT id,raw_observation_id,superseded_at,subject_type FROM normalized_observations
+  WHERE id=m.normalized_observation_id OFFSET 0
+ ) n
  JOIN raw_observations r ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id
  WHERE g.origin_namespace=k.namespace AND g.origin_external_id=k.origin
  AND n.superseded_at IS NULL AND n.subject_type='species' AND r.raw_payload IS NULL
