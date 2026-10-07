@@ -1,3 +1,258 @@
+# H3 PRE-LIVE-ADAPTER HARDENING
+
+This is the current implementation receipt for the narrow H3 pass. Source of
+truth: [authoritative H3 request](docs/H3_PRE_LIVE_ADAPTER_SPEC.md). The previously
+accepted M2 engineering closure at c1db87e is retained; sections below this H3
+receipt describe earlier historical freezes. H3 results are implementer
+verification, ready for independent verification, not a new promotion approval.
+
+## Repository receipts and scope
+
+| Repository | Actual starting main/origin SHA | H3 code/test freeze |
+|---|---|---|
+| Core | c1db87e6c7a828d33e19a8ee91683998b4f3bb58 | 3ab6a216edc2e7d8d69c2a59001121bf2380cbaa |
+| HA | c76726ece1e485ece03810087927da344289fba7 | unchanged |
+
+Clean main checkout and pull --ff-only preceded editing. Core remains 0.1.0-dev,
+HA 0.16.1, patterns default OFF. No release, production promotion, new provider,
+M3, ecological-policy change, normalized-observation retention, worker or
+watermark engine. Migrations 0001–0005, M1 ingestion/decision code and both legacy
+fixtures are unchanged. The external final submission receipt records the final
+documentation/evidence SHA and its exact-SHA CI, avoiding a self-SHA cycle.
+
+## Original finding and bounded working set
+
+The old identity.reconcile loaded every current trusted species assertion,
+including arbitrarily old observations that stay current until corrected. Each
+shadow generation revalidated and rewrote the entire retained identity set inside
+its separate bounded capture phase. M1 stayed valid, but eventually every shadow
+generation exhausted the default 900 ms server transaction budget.
+
+identity.working_set now uses the run's actual enabled policies and the same
+input_window helper as analytical capture. Its primary SQL set is current,
+non-superseded trusted species assertions with observed_at between evaluation
+time minus the maximum temporal window and evaluation time plus maximum future
+tolerance, and valid_until >= evaluation time. Defaults are 4 days / 1 hour.
+No policies means no identity reads or writes. Subject-specific ecological
+admission remains in the accepted engine; it is not loosened or pre-guessed.
+
+The primary set is expanded only by exact, source-qualified identity dependencies:
+
+1. Bulk canonical/stable report ID lookup, including report_external_id aliases
+   and the existing legacy fallback ID. Canonical targets may be outside the
+   primary time/validity slice.
+2. Bulk explicit claimant lookup through durable raw origin_namespace and
+   origin_external_id, independently of current group membership. This discovers
+   old rejected/rehomed mirrors after a relevant canonical correction.
+3. Existing explicit memberships provide the accepted fallback for ordinary
+   already-pruned bodies whose valid relationship was previously established.
+
+Unvisited qualified keys are expanded in bulk until closure; visited keys and
+assertion IDs terminate cycles and prevent duplicate work. Additional selected
+assertions are loaded in one batch per dependency frontier. SQL LATERAL/OFFSET 0
+boundaries preserve qualified raw and assertion lookups instead of letting the
+planner flatten them into retained-history joins. Species admission follows the
+raw-record lookup, avoiding a misleading full species-partial-index scan on
+fresh bulk-loaded statistics. There is no per-record network query and no
+species/time/location search to discover identity.
+
+The exact canonical-first case-insensitive taxon / +/-1 hour validator is retained.
+Without an authority, existing deterministic explicitly claimed peer semantics
+remain. Valid mirrors collapse; contradictions remain independent; canonical
+corrections retry old claims and re-collapse or split as before. Out-of-window
+dependencies validate identity only; analytical density admission still applies
+the unchanged policy windows. Canonical/claimant dependency admission never
+makes an old observation count as fresh support.
+
+Only selected assertions receive batched metadata/group/member/behavior work.
+Retirement of superseded memberships is scoped to superseded normalized versions
+of selected raw records. Old unrelated current assertions remain stored, current,
+and untouched. No historical cluster membership triple, episode snapshot or
+report provenance is rewritten.
+
+## Fingerprint, provenance and boundary
+
+The logical input fingerprint includes the analytical observations actually used,
+resolved identity/status/link basis/behaviors and the logical dependency facts
+used for validation: provider/local report identity, claim target, taxon, observed
+time and resulting status. Physical row IDs and fetch times do not drive it.
+Full provider-content hashes are excluded from this logical fingerprint because
+irrelevant old provider rows can change them. Exact consumed source run IDs and
+full content hashes are still stored in pattern_generation_sources; conservative
+debug currentness/freshness checks remain unchanged.
+
+The existing atomic REPEATABLE READ enrichment/capture phase remains after M1
+publication commits and outside the M1 publication/advisory lock. Separate shadow
+pool/deadline, compute/stage/episode preparation and short current-base recheck
+publication are retained. Default M1 3 s and enrichment lock500 / statement750 /
+transaction900 ms / client1 s are unchanged. No expensive work was moved into M1.
+
+## Migration 0006 and measured query plans
+
+[0006 SQL](migrations/versions/0006_bounded_identity.sql) / [schema inventory](docs/SCHEMA_0006.md)
+add only three B-tree indexes; 32 application tables remain:
+
+| Index | Measured need |
+|---|---|
+| ix_raw_local_report_identity | Qualified source/report alias expression lookup previously revisited all retained assertions/raw bodies for each key |
+| ix_raw_explicit_origin | Durable target lookup must find rejected claimants outside their current independent group without scanning bodies |
+| ix_normalized_superseded_raw | Old global membership retirement visited all retained current memberships; selected superseded raw versions now have a direct partial index |
+
+Existing ux_normalized_current resolves matching raw-record current assertions;
+existing qualified-group/current-membership and normalized time indexes are reused.
+No GIN index, redundant claim store, speculative geometry index or data backfill.
+The expression's id::text cast preserves the existing fallback value and makes
+the indexed expression immutable. New indexes add ordinary storage/write/build
+cost; N-A collection acceptance remains below default deadline.
+
+[Before-index plans](docs/validation/h3-before-indexes/README.md) record the actual
+need: at 10k old rows dependency branches visited 10004 normalized rows four
+times and tens of thousands of raw PK rows, taking 71.871 ms; at25k dependency
+execution was191.337 ms. Retirement at10k visited10004 assertions, taking8.745 ms.
+That diagnostic workflow's existing1000-fresh-report smoke failed, so publication
+of the four-row benchmark alone was insufficient acceptance.
+
+Final untruncated EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) is in
+[h3-performance.json](docs/validation/h3-final/h3-performance.json). No manual
+ANALYZE, planner setting override or production timeout increase was used.
+
+| Old current rows | Query | Execution ms | Raw/normalized leaf row visits | Rows returned / changed |
+|---|---|---:|---:|---:|
+| 0 | active | 0.127 | 8 | 4 |
+| 0 | dependencies | 0.273 | 20 | 4 |
+| 0 | retirement | 0.060 | 0 | 0 |
+| 10000 | active | 0.106 | 8 | 4 |
+| 10000 | dependencies | 0.144 | 8 | 4 |
+| 10000 | retirement | 0.034 | 0 | 0 |
+| 25000 | active | 0.115 | 8 | 4 |
+| 25000 | dependencies | 0.152 | 8 | 4 |
+| 25000 | retirement | 0.040 | 0 | 0 |
+
+Visits sum (Actual Rows + Rows Removed by Filter/Index Recheck) * Actual Loops
+for raw/normalized relation scans, not distinct IDs or index pages. At10k/25k,
+active uses ix_normalized_current_time and raw PK; dependencies use both0006 raw
+indexes and ux_normalized_current; retirement uses ix_normalized_superseded_raw.
+Empty claim/pruned-link branches return zero. The plan acceptance also checks
+fewer than200 such visits per query at10k/25k, rejecting history-proportional
+joins even when the run happens to publish.
+
+Planner choices vary with statistics. At the2k freshly bulk-loaded point, the
+active query used ux_normalized_current and filtered2000 old assertions (2008
+raw/normalized visits,0.489 ms), returning/reconciling only4. At5k/10k/25k it used
+the existing bounded time index. This observation is retained rather than
+claiming every physical plan is identical; maintained DB statistics and broader
+operational volume testing remain necessary.
+
+## Actual default-budget performance
+
+Real PostgreSQL18.6 / PostGIS3.6.4, four fresh reports plus current normalized
+assertions observed60days earlier. Historical valid_until is deliberately still
+future, proving exclusion by the working window rather than accidental expiry.
+Full source-content hash also changes to test logical fingerprint independence.
+
+| Retained old | Old c1db87e enrichment replay seconds / outcome | New M1 return + complete shadow seconds / outcome | Working set |
+|---|---|---|---:|
+| 0 | 0.043750 / complete | 0.119803 / published | 4 |
+| 2000 | 0.215718 / complete | 0.046402 / published | 4 |
+| 5000 | 0.552838 / complete | 0.045080 / published | 4 |
+| 10000 | 0.915294 / default-budget failure | 0.125688 / published | 4 |
+| 25000 | 1.001936 / default-budget failure | 0.178739 / published | 4 |
+
+The pinned old code is replayed on the same current-schema instance with the
+same enrichment bounds. An old failure rolls back truthfully and is retained in
+the artifact. Timings are individual CI measurements, not a production SLA;
+hardware varies (earlier faster diagnostic runners reached the old cliff at25k).
+New timing includes M1 generation plus explicit background-shadow drain; it is
+not the primary-query EXPLAIN time. Independent pytest runs measured H3-1
+0.139393 s and25k0.127851 s for the same completed-generation portion.
+
+## H3 scenarios and logging
+
+| Scenario | Separately named test / result |
+|---|---|
+| H3-1 | test_h3_1_10000_old_rows_four_fresh_publish_default_budget: PASS; count4, default settings,10004 current rows preserved |
+| H3-2 | test_h3_2_outside_window_canonical_target_still_verifies_active_mirror: PASS; outside canonical loaded, one verified group |
+| H3-3 | test_h3_3_corrected_active_canonical_recovers_outside_window_claimant: PASS; rejected old claimant re-collapses without redelivery |
+| H3-4 | test_h3_4_irrelevant_history_excluded_fingerprint_and_members_unchanged: PASS; working set4, same fingerprint/membership triples and continued episode; old rows receive no groups |
+| H3-5 | test_h3_5_shuffled_insertion_yields_same_identity_fingerprint_clusters: PASS; four shuffled input/insertion runs produce the same logical output |
+| H3-6 | test_h3_6_correction_outside_window_drops_support_keeps_provenance: PASS; next-generation count4→3, historical membership triples unchanged |
+| H3-7 | test_h3_7_old_record_correction_returns_to_relevance: PASS; old record becomes eligible, next-generation count5 |
+
+Five additional tests PASS:25k history, persistent mismatch-log dedup/resolution,
+no enabled policies, outside-window aliased canonical ID, and active canonical
+invalidation/split of an older claimant. [Test source](tests/test_h3.py).
+
+origin_identity_mismatch is emitted for a new transition to mismatch, not every
+run with the same persistent status. mismatch→valid emits origin_identity_resolved.
+The test verifies one new mismatch, zero repeat events, then one resolution.
+Persisted status/current membership/provenance remain authoritative. Events are
+attempt logs emitted before transaction commit as before; a rolled-back retry
+may repeat an attempted transition. No exactly-once external logging guarantee
+or new durable outbox is claimed.
+
+## Full acceptance and evidence
+
+[Code/test-freeze CI37674959331](https://github.com/Tmatz27/photography-events-core/actions/runs/37674959331)
+is SUCCESS at3ab6a216edc2e7d8d69c2a59001121bf2380cbaa; job112975960561.
+Artifact11507391240 downloaded and ZIP SHA-256 verified:
+fc81ccc095e7928ae7937be974d94d6f78237a4e13d61d39e61c01e3b300a579.
+Unedited machine artifacts: [h3-final](docs/validation/h3-final/README.md).
+
+- **273 passed**, zero failures/errors/skips,60.00 s on real PostGIS. XML name
+  comparison retains all261 accepted tests and adds12 H3 cases. All38 A,14 F,
+  P1–P7, B1–B4, C1–C5 pass, including S1/S1-R1 isolation, S3 rescue and privacy.
+- Linux portable96 passed/177DBskipped; Windows91 passed/182skipped (5POSIX
+  cases additionally skipped). Ruff and compile pass. No original assertion was
+  removed. The retained100day-body test now evaluates at the historical
+  observation time so both expired current assertions are inside its valid input
+  slice; it additionally checks explicit_verified. Current-run rules are intact.
+- Both legacy oracle recaptures are byte-identical: Tule Elk15 cases×24 fields;
+  pipeline9 cases/14 steps. Evaluator18000 comparisons, seed20261001,0 mismatches.
+- N-A500 OFF collections0.847619/0.812351 s and SHADOW0.785094/0.808755 s at3 s,
+  each2010 SQL statements and500 committed assertions. No M2 enrichment in OFF
+  collection. Full historical/current100/500/1000 measurements retained.
+- Existing1000-fresh-report smoke publishes one cluster/episode, zero promoted
+  opportunities. M1 OFF returns0.023940–0.027352 s; SHADOW0.023332–0.026527 s.
+  Completed shadow0.298862/0.307992/0.311512 s; no M1 publication delay regression.
+- Fresh DB→0006, seeded0001→0002→0003→0004→0005→0006, repeat head and the
+  disposable0001 downgrade/upgrade pass. Legacy provider/private geometry,
+  held M1 API, behavior/membership history and shadow hashes/timestamps preserved.
+- Operator backup.sh / restore.sh both execute successfully; custom-format
+  backup293220 bytes, restore into a clean DB, correct application owner, head0006,
+  all three new indexes, exact report-group identity digest, M1 API, episode key
+  and debug state preserved. Core/DB restarts pass; frozen/stopped DB failures
+  remain bounded503 with pool recovery and no checked-out connection leaks.
+- Unchanged HA [exact-SHA CI37334287547](https://github.com/Tmatz27/Home-assistant-photography-events/actions/runs/37334287547)
+  remains green in all four jobs; no HA implementation or product-semantic change.
+
+## Limits and status
+
+Work scales with the actual active set and explicit dependency graph. A genuinely
+large current window, many real claimants, many superseded versions of a selected
+record or deep qualified chains can still reach the unchanged safety deadline.
+There is no unrestricted-volume promise, truncation of valid dependencies,
+retention deletion, watermark/retry worker, provider batch-size guarantee or
+durable recovery for an abruptly interrupted running shadow task. Destroyed old
+rejected-claim metadata cannot be reconstructed; the accepted conservative
+independence fallback remains. Statistics/planner behavior requires operational
+monitoring.0006 index build and ordinary maintenance add cost.
+
+H3 removes the accumulated-unrelated-history reconciliation gate. Live adapter
+engineering can start after independent H3 verification. Product promotion still
+requires ecological threshold validation, live source contracts, public
+destination validation, HA product semantics and operational volume/retention
+validation. No live adapters or production enablement are included in this pass.
+
+M2 ENGINEERING CLOSED = YES (previous independently accepted closure retained)
+
+SHADOW SAFE = YES
+
+LIVE-ADAPTER ENGINEERING READY = YES (H3 implementer acceptance passed; independent verification pending)
+
+PROMOTION READY = NO
+
+---
+
 # FINAL HARDENING — N-A / N-B / N-C
 
 This section is the current hardening authority and supersedes the previous

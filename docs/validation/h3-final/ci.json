@@ -1,0 +1,115 @@
+{
+  "repo": "Tmatz27/photography-events-core",
+  "head_sha": "3ab6a216edc2e7d8d69c2a59001121bf2380cbaa",
+  "run_id": 37674959331,
+  "job_id": 112975960561,
+  "jobs": [
+    {
+      "id": 112975960561,
+      "name": "validate",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 37674959331,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run python -m pip install -r requirements-dev.lock",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Independent legacy recapture and differential comparisons",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Static checks and portable tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Docker, PostGIS, migrations, failure injection and restore",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    }
+  ],
+  "artifact": {
+    "id": 11507391240,
+    "name": "core-milestone-evidence",
+    "size_in_bytes": 42037,
+    "url": "https://api.github.com/repos/Tmatz27/photography-events-core/actions/artifacts/11507391240",
+    "archive_download_url": "https://api.github.com/repos/Tmatz27/photography-events-core/actions/artifacts/11507391240/zip",
+    "expired": false,
+    "created_at": "2026-10-07T19:33:54Z",
+    "expires_at": "2027-01-05T19:30:10Z",
+    "updated_at": "2026-10-07T19:33:54Z",
+    "digest": "sha256:fc81ccc095e7928ae7937be974d94d6f78237a4e13d61d39e61c01e3b300a579",
+    "workflow_run": {
+      "id": 37674959331,
+      "repository_id": 1400145037,
+      "head_repository_id": 1400145037,
+      "head_branch": "main",
+      "head_sha": "3ab6a216edc2e7d8d69c2a59001121bf2380cbaa"
+    }
+  }
+}

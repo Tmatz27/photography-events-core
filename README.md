@@ -87,7 +87,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0005`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0006`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -133,12 +133,14 @@ correctable report membership, canonical behavior, immutable analytical clusters
 and persistent episodes ([schema](docs/SCHEMA_0003.md)). Revision `0004` adds
 independent shadow-run lifecycle metadata ([schema](docs/SCHEMA_0004.md)). Revision
 `0005` adds final identity/behavior corrections and coherence diagnostics
-([schema](docs/SCHEMA_0005.md)).
+([schema](docs/SCHEMA_0005.md)). Revision `0006` adds three indexes for bounded
+identity dependency/correction lookups ([schema](docs/SCHEMA_0006.md)); no new
+tables or analytical policy changes are introduced.
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
 `python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
-upgrading. Revisions `0002` through `0005` are forward-only because earlier schemas
+upgrading. Revisions `0002` through `0006` are forward-only; earlier schemas
 cannot represent their histories; rollback requires a verified pre-upgrade backup restored to a new DB
 and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
 check remains in CI. Migrated decisions stay incomplete/held until a fresh
@@ -330,15 +332,27 @@ M1 collection persists raw/normalized assertions and commits without report-grou
 membership or behavior-relationship work, in both OFF and SHADOW modes. It retains
 cheap fixture-contract validation and the original M1 behavior field. Enrichment
 is deferred until a shadow pattern run captures its inputs. That bounded repeatable-
-read transaction reconciles current trusted claims and behaviors in batches, then
+read transaction reconciles the active policy window plus exact identity
+dependencies and behaviors in batches, then
 records the deterministic input fingerprint and consumed source-run provenance.
 An enrichment failure rolls back that shadow phase and marks the run failed;
 it cannot roll back M1 collection. A running run with no input fingerprint has not
 completed enrichment/capture. No partially reconciled set is used for clustering.
 Server-local enrichment limits also bound locks on shared assertion metadata.
 
+The working window uses the maximum temporal window and future tolerance of the
+run's enabled policies. Relevant mirrors load their canonical targets even outside
+that window; relevant corrected canonical records load older explicit claimants
+from durable metadata, including rejected/rehomed claims. Lookups use qualified
+IDs, never nearby coordinates, species or time as identity discovery. Unrelated
+older current assertions remain stored and are not reconciled or retired by age.
+The logical input fingerprint includes the used observations and identity
+dependencies; full source-run hashes remain separate consumed provenance.
+Persistent identity mismatches log on status change, with a resolution event when
+they become valid.
+
 Rejected explicit origin claims remain in the raw metadata contract and are retried
-when either side changes, even without mirror redelivery. Retention removes bulk
+when either side is relevant, even without mirror redelivery. Retention removes bulk
 provider text but preserves a small metadata envelope for explicit claims/report
 aliases. Historical membership links used by clusters remain immutable.
 
