@@ -112,6 +112,28 @@ def test_contract_complete_source_controlled(key):
     assert "ACCESS" not in value["roles"]
 
 
+@pytest.mark.parametrize("key", CONTRACTS)
+def test_live_health_uses_contract_native_freshness_without_changing_m1_requirements(key):
+    from pec.database import project_source, REQUIRED_SOURCES
+
+    contract = CONTRACTS[key]
+    row = dict(
+        key=key,
+        status="success",
+        enabled=True,
+        last_attempt_at=NOW,
+        last_success_at=NOW,
+        provider_updated_at=NOW - timedelta(seconds=contract.freshness_seconds - 1),
+        error_code=None,
+    )
+    assert project_source(row, NOW).state == "UP"
+    row["provider_updated_at"] = NOW - timedelta(seconds=contract.freshness_seconds + 1)
+    assert project_source(row, NOW).state == "STALE"
+    row["provider_updated_at"] = None
+    assert project_source(row, NOW).state == "STALE"
+    assert REQUIRED_SOURCES == {"nws_alerts", "fixture_observations"}
+
+
 def test_i1_open_research_grade():
     fact = inaturalist.parse(observation())
     assert fact.analysis_point and fact.credible and fact.reported_count is None
