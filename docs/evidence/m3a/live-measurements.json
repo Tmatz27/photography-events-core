@@ -1,0 +1,18 @@
+{
+  "measurement_date_utc": "2026-10-08",
+  "method": "tools/verify_live_contracts.py; optional manual public reads; no DB mutation; aggregates only",
+  "continuous_daily_measurement": false,
+  "daily_arrival_rate_inferred": false,
+  "smoke": [
+    {"source":"inaturalist","requests":2,"received":2,"accepted":2,"bytes_received":93609,"status":"passed","rate_limit_count":0},
+    {"source":"wfigs_current","requests":2,"received":1,"accepted":1,"bytes_received":55751,"status":"passed","rate_limit_count":0},
+    {"source":"nws_live_context","requests":3,"received":3,"accepted":3,"bytes_received":172098,"status":"passed","rate_limit_count":0}
+  ],
+  "bounded_initial_scope": [
+    {"source":"inaturalist","verified_at":"2026-10-08T14:34:38.777343+00:00","requests":1,"received":60,"accepted":60,"rejected":0,"unique_records":60,"obscured":2,"private":0,"bytes_received":4128917,"poll_seconds":1.032,"status":"passed","rate_limit_count":0},
+    {"source":"wfigs_current","verified_at":"2026-10-08T14:34:39.999502+00:00","requests":3,"received":0,"accepted":0,"rejected":0,"unique_records":0,"bytes_received":86093,"poll_seconds":2.266,"status":"passed","rate_limit_count":0},
+    {"source":"nws_live_context","verified_at":"2026-10-08T14:36:37.897445+00:00","requests":3,"received":158,"accepted":158,"rejected":0,"unique_records":158,"bytes_received":176622,"poll_seconds":2.765,"status":"passed","rate_limit_count":0}
+  ],
+  "failed_probe": {"source":"nws_live_context","verified_at":"2026-10-08T14:34:42.464028+00:00","requests":1,"status":"incomplete","http_status":400,"reason":"Unsupported limit on /alerts/active; official OpenAPI checked; parameter removed; corrected bounded poll passed"},
+  "limits": "iNaturalist 14-day scoped snapshot is not daily arrivals; WFIGS zero is complete bounded view at that moment, not proof of travel safety; NWS facts are alerts plus forecast periods, not observations of monarchs"
+}
