@@ -73,6 +73,7 @@ class PatternResponse(Contract):
     clusters: list[ClusterView]
     preview_opportunities: list[Opportunity]
     coherence_rejections: list[CoherenceView] = Field(default_factory=list)
+    identity_rejected_count: int = 0
 
 
 def metrics(row):
@@ -205,5 +206,5 @@ async def read(db, now, episode_key=None):
             metrics=None if row["protected"] else metrics(row)) for row in rows] if episode_key is None else []
         return PatternResponse(**VERSION,assessment_id=aid,mode="shadow",analysis_state=state,
                                items=views,clusters=public_clusters,preview_opportunities=previews,
-                               coherence_rejections=diagnostics)
+                               coherence_rejections=diagnostics,identity_rejected_count=run['identity_rejected_count'])
     return await db.transaction(operation)

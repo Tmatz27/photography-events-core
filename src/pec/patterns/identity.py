@@ -67,7 +67,7 @@ ROW_SELECT = """SELECT n.id,n.subject_key,n.observed_at,n.origin_identity_status
  ON m.normalized_observation_id=n.id AND m.superseded_at IS NULL
  LEFT JOIN observation_report_groups g ON g.id=m.report_group_id
  WHERE n.superseded_at IS NULL AND n.subject_type='species'
- AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')"""
+ AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b','inaturalist')"""
 ROW_ORDER = " ORDER BY s.key,r.external_id,n.subject_key,n.id"
 ACTIVE_SQL = ROW_SELECT + """
  AND n.observed_at BETWEEN :window_start AND :window_end AND n.valid_until>=:now""" + ROW_ORDER
@@ -134,8 +134,20 @@ UPDATE observation_report_group_members m
 
 
 def details_for(row):
+    if row['source_key']=='inaturalist':
+        from ..sources.models import identifier
+        origin=identifier(row['external_id'])
+        uncertainty=row['coordinate_uncertainty_meters']
+        if uncertainty is not None and (not math.isfinite(uncertainty) or uncertainty<0):
+            raise ValueError('Invalid live uncertainty')
+        if type(row['credible']) is not bool or row['spatial_precision'] not in ('point','area','unknown'):
+            raise ValueError('Invalid live metadata')
+        return dict(namespace='inaturalist',origin=origin,local_namespace='inaturalist',local_origin=origin,
+            basis='provider_identity',uncertainty=uncertainty,precision=row['spatial_precision'],
+            credible=row['credible'],behaviors=['presence'],withdrawn=False)
     payload={**(row["raw_payload"] or {})}
-    payload.setdefault("external_id",row["external_id"] or f"legacy-raw-{row['raw_observation_id']}")
+    if not payload.get("external_id"):
+        payload["external_id"]=row["external_id"] or f"legacy-raw-{row['raw_observation_id']}"
     payload.setdefault("behavior",row["behavior"])
     if row["raw_payload"] is None:
         payload.update(coordinate_uncertainty_meters=row["coordinate_uncertainty_meters"],
@@ -143,6 +155,28 @@ def details_for(row):
         if row["link_basis"]=="explicit_origin_id":
             payload.update(origin_namespace=row["origin_namespace"],origin_external_id=row["origin_external_id"])
     return metadata(payload,row["source_key"])
+
+
+class WorkingSet(list):
+    def __init__(self):
+        super().__init__()
+        self.invalid_ids=set()
+
+
+def valid_details(rows, result):
+    """A damaged stored contract cannot cancel unrelated identity operations."""
+    valid=[]
+    for row in rows:
+        try:
+            if not isinstance(row["subject_key"],str) or not row["subject_key"].strip():
+                raise ValueError("Invalid subject")
+            row["details"]=details_for(row)
+        except (KeyError,TypeError,ValueError,OverflowError):
+            result.invalid_ids.add(row["id"])
+            event("identity_invalid",source=row["source_key"],code="invalid_metadata")
+        else:
+            valid.append(row)
+    return valid
 
 
 def dependency_keys(rows):
@@ -153,26 +187,27 @@ def dependency_keys(rows):
 async def working_set(c, now, policies):
     """Active policy window plus transitive explicit identity dependencies only."""
     if not policies:
-        return []
+        return WorkingSet()
     from .clustering import input_window
     rows=[dict(r) for r in (await c.execute(text(ACTIVE_SQL),input_window(now,policies))).mappings()]
+    result=WorkingSet()
+    rows=valid_details(rows,result)
     found={r["id"]:r for r in rows}
-    for row in rows:
-        row["details"]=details_for(row)
     visited=set()
     pending=dependency_keys(rows)
     while pending:
         visited.update(pending)
         keys=json.dumps([dict(namespace=ns,origin=origin) for ns,origin in sorted(pending)])
-        ids=set((await c.execute(text(DEPENDENCY_SQL),{"keys":keys})).scalars())-found.keys()
+        ids=set((await c.execute(text(DEPENDENCY_SQL),{"keys":keys})).scalars())-found.keys()-result.invalid_ids
         if not ids:
             break
         batch=[dict(r) for r in (await c.execute(text(ROWS_SQL),{"ids":sorted(ids)})).mappings()]
+        batch=valid_details(batch,result)
         for row in batch:
-            row["details"]=details_for(row)
             found[row["id"]]=row
         pending=dependency_keys(batch)-visited
-    return sorted(found.values(),key=lambda r:(r["source_key"],r["external_id"] or "",r["subject_key"],r["id"]))
+    result.extend(sorted(found.values(),key=lambda r:(r["source_key"],r["external_id"] or "",r["subject_key"],r["id"])))
+    return result
 
 
 async def reconcile(c, now, policies=POLICIES):
@@ -182,6 +217,8 @@ async def reconcile(c, now, policies=POLICIES):
     neither loaded nor retired. A failed reconciliation rolls back shadow only.
     """
     rows=await working_set(c,now,policies)
+    result=WorkingSet()
+    result.invalid_ids.update(rows.invalid_ids)
     claims=defaultdict(list)
     for row in rows:
         details=row["details"]
@@ -214,7 +251,7 @@ async def reconcile(c, now, policies=POLICIES):
                 stamp=max(now,row["fetched_at"],row["created_at"] or now),
                 behaviors=details["behaviors"]))
     if not desired:
-        return []
+        return result
     # Only retire superseded history belonging to a selected provider record.
     # Irrelevant old current assertions are never superseded by their age.
     await c.execute(text(RETIRE_SQL),{"now":now,"raw_ids":sorted({r["raw_observation_id"] for r in rows})})
@@ -251,9 +288,10 @@ async def reconcile(c, now, policies=POLICIES):
         CROSS JOIN LATERAL jsonb_array_elements_text(p.behaviors) AS b(code)
         ON CONFLICT(normalized_observation_id,behavior_code) DO NOTHING"""),params)
     by_id={r["id"]:r for r in rows}
-    return [dict(provider=by_id[d["nid"]]["source_key"],provider_record=by_id[d["nid"]]["external_id"],
+    result.extend([dict(provider=by_id[d["nid"]]["source_key"],provider_record=by_id[d["nid"]]["external_id"],
         local_report=by_id[d["nid"]]["details"]["local_origin"],record=d["origin"],namespace=d["namespace"],
         claimed_namespace=by_id[d["nid"]]["details"]["namespace"],
         claimed_origin=by_id[d["nid"]]["details"]["origin"],
         subject=by_id[d["nid"]]["subject_key"],observed_at=by_id[d["nid"]]["observed_at"].isoformat(),
-        status=d["status"]) for d in desired]
+        status=d["status"]) for d in desired])
+    return result

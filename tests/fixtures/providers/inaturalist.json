@@ -1,0 +1,105 @@
+{
+  "results": [
+    {
+      "id": 1,
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time_observed_at": "2026-09-19T18:00:57-07:00",
+      "observed_on": "2026-09-19",
+      "observed_time_zone": "America/Los_Angeles",
+      "updated_at": "2026-10-07T20:42:35-07:00",
+      "quality_grade": "needs_id",
+      "geoprivacy": null,
+      "taxon_geoprivacy": "open",
+      "obscured": false,
+      "public_positional_accuracy": 9,
+      "community_taxon_id": null,
+      "description": "Sanitized provider response",
+      "taxon": {
+        "id": 48662,
+        "name": "Danaus plexippus",
+        "rank": "species",
+        "ancestor_ids": [
+          48460,
+          1,
+          47120,
+          372739,
+          47158,
+          184884,
+          47157,
+          47224,
+          47922,
+          61244,
+          134169,
+          522900,
+          48663,
+          48662
+        ]
+      },
+      "annotations": [
+        {
+          "controlled_attribute_id": 1,
+          "controlled_value_id": 6
+        },
+        {
+          "controlled_attribute_id": 17,
+          "controlled_value_id": 18
+        },
+        {
+          "controlled_attribute_id": 22,
+          "controlled_value_id": 24
+        }
+      ],
+      "geojson": {
+        "type": "Point",
+        "coordinates": [
+          -120.63,
+          35.13
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "time_observed_at": "2026-10-07T09:16:10-07:00",
+      "observed_on": "2026-10-07",
+      "observed_time_zone": "America/Los_Angeles",
+      "updated_at": "2026-10-07T14:06:30-07:00",
+      "quality_grade": "casual",
+      "geoprivacy": null,
+      "taxon_geoprivacy": "open",
+      "obscured": false,
+      "public_positional_accuracy": 4,
+      "community_taxon_id": null,
+      "description": "Sanitized provider response",
+      "taxon": {
+        "id": 48662,
+        "name": "Danaus plexippus",
+        "rank": "species",
+        "ancestor_ids": [
+          48460,
+          1,
+          47120,
+          372739,
+          47158,
+          184884,
+          47157,
+          47224,
+          47922,
+          61244,
+          134169,
+          522900,
+          48663,
+          48662
+        ]
+      },
+      "annotations": [],
+      "geojson": {
+        "type": "Point",
+        "coordinates": [
+          -120.63,
+          35.13
+        ]
+      }
+    }
+  ]
+}

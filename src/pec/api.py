@@ -28,8 +28,25 @@ def create_app(settings=None, database=None, clock=None):
     @asynccontextmanager
     async def lifespan(app):
         event("startup", code="core_0_1_dev")
-        yield
-        await db.close()
+        from .scheduler import Scheduler
+        scheduler=Scheduler()
+        try:
+            if settings.live_sources:
+                from .sources.contracts import CONTRACTS
+                from .sources.storage import collect, register
+                async def setup(c):
+                    await db._check(c)
+                    for contract in CONTRACTS.values():
+                        await register(c,contract)
+                await db.pattern_transaction(setup,write=True)
+                for key,contract in CONTRACTS.items():
+                    scheduler.add(key,contract.scheduler_policy,
+                        lambda contract=contract:collect(db,contract,settings.source_user_agent),
+                        lambda key:db.load_backoff(key,clock()),db.save_backoff)
+            yield
+        finally:
+            await scheduler.close()
+            await db.close()
 
     app = FastAPI(title="Photography Events Core", version=VERSION["core_version"], lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
@@ -74,6 +91,17 @@ def create_app(settings=None, database=None, clock=None):
         return Health(**VERSION, status="ready")
 
     secured = [Depends(auth)]
+
+    from .sources.debug import contracts as read_contracts, calibration as read_calibration
+    from .sources.debug import ContractResponse, CalibrationResponse
+
+    @app.get('/api/v1/debug/source-contracts',response_model=ContractResponse,dependencies=secured)
+    async def source_contracts():
+        return await read_contracts(db,clock())
+
+    @app.get('/api/v1/debug/live/calibration',response_model=CalibrationResponse,dependencies=secured)
+    async def live_calibration():
+        return await read_calibration(db,clock())
 
     from .patterns.api import PatternResponse, read as read_patterns
 

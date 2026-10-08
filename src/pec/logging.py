@@ -9,7 +9,7 @@ EVENTS = frozenset({"startup", "schema_issue", "database_unavailable", "database
     "assessment_failure", "assessment_conflict", "report_group_created", "report_group_membership_superseded",
     "cluster_created", "cluster_rejected_incoherent", "cluster_low_precision_excluded", "episode_created",
     "episode_continued", "episode_split", "episode_merged", "episode_ended", "public_location_unavailable",
-    "pattern_failure", "origin_identity_mismatch", "origin_identity_resolved"})
+    "pattern_failure", "origin_identity_mismatch", "origin_identity_resolved", "identity_invalid"})
 logger = logging.getLogger("photography_events_core")
 
 

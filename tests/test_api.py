@@ -67,7 +67,7 @@ async def test_health_metadata(app, path):
     r = await get(app, path, None)
     assert r.status_code == 200
     assert r.json()["api_version"] == "v1"
-    assert r.json()["schema_version"] == "0006"
+    assert r.json()["schema_version"] == "0007"
 
 
 @pytest.mark.parametrize("path", ["/health/ready", "/api/v1/opportunities", "/api/v1/opportunities/test", "/api/v1/sources/health"])
@@ -134,7 +134,7 @@ def test_configuration_and_redaction(monkeypatch):
 
 def test_openapi_is_strongly_typed(app):
     schema = app.openapi()
-    assert len(schema["paths"]) == 7
+    assert len(schema["paths"]) == 9
     assert schema["paths"]["/api/v1/debug/patterns"]["get"]["security"] == [{"HTTPBearer": []}]
     assert schema["paths"]["/api/v1/opportunities"]["get"]["security"] == [{"HTTPBearer": []}]
     assert "Opportunity" in schema["components"]["schemas"]

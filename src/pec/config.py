@@ -13,8 +13,15 @@ class Settings:
     evaluation_grace: float = 30.0
     patterns_mode: str = "off"
     pattern_timeout: float = 30.0
+    live_sources: bool = False
+    source_user_agent: str = 'PhotographyEventsCore-shadow (+https://github.com/Tmatz27/photography-events-core)'
 
     def __post_init__(self):
+        if self.live_sources and self.patterns_mode!='shadow':
+            raise ValueError('Live sources require explicit shadow mode')
+        if (len(self.source_user_agent)<10 or not self.source_user_agent.isascii()
+                or '\r' in self.source_user_agent or '\n' in self.source_user_agent):
+            raise ValueError('A descriptive ASCII source User-Agent is required')
         if not 0.1 <= self.pattern_timeout <= 300:
             raise ValueError("CORE_PATTERN_TIMEOUT must be between 0.1 and 300 seconds")
         if self.patterns_mode not in ("off", "shadow"):
@@ -40,5 +47,7 @@ class Settings:
                              database=os.environ.get("POSTGRES_DB", "photography_events"))
         return cls(url, os.environ.get("CORE_API_TOKEN", ""), float(os.environ.get("CORE_DATABASE_TIMEOUT", "3")),
                    float(os.environ.get("CORE_EVALUATION_GRACE", "30")), os.environ.get("CORE_PATTERNS_MODE", "off"),
-                   float(os.environ.get("CORE_PATTERN_TIMEOUT", "30")))
+                   float(os.environ.get("CORE_PATTERN_TIMEOUT", "30")),
+                   os.environ.get('CORE_LIVE_SOURCES','false').lower()=='true',
+                   os.environ.get('CORE_SOURCE_USER_AGENT',cls.__dataclass_fields__['source_user_agent'].default))
 

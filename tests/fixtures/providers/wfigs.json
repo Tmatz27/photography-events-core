@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "properties": {
+    "exceededTransferLimit": true
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": 52325,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.636,
+              35.13
+            ],
+            [
+              -120.633,
+              35.13
+            ],
+            [
+              -120.633,
+              35.132
+            ],
+            [
+              -120.636,
+              35.132
+            ],
+            [
+              -120.636,
+              35.13
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "OBJECTID": 1,
+        "GlobalID": "{00000000-0000-4000-8000-000000000001}",
+        "poly_IRWINID": "{00000000-0000-4000-8000-000000000002}",
+        "poly_FeatureCategory": "Wildfire Daily Fire Perimeter",
+        "poly_FeatureStatus": "Approved",
+        "poly_FeatureAccess": "Public",
+        "poly_IsVisible": "Yes",
+        "poly_DeleteThis": "No",
+        "poly_DateCurrent": 1776172384171,
+        "poly_PolygonDateTime": 1775051410219,
+        "attr_IncidentTypeCategory": "WF",
+        "attr_ActiveFireCandidate": 1,
+        "attr_FireOutDateTime": null,
+        "attr_ModifiedOnDateTime_dt": 1790790147780
+      }
+    }
+  ]
+}

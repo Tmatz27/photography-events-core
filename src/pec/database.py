@@ -86,6 +86,9 @@ class Database:
         from .patterns.policy import POLICIES
         self.patterns_mode = settings.patterns_mode
         self.pattern_policies = POLICIES
+        if settings.live_sources:
+            from .sources.calibration import POLICIES_SHADOW
+            self.pattern_policies=POLICIES_SHADOW
         self.timeout = settings.database_timeout
         self.pattern_timeout = settings.pattern_timeout
         self._pattern_tasks = set()

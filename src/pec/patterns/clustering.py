@@ -21,13 +21,15 @@ INPUT_SQL = """SELECT n.id,n.raw_observation_id,n.subject_key,n.observed_at,n.va
  JOIN observation_report_groups g ON g.id=m.report_group_id
  WHERE n.superseded_at IS NULL AND n.subject_type='species'
  AND n.observed_at BETWEEN :window_start AND :window_end AND n.valid_until>=:now
- AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
+ AND s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b','inaturalist')
+ AND (s.key<>'inaturalist' OR n.credible)
+ AND NOT n.id=ANY(CAST(:excluded_ids AS bigint[]))
  ORDER BY s.key,r.external_id,n.subject_key"""
 
 SOURCE_SQL = """SELECT s.id AS source_id,s.key,r.id AS source_run_id,r.status,r.content_sha256,r.completed_at
  FROM sources s JOIN LATERAL(SELECT * FROM source_runs WHERE source_id=s.id
  ORDER BY completed_at DESC,id DESC LIMIT 1) r ON TRUE
- WHERE s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b')
+ WHERE s.key IN ('fixture_observations','fixture_mirror_a','fixture_mirror_b','inaturalist')
  ORDER BY s.key"""
 
 # The SQL groups one deterministic point per report. Cluster numbers are local
@@ -56,11 +58,12 @@ SINGLE_LABEL = "row_number() OVER(ORDER BY report_key)"
 def input_window(now, policies):
     return dict(now=now,window_start=now-timedelta(seconds=max(
         (p.temporal_window_seconds for p in policies),default=0)),
-        window_end=now+timedelta(seconds=max((p.future_tolerance_seconds for p in policies),default=0)))
+        window_end=now+timedelta(seconds=max((p.future_tolerance_seconds for p in policies),default=0)),excluded_ids=[])
 
 
-async def load_inputs(c, now, policies):
-    rows = [dict(r) for r in (await c.execute(text(INPUT_SQL),input_window(now,policies))).mappings()] if policies else []
+async def load_inputs(c, now, policies, *, excluded_ids=()):
+    params={**input_window(now,policies),"excluded_ids":sorted(excluded_ids)}
+    rows = [dict(r) for r in (await c.execute(text(INPUT_SQL),params)).mappings()] if policies else []
     sources = [dict(r) for r in (await c.execute(text(SOURCE_SQL))).mappings()]
     identity = []
     for row in rows:
@@ -151,7 +154,9 @@ async def candidates(c, rows, policy, now, *, rejections=None, lineage=None):
             summary["max_single_report_count"] is not None and summary["max_single_report_count"] >= policy.count_requirement)
         if policy.trigger == "COUNT_THRESHOLD" and not count_ok:
             return None
-        qualified = summary["independent_report_count"] >= policy.qualifying_reports and count_ok
+        qualified = (summary["independent_report_count"] >= policy.qualifying_reports and count_ok
+            and not getattr(policy,'calibration_only',False)
+            and not any(r['source_key']=='inaturalist' for r in members))
         for row in members:
             dispositions[row["id"]] = "cluster_input"
         return {**dict(shape), **summary, "cluster_key": canonical_hash(shape["reports"]),

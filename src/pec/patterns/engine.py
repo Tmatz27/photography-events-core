@@ -133,14 +133,18 @@ async def prepare(c, aid, now, policies, *, budget=1.0):
     # M1 provider correction behind a terminated client connection.
     await server_bounds(c,budget)
     dependencies=await report_identity.reconcile(c,now,policies)
-    rows, sources, identity = await clustering.load_inputs(c,now,policies)
+    invalid=getattr(dependencies,"invalid_ids",())
+    if invalid:
+        rows, sources, identity = await clustering.load_inputs(c,now,policies,excluded_ids=invalid)
+    else:
+        rows, sources, identity = await clustering.load_inputs(c,now,policies)
     identity["identity_dependencies"]=dependencies
     providers={row["source_key"] for row in rows} | {row["provider"] for row in dependencies}
     # Full source content hashes remain exact consumed provenance below. The
     # logical fingerprint must not change for an unrelated old provider row.
     identity["sources"]=[{k:s[k] for k in ("key","status")} for s in sources if s["key"] in providers]
-    await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash WHERE assessment_run_id=:aid"),
-                    {"aid":aid,"hash":canonical_hash(identity)})
+    await c.execute(text("UPDATE pattern_generation_runs SET input_fingerprint=:hash,identity_rejected_count=:rejected WHERE assessment_run_id=:aid"),
+                    {"aid":aid,"hash":canonical_hash(identity),"rejected":len(invalid)})
     if sources:
         await c.execute(text("""INSERT INTO pattern_generation_sources
             (assessment_run_id,source_id,source_run_id,content_sha256) VALUES(:aid,:source_id,:source_run_id,:content_sha256)"""),
