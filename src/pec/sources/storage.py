@@ -124,7 +124,19 @@ async def store_fact(c, contract, sid, rid, fact, now):
         or (previous["provider_updated_at"] and previous["provider_updated_at"] > fact.provider_updated_at)
     ):
         return "duplicates"
-    digest = fingerprint(dict(payload=fact.payload, metadata=fact.metadata, in_scope=fact.in_scope))
+    digest = fingerprint(
+        dict(
+            payload=fact.payload,
+            metadata=fact.metadata,
+            in_scope=fact.in_scope,
+            observed_at=fact.observed_at.isoformat() if fact.observed_at else None,
+            observed_date=fact.observed_date.isoformat() if fact.observed_date else None,
+            provider_updated_at=fact.provider_updated_at.isoformat(),
+            time_precision=fact.time_precision,
+            spatial_basis=fact.spatial_basis,
+            parser_version=contract.parser_version,
+        )
+    )
     sensitive = fact.sensitive or bool(previous and previous["sensitive"])
     changed = not previous or previous["content_sha256"] != digest or previous["raw_payload"] is None
     if fact.analysis_area:

@@ -276,6 +276,17 @@ async def test_n3_alert_update_cancel_explicit_supersession(db):
     assert not await sql(db, "SELECT * FROM normalized_observations WHERE superseded_at IS NULL")
 
 
+async def test_nws_model_reissue_same_values_retains_new_native_issue(db):
+    first = Batch(received=1, records=[nws.forecast(forecast(50), NOW)], provider_updated_at=NOW)
+    await persist(db, NWS, first, NOW, NOW)
+    later = NOW + timedelta(minutes=10)
+    second = Batch(received=1, records=[nws.forecast(forecast(50), later)], provider_updated_at=later)
+    await persist(db, NWS, second, later, later)
+    rows = await sql(db, "SELECT * FROM normalized_observations ORDER BY id")
+    assert len(rows) == 2 and rows[0]["superseded_at"] and rows[1]["provider_updated_at"] == later
+    assert rows[1]["observed_at"] == later and rows[1]["valid_until"] == rows[0]["valid_until"]
+
+
 @pytest.mark.parametrize("temperature,word", [(50, "clustered"), (70, "flying")])
 async def test_n5_m3_m4_temperature_does_not_create_aggregation(db, temperature, word):
     batch = Batch(received=1, records=[nws.forecast(forecast(temperature), NOW)], provider_updated_at=NOW)
