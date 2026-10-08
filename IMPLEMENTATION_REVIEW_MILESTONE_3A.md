@@ -16,14 +16,14 @@ Verified clean `main` and actual `origin/main` before edits:
 - Core start: `c64159688202dfb57594e74006dbf2e9ebd9d6c7`.
 - HA start/final: `c76726ece1e485ece03810087927da344289fba7`; unchanged, clean,
   equal to origin/main on final verification.
-- Core code freeze: `ace50fbc6f136088139315db6734298047ec53ba`.
+- Core code freeze: `b6a7547995f483f6b97df487f28bf9f93fa5daa9`.
 - Final submission is a documentation/evidence-only descendant of that freeze.
   The exact submission SHA, clean origin/main check and final-tip CI receipt
   are recorded in the external `outputs/M3A_FINAL_RECEIPT.md` beside this checkout
   and in the final response. This avoids a self-referential commit SHA in a
   committed file. Treat the freeze as the final implementation SHA.
 
-Freeze CI: [Core validation](https://github.com/Tmatz27/photography-events-core/actions/runs/37795742957).
+Freeze CI: [Core validation](https://github.com/Tmatz27/photography-events-core/actions/runs/37797766918).
 Its downloaded artifact and exact results are archived under `docs/evidence/m3a`.
 
 ## 3. M3 Source Contract design
@@ -138,6 +138,10 @@ requires descriptive User-Agent; no paid key and no publicly fixed request rate.
 on `/alerts/active`; the live bounded verification caught this and the request
 was corrected. CAP IDs/references model updates/cancellation. Forecast issue
 time and valid period stay separate; old native data stays stale after HTTP 200.
+Native model reissues with identical weather values retain the new issue time
+without extending period validity. General live source health and contract
+diagnostics use the same native freshness policy. M1's required source set and
+fixture health behavior are unchanged.
 Core's new fact parser does not replace HA's production alert decisions.
 
 ## 14. Proof boundaries
@@ -269,10 +273,10 @@ privacy fractions, latency and 429s during future opted-in operation.
 
 ## 25. Tests and exact results
 
-Final freeze: **360 passed in 69.51 seconds; zero failures/errors/skips**,
-including 44 portable source-contract cases, 32 real-DB source/calibration
+Final freeze: **364 passed in 68.88 seconds; zero failures/errors/skips**,
+including 47 portable source-contract cases, 33 real-DB source/calibration
 scenarios and 11 dedicated portable L1 regressions. Source suite includes the
-additional DB L1 case. Local: 146 passed, 214 skipped without PostGIS; ruff clean.
+additional DB L1 case. Local: 149 passed, 215 skipped without PostGIS; ruff clean.
 Prior corrected revision e1cd9dd: full 357 passed, zero failures/skips; CI green.
 Final freeze evidence is archived under `docs/evidence/m3a/` (acceptance, parity,
 JUnit XML, pytest log, H3/collection/M2 performance and frozen DB receipts).
@@ -370,6 +374,6 @@ known-ID refresh scope escape; ArcGIS complete snapshot/absence and topology;
 exact curated geometry safety; NWS native freshness and explicit cancellation;
 durable quotas/Retry-After/cancelled attempt state; roles/count/behavior/provenance;
 and isolation from M1 production locks/pools/inputs/output. Reproduce all legacy
-and 360 collected checks, exact migration and restore evidence. Decide whether
+and 364 collected checks, exact migration and restore evidence. Decide whether
 the explicit post-M1 recalculation cadence is sufficient for a later supervised
 shadow operation; do not approve production promotion or add deferred sources.

@@ -1,8 +1,8 @@
 {
   "synthetic_provider_records": 1000,
   "density_points": 1000,
-  "load_inputs_seconds": 0.043225,
-  "dbscan_seconds": 0.047694,
+  "load_inputs_seconds": 0.042465,
+  "dbscan_seconds": 0.044879,
   "candidate_clusters": 1,
   "policy": {
     "key": "black_bear_activity",
@@ -48,8 +48,8 @@
         "Total Cost": 45.34,
         "Plan Rows": 1,
         "Plan Width": 415,
-        "Actual Startup Time": 12.71,
-        "Actual Total Time": 12.761,
+        "Actual Startup Time": 12.634,
+        "Actual Total Time": 12.676,
         "Actual Rows": 1001.0,
         "Actual Loops": 1,
         "Disabled": false,
@@ -82,8 +82,8 @@
             "Total Cost": 45.33,
             "Plan Rows": 1,
             "Plan Width": 415,
-            "Actual Startup Time": 0.066,
-            "Actual Total Time": 9.417,
+            "Actual Startup Time": 0.061,
+            "Actual Total Time": 9.38,
             "Actual Rows": 1001.0,
             "Actual Loops": 1,
             "Disabled": false,
@@ -109,8 +109,8 @@
                 "Total Cost": 25.15,
                 "Plan Rows": 1,
                 "Plan Width": 335,
-                "Actual Startup Time": 0.044,
-                "Actual Total Time": 4.804,
+                "Actual Startup Time": 0.041,
+                "Actual Total Time": 4.872,
                 "Actual Rows": 1001.0,
                 "Actual Loops": 1,
                 "Disabled": false,
@@ -136,8 +136,8 @@
                     "Total Cost": 16.85,
                     "Plan Rows": 1,
                     "Plan Width": 287,
-                    "Actual Startup Time": 0.037,
-                    "Actual Total Time": 3.408,
+                    "Actual Startup Time": 0.035,
+                    "Actual Total Time": 3.46,
                     "Actual Rows": 1001.0,
                     "Actual Loops": 1,
                     "Disabled": false,
@@ -165,8 +165,8 @@
                         "Total Cost": 16.64,
                         "Plan Rows": 1,
                         "Plan Width": 254,
-                        "Actual Startup Time": 0.031,
-                        "Actual Total Time": 2.343,
+                        "Actual Startup Time": 0.029,
+                        "Actual Total Time": 2.369,
                         "Actual Rows": 1001.0,
                         "Actual Loops": 1,
                         "Disabled": false,
@@ -195,7 +195,7 @@
                             "Total Cost": 8.33,
                             "Plan Rows": 1,
                             "Plan Width": 214,
-                            "Actual Startup Time": 0.023,
+                            "Actual Startup Time": 0.022,
                             "Actual Total Time": 0.998,
                             "Actual Rows": 1001.0,
                             "Actual Loops": 1,
@@ -463,9 +463,9 @@
         "Temp Read Blocks": 0,
         "Temp Written Blocks": 0
       },
-      "Planning Time": 0.598,
+      "Planning Time": 0.577,
       "Triggers": [],
-      "Execution Time": 12.847
+      "Execution Time": 12.753
     }
   ],
   "clustering_plan": [
@@ -478,8 +478,8 @@
         "Total Cost": 11555.22,
         "Plan Rows": 100,
         "Plan Width": 120,
-        "Actual Startup Time": 13.356,
-        "Actual Total Time": 13.359,
+        "Actual Startup Time": 13.06,
+        "Actual Total Time": 13.061,
         "Actual Rows": 1.0,
         "Actual Loops": 1,
         "Disabled": false,
@@ -510,8 +510,8 @@
             "Total Cost": 11551.65,
             "Plan Rows": 100,
             "Plan Width": 120,
-            "Actual Startup Time": 13.316,
-            "Actual Total Time": 13.32,
+            "Actual Startup Time": 13.023,
+            "Actual Total Time": 13.024,
             "Actual Rows": 1.0,
             "Actual Loops": 1,
             "Disabled": false,
@@ -537,8 +537,8 @@
                 "Total Cost": 3862.65,
                 "Plan Rows": 100,
                 "Plan Width": 68,
-                "Actual Startup Time": 12.751,
-                "Actual Total Time": 12.754,
+                "Actual Startup Time": 12.438,
+                "Actual Total Time": 12.439,
                 "Actual Rows": 1.0,
                 "Actual Loops": 1,
                 "Disabled": false,
@@ -565,8 +565,8 @@
                     "Total Cost": 3785.9,
                     "Plan Rows": 100,
                     "Plan Width": 68,
-                    "Actual Startup Time": 12.332,
-                    "Actual Total Time": 12.373,
+                    "Actual Startup Time": 12.039,
+                    "Actual Total Time": 12.078,
                     "Actual Rows": 1000.0,
                     "Actual Loops": 1,
                     "Disabled": false,
@@ -598,8 +598,8 @@
                         "Total Cost": 3782.32,
                         "Plan Rows": 100,
                         "Plan Width": 68,
-                        "Actual Startup Time": 11.455,
-                        "Actual Total Time": 12.133,
+                        "Actual Startup Time": 11.14,
+                        "Actual Total Time": 11.842,
                         "Actual Rows": 1000.0,
                         "Actual Loops": 1,
                         "Disabled": false,
@@ -625,8 +625,8 @@
                             "Total Cost": 3781.32,
                             "Plan Rows": 100,
                             "Plan Width": 76,
-                            "Actual Startup Time": 11.454,
-                            "Actual Total Time": 12.036,
+                            "Actual Startup Time": 11.139,
+                            "Actual Total Time": 11.734,
                             "Actual Rows": 1000.0,
                             "Actual Loops": 1,
                             "Disabled": false,
@@ -653,8 +653,8 @@
                                 "Total Cost": 4.57,
                                 "Plan Rows": 100,
                                 "Plan Width": 48,
-                                "Actual Startup Time": 0.976,
-                                "Actual Total Time": 1.015,
+                                "Actual Startup Time": 0.971,
+                                "Actual Total Time": 1.01,
                                 "Actual Rows": 1000.0,
                                 "Actual Loops": 1,
                                 "Disabled": false,
@@ -686,8 +686,8 @@
                                     "Total Cost": 1.0,
                                     "Plan Rows": 100,
                                     "Plan Width": 48,
-                                    "Actual Startup Time": 0.729,
-                                    "Actual Total Time": 0.798,
+                                    "Actual Startup Time": 0.709,
+                                    "Actual Total Time": 0.779,
                                     "Actual Rows": 1000.0,
                                     "Actual Loops": 1,
                                     "Disabled": false,
@@ -728,47 +728,47 @@
         "Temp Read Blocks": 0,
         "Temp Written Blocks": 0
       },
-      "Planning Time": 0.192,
+      "Planning Time": 0.18,
       "Triggers": [],
-      "Execution Time": 13.415
+      "Execution Time": 13.102
     }
   ],
   "m1_publication_seconds": {
     "off": [
-      0.028798,
-      0.025748,
-      0.027588
+      0.03011,
+      0.030139,
+      0.031
     ],
     "shadow": [
-      0.028604,
-      0.025466,
-      0.032377
+      0.029383,
+      0.026202,
+      0.023451
     ]
   },
   "shadow_completed_seconds": [
-    0.308837,
-    0.333456,
-    0.308079
+    0.301628,
+    0.311362,
+    0.287439
   ],
   "m1_publication_deadline_seconds": 3,
   "m2_phase_seconds": {
     "compute": [
-      0.046586,
-      0.028127,
-      0.031596,
-      0.026859
+      0.04587,
+      0.027528,
+      0.025685,
+      0.02617
     ],
     "episode_prepare": [
-      0.00209,
-      0.008094,
-      0.007552,
-      0.007942
+      0.001952,
+      0.008058,
+      0.007588,
+      0.007605
     ],
     "finish_transaction": [
-      0.009558,
-      0.004836,
-      0.00485,
-      0.004665
+      0.008571,
+      0.004389,
+      0.004018,
+      0.003912
     ]
   }
 }
