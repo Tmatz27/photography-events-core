@@ -57,25 +57,26 @@ def perimeter(index=1, **changes):
 
 
 def alert(index=1, **changes):
-    result = dict(
-        type="Feature",
-        geometry=perimeter()["geometry"],
-        properties=dict(
-            id=f"urn:test:{index}",
-            status="Actual",
-            messageType="Alert",
-            event="Red Flag Warning",
-            sent=NOW.isoformat(),
-            expires=(NOW + timedelta(hours=3)).isoformat(),
-            references=[],
-        ),
+    result = copy.deepcopy(json.loads((FIXTURES / "nws.json").read_text())["alerts"]["features"][0])
+    result["geometry"] = perimeter()["geometry"]
+    result["properties"].update(
+        id=f"urn:test:{index}",
+        status="Actual",
+        messageType="Alert",
+        event="Red Flag Warning",
+        sent=NOW.isoformat(),
+        expires=(NOW + timedelta(hours=3)).isoformat(),
+        references=[],
     )
     result["properties"].update(changes)
     return result
 
 
 def forecast(temperature=50, **changes):
-    result = dict(
+    result = copy.deepcopy(
+        json.loads((FIXTURES / "nws.json").read_text())["forecast"]["properties"]["periods"][0]
+    )
+    result.update(
         startTime=NOW.isoformat(),
         endTime=(NOW + timedelta(hours=1)).isoformat(),
         temperature=temperature,

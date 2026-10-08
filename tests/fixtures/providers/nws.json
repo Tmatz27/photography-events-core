@@ -1,0 +1,85 @@
+{
+  "alerts": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "id": "urn:test:1",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -120.636,
+                35.13
+              ],
+              [
+                -120.633,
+                35.13
+              ],
+              [
+                -120.633,
+                35.132
+              ],
+              [
+                -120.636,
+                35.132
+              ],
+              [
+                -120.636,
+                35.13
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "id": "urn:test:1",
+          "event": "Heat Advisory",
+          "sent": "2026-10-08T04:57:00-07:00",
+          "expires": "2026-10-08T20:00:00-07:00",
+          "onset": "2026-10-08T04:57:00-07:00",
+          "ends": "2026-10-08T20:00:00-07:00",
+          "status": "Actual",
+          "messageType": "Update",
+          "severity": "Moderate",
+          "references": [],
+          "geocode": {
+            "SAME": [
+              "006079",
+              "006083"
+            ],
+            "UGC": [
+              "CAZ340",
+              "CAZ346"
+            ]
+          }
+        },
+        "type": "Feature"
+      }
+    ]
+  },
+  "forecast": {
+    "properties": {
+      "updateTime": "2026-10-08T12:01:41+00:00",
+      "periods": [
+        {
+          "startTime": "2026-10-08T06:00:00-07:00",
+          "endTime": "2026-10-08T07:00:00-07:00",
+          "temperature": 65,
+          "temperatureUnit": "F",
+          "shortForecast": "Patchy Fog",
+          "windSpeed": "0 mph",
+          "windDirection": ""
+        },
+        {
+          "startTime": "2026-10-08T07:00:00-07:00",
+          "endTime": "2026-10-08T08:00:00-07:00",
+          "temperature": 63,
+          "temperatureUnit": "F",
+          "shortForecast": "Patchy Fog",
+          "windSpeed": "0 mph",
+          "windDirection": ""
+        }
+      ]
+    }
+  }
+}

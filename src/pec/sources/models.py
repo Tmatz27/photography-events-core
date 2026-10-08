@@ -120,6 +120,7 @@ class Batch:
     provider_updated_at: datetime | None = None
     rate_limited: int = 0
     unavailable_ids: set[str] = field(default_factory=set)
+    invalid_numeric_ids: set[int] = field(default_factory=set)
     snapshot: bool = False
     failure_code: str | None = None
     alert_asof: datetime | None = None
@@ -132,6 +133,8 @@ class Batch:
             except RecordError as exc:
                 eid = None
                 if isinstance(value, dict):
+                    if type(value.get("id")) is int and value["id"] > 0:
+                        self.invalid_numeric_ids.add(value["id"])
                     try:
                         eid = identifier(value.get("uuid"))
                     except RecordError:

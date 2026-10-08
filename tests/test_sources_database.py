@@ -139,6 +139,13 @@ async def test_malformed_known_correction_withdraws_old(db):
     assert rows[0]["superseded_at"] and rows[0]["sensitive"]
 
 
+async def test_unreadable_uuid_known_numeric_id_protects_prior_fact(db):
+    await save(db, INATURALIST, [observation()])
+    await save(db, INATURALIST, [observation(uuid=None, geoprivacy="private", geojson=None)], 1)
+    rows = await normals(db)
+    assert len(rows) == 1 and rows[0]["superseded_at"] and rows[0]["sensitive"]
+
+
 async def test_scope_correction_and_older_update_no_rollback(db):
     await save(db, INATURALIST, [observation()])
     r = observation(updated_at=(NOW + timedelta(hours=1)).isoformat())

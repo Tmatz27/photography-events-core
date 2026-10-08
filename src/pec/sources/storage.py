@@ -279,6 +279,24 @@ async def persist(db, contract, batch, started, completed):
                 await withdraw(c, sid, eid, completed, protect=True)
         for eid in batch.unavailable_ids:
             await withdraw(c, sid, eid, completed, protect=True)
+        if contract.source_key == "inaturalist" and batch.invalid_numeric_ids:
+            # The documented numeric ID can identify a previously known record
+            # even when this unreadable correction lost its UUID. It is only
+            # a withdrawal/protection lookup, never a synthetic new identity.
+            unreadable = (
+                (
+                    await c.execute(
+                        text("""SELECT DISTINCT r.external_id FROM raw_observations r
+                JOIN normalized_observations n ON n.raw_observation_id=r.id WHERE r.source_id=:sid
+                AND (n.source_metadata->>'provider_numeric_id')::bigint=ANY(CAST(:ids AS bigint[]))"""),
+                        dict(sid=sid, ids=sorted(batch.invalid_numeric_ids)),
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            for eid in unreadable:
+                await withdraw(c, sid, eid, completed, protect=True)
         complete = batch.complete and not errors
         if complete and batch.snapshot:
             missing = (
