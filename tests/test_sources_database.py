@@ -1,6 +1,7 @@
 """M3A contract persistence/privacy and shadow calibration against real PostGIS."""
 
 import copy
+import asyncio
 import json
 from datetime import timedelta
 
@@ -327,6 +328,41 @@ async def test_optional_mocked_collect_and_cursor_commit(db):
     assert status == 200 and len(await normals(db)) == 1
     row = (await sql(db, "SELECT * FROM source_poll_state"))[0]
     assert row["cursor_updated_at"] == NOW
+
+
+async def test_incident_pieces_union_and_transport_metrics(db):
+    a, b = perimeter(), perimeter(2)
+    b["properties"]["poly_IRWINID"] = a["properties"]["poly_IRWINID"]
+    batch = Batch(provider_updated_at=NOW, snapshot=True)
+    batch.parse([a, b], wfigs.parse)
+    batch.records = wfigs.combine(batch.records, batch.rejected)
+    await persist(db, WFIGS, batch, NOW, NOW)
+    assert len(await sql(db, "SELECT * FROM normalized_observations WHERE superseded_at IS NULL")) == 1
+    run = (await sql(db, "SELECT * FROM source_runs"))[0]
+    assert run["records_received"] == run["records_accepted"] == 2 and run["unique_records"] == 1
+
+
+async def test_cancelled_collection_records_failure_without_m1(db):
+    from pec.sources.http import Client
+    from test_source_contracts import noop
+
+    entered = asyncio.Event()
+
+    async def blocked(url, ua):
+        entered.set()
+        await asyncio.Event().wait()
+
+    c = Client(INATURALIST, "PhotographyEventsCore-offline", reserve=noop, transport=blocked)
+    task = asyncio.create_task(
+        collect(db, INATURALIST, "PhotographyEventsCore-offline", client=c, clock=lambda: NOW)
+    )
+    await asyncio.wait_for(entered.wait(), 5)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    run = (await sql(db, "SELECT * FROM source_runs"))[0]
+    assert run["status"] == "failure" and run["error_code"] == "collection_cancelled" and run["requests"] == 1
+    assert not await sql(db, "SELECT * FROM assessment_runs")
 
 
 async def test_authenticated_debug_does_not_expose_provider_points(db):

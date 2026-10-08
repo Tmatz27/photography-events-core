@@ -33,6 +33,8 @@ def parse(feature):
     if not isinstance(feature, dict) or not isinstance(feature.get("properties"), dict):
         raise RecordError("invalid_feature")
     props = feature["properties"]
+    if type(props.get("OBJECTID")) is not int or props["OBJECTID"] <= 0:
+        raise RecordError("invalid_transport_id")
     gid = identifier(props.get("GlobalID"))
     irwin = identifier(props["poly_IRWINID"]) if props.get("poly_IRWINID") else None
     eid = "irwin:" + irwin if irwin else "global:" + gid

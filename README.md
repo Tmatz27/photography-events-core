@@ -1,4 +1,4 @@
-# Photography Events Core — Milestone 2 shadow development
+# Photography Events Core — Milestone 3A shadow development
 
 A LAN-only Python service for the Photography Events regret-prevention product.
 The Home Assistant v0.16.1 local engine remains authoritative. Core is a
@@ -8,6 +8,8 @@ release or a replacement for the existing integration.
 The accepted [Milestone 1 review](IMPLEMENTATION_REVIEW_MILESTONE_1.md) records
 the foundation. The [Milestone 2 review](IMPLEMENTATION_REVIEW_MILESTONE_2.md)
 records observation intelligence, shadow activation, acceptance and limitations.
+The [M3A shadow operations guide](docs/LIVE_SHADOW_OPERATIONS.md) documents the
+opt-in public source contracts and provisional bear/monarch calibration.
 
 HA repository: https://github.com/Tmatz27/Home-assistant-photography-events
 
@@ -71,6 +73,8 @@ Uvicorn; migration failure stops startup with a sanitized structured event.
 | `CORE_EVALUATION_GRACE` | Grace for materially newer relevant inputs; default 30 seconds, range 0–300 |
 | `CORE_PATTERNS_MODE` | `off` by default; `shadow` computes development intelligence after M1 commits, with no production promotion |
 | `CORE_PATTERN_TIMEOUT` | 30 seconds per shadow phase; separate from the M1 database deadline |
+| `CORE_LIVE_SOURCES` | `false` by default; explicit `true` requires shadow mode and registers only iNaturalist, WFIGS and NWS |
+| `CORE_SOURCE_USER_AGENT` | Descriptive public API contact/project identifier; no API secret |
 | `DB_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-db` |
 | `CORE_DATA_PATH` | Default `/mnt/cache/appdata/photography-events-core` |
 | `BACKUP_DIR` | Mounted Synology destination, no NAS credentials in Core |

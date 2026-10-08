@@ -12,7 +12,7 @@ from ..ingestion import canonical, fingerprint
 from ..logging import event
 from .http import Client, FetchError
 from .fetch import fetch
-from .models import RecordError
+from .models import RecordError, Batch
 
 
 async def register(c, contract):
@@ -253,15 +253,21 @@ async def persist(db, contract, batch, started, completed):
         errors = Counter(code for _, code in batch.rejected)
         seen = []
         for fact in batch.records:
+            # Transport records are features; incident identity is the union.
+            weight = (
+                len(fact.payload.get("pieces", [fact.payload]))
+                if contract.source_key == "wfigs_current"
+                else 1
+            )
             try:
                 async with c.begin_nested():
                     disposition = await store_fact(c, contract, sid, rid, fact, completed)
             except (RecordError, IntegrityError, DataError) as exc:
                 code = exc.code if isinstance(exc, RecordError) else "invalid_database_fact"
-                batch.rejected.append((fact.external_id, code))
-                errors[code] += 1
+                batch.rejected.extend((fact.external_id, code) for _ in range(weight))
+                errors[code] += weight
             else:
-                counts["accepted"] += 1
+                counts["accepted"] += weight
                 counts[disposition] += 1
                 counts["obscured_records"] += fact.spatial_basis == "obscured_cell"
                 counts["private_records"] += fact.spatial_basis == "private_unavailable"
@@ -375,7 +381,21 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
     if not enabled:
         return 503, None
     client = client or Client(contract, user_agent, reserve=lambda: reserve(db, contract))
-    batch = await fetch(contract, client, started, cursor=cursor, known=known)
+    try:
+        batch = await fetch(contract, client, started, cursor=cursor, known=known)
+    except asyncio.CancelledError:
+        # Scheduler deadline/shutdown remains cancellation, with a truthful
+        # failed attempt rather than a success/empty snapshot. No M1 resources.
+        failed = Batch(
+            complete=False,
+            http_status=503,
+            failure_code="collection_cancelled",
+            requests=client.requests,
+            bytes_received=client.bytes_received,
+            rate_limited=client.rate_limited,
+        )
+        await asyncio.shield(persist(db, contract, failed, started, clock()))
+        raise
     await persist(db, contract, batch, started, clock())
     if batch.complete and not batch.rejected and contract.source_key == "inaturalist":
 
