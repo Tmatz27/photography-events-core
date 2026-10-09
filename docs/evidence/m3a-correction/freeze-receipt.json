@@ -1,0 +1,180 @@
+{
+  "core_starting_sha": "ac37ce4ac953b5d81dd49790d2d2e09326fe7329",
+  "core_code_freeze_sha": "d43447faf094aba829dda863bff3ff5c2ba9fecf",
+  "ha_starting_and_final_sha": "c76726ece1e485ece03810087927da344289fba7",
+  "ha_changed": false,
+  "ci_run": 37864789425,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/37864789425",
+  "ci_conclusion": "success",
+  "artifact_id": 11587877086,
+  "artifact_sha256": "d13ad7cf555cce4e7c9920ed3b2497c1824e7a7312a1e766fe2aee11ae2b4ae0",
+  "core_tests_passed": 396,
+  "core_tests_failed": 0,
+  "core_tests_skipped": 0,
+  "core_test_seconds": 73.485,
+  "preserved_baseline_tests": 364,
+  "new_regression_cases": 32,
+  "new_case_names": [
+    [
+      "tests.test_source_corrections",
+      "test_cadence_new_source_poll_marks_watch_outdated_without_m1_rerun"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_concurrent_newer_withdrawal_then_late_response"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_f3_real_production_pool_exhaustion_does_not_block_backoff"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_live_fire_safety_updates_without_new_m1_or_m2"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r10_negative_safety_requires_current_successful_complete_evidence[failed]"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r10_negative_safety_requires_current_successful_complete_evidence[no_complete_snapshot]"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r10_negative_safety_requires_current_successful_complete_evidence[partial]"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r10_negative_safety_requires_current_successful_complete_evidence[stale]"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r1_identical_fire_reappears_hold_and_history"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r2_identical_alert_reappears"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r3_r5_protected_unavailable_biological_record_reappears"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r4_r9_duplicates_reinstated_rejected_distinct"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r6_older_empty_snapshot_cannot_clear_newer_active"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r6_older_late_snapshot_cannot_resurrect_retirement"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r7_incomplete_does_not_retire"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r8_explicit_cancel_then_later_fetch_of_stale_alert"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_r8_legacy_cancel_payload_restores_missing_barrier"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t1_future_open_then_older_valid_obscured_protected"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t1_future_rejected_privacy_still_protects_without_regression"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t2_future_historical_watermark_does_not_freeze_valid_correction"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t2_identical_legitimate_fact_replaces_invalid_historical_native_stamp"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t2_new_future_provider_version_rejected_not_persisted"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t3_older_open_cannot_downgrade_or_regress_fields"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t4_future_forecast_valid_period_allowed_native_issue_now"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t5_one_future_clock_isolated_among_many"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t6_older_privacy_only_immediately_redacts_current_and_history"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t6_protection_provenance_survives_accepted_correction_and_retention"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t7_older_privacy_update_never_reactivates_retired_fact"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t7_older_unavailable_protects_without_retiring_current"
+    ],
+    [
+      "tests.test_source_corrections",
+      "test_t7_out_of_order_privacy_still_elevates_without_other_changes"
+    ],
+    [
+      "tests.test_source_corrections_portable",
+      "test_contract_clock_tolerance_configurable_not_forecast_valid_time"
+    ],
+    [
+      "tests.test_source_corrections_portable",
+      "test_f3_backoff_routes_to_shadow_pool_only"
+    ]
+  ],
+  "local_portable_passed": 151,
+  "local_without_postgis_skips": 245,
+  "ci_portable_passed": 156,
+  "ci_portable_skips": 240,
+  "migration_head_and_restored_head": "0008",
+  "prior_migrations_byte_unchanged": true,
+  "legacy_fixture_cases": 15,
+  "pipeline_cases": 9,
+  "legacy_evaluator_comparisons": 18000,
+  "legacy_evaluator_mismatches": 0,
+  "default_deadlines_seconds": {
+    "production_database": 3,
+    "shadow_transaction": 30,
+    "scheduled_poll": 120
+  },
+  "production_promotion": false,
+  "release_published": false,
+  "unattended_live_operation": false,
+  "max_fingerprint_seconds": 0.21313061099999686,
+  "max_full_persist_seconds": 0.22344436699998482,
+  "fingerprint_optimization_required": false,
+  "evidence_files_sha256": {
+    "acceptance.json": "2c57d459fdbd9805015b48338a3a3f7ba2448087ab0acc92ffa0b67947713583",
+    "pytest.log": "009216dbeb921f79e084533204c186afa9da2d78bcf1ff3adff85ea09cb58e2e",
+    "tests.xml": "d927d1aa5aaae698678be6424aa24a8fa09b1dfdf6b36dc37933759b9a15d862",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "frozen-database.json": "e99cf3f2b20b6d424691913e2d84e5de060801167ee19d7c5fee13ba1ee37cb8",
+    "m2-performance.json": "5714019f3cc7531949c1684885c488b0ef3f5a3bb3066c9b4933446eb1714df9",
+    "collection-performance.json": "d347f4ad63c38f4e3f9f530dc2cd7ef1660d1762bea7c566e3c0206b4bee9ed8",
+    "h3-performance.json": "e0f625fe33323c2165254d6bdcf2662e662530c0485a955e62029529409c74bf",
+    "source-fingerprint-performance.json": "9c99f3be726becaba507ac3fc0259c407aa6077bcef64336e75d69abc6c22e58"
+  },
+  "submission_tip": "Documentation/evidence descendant; exact final tip/CI in outputs/M3A_CORRECTION_FINAL_RECEIPT.md"
+}

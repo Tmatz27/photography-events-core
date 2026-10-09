@@ -484,7 +484,7 @@ metadata, observation/native time or internal historical analytical geometry.
 M2 serialization already redacts any affected historical member. A rejected
 older/future privacy update cannot change unrelated fields or resurrect a retired
 fact. Protection provenance is retained separately from the accepted source fact
-via `privacy_source_run_id` and sanitized run context. An impossible historical
+via `privacy_source_run_id` and sanitized run context. The original
 protection-only run remains referenced through later accepted corrections and
 retention. An older known-ID public-unavailable response also raises protection
 without retiring the current fact or changing unrelated fields. An impossible historical
@@ -570,3 +570,90 @@ Files: `tests/test_source_corrections.py` and
 also exercised by `tools/migration_acceptance.py seed-lifecycle`. The original
 364 tests remain named and collected; archived JUnit names are compared rather
 than inferring preservation from the total count alone.
+
+### Correction code freeze and complete validation
+
+Implementation freeze: `d43447faf094aba829dda863bff3ff5c2ba9fecf`. [Real Core validation](https://github.com/Tmatz27/photography-events-core/actions/runs/37864789425)
+is green. Artifact `11587877086` ZIP SHA-256:
+`d13ad7cf555cce4e7c9920ed3b2497c1824e7a7312a1e766fe2aee11ae2b4ae0`. Archived at `docs/evidence/m3a-correction/`;
+`freeze-receipt.json` contains all file hashes and exact new parameter-case names.
+Final submission is a documentation/evidence-only descendant of this freeze.
+
+**396 passed in 73.48 seconds; zero failures, errors or
+skips**, on real PostgreSQL 18.6 / PostGIS 3.6.4. All original 364 named cases
+are preserved and passed, verified against baseline JUnit names; 32 cases were
+added. Local Windows run: 151 portable passed, 245 skipped without PostGIS/oracle;
+CI portable run: 156 passed, 240 DB cases skipped, then the full DB suite ran.
+Ruff is clean. All M2 A/F/P/B/C/H3, privacy, safety replay, concurrency, L1,
+source contract, durable quota, Retry-After and cancellation checks passed.
+
+Both independently recaptured legacy oracle files were byte-identical: 15/15
+legacy fixture cases, nine pipeline cases, 18,000 seeded evaluator comparisons
+and zero mismatches. Fresh head 0008, full 0001–0008 chain, explicit 0007 lifecycle
+backfill, repeat migration, current/historical memberships, restart/frozen-DB
+failure recovery and Compose acceptance passed. Actual operator `backup.sh` and
+`restore.sh` succeeded; restored application owner, head 0008, all three H3
+indexes and report-group identity digest were preserved. M2 episode/generation
+artifacts survived restore; zero M2 opportunities were promoted.
+
+Safety replay specifically passes complete intersecting fire → complete absence
+→ identical return → restored hold, while preserving original evidence/native
+time. Older completion, incomplete/failed/stale snapshot and stale explicit CAP
+replay cannot clear or resurrect safety. Privacy-only rejected older/future facts
+redact current/history immediately, never reactivate retired facts, and preserve
+protection-only provenance through accepted corrections and retention. Production
+pool exhaustion does not block M3 backoff; restart retains backoff/quota state.
+
+Earlier correction runs are retained as troubleshooting receipts: run
+37863458298 failed in synthetic benchmark timestamp binding before DB tests;
+37864111008 passed 393 cases and failed only the new cadence test at the exact
+poll-completion moment, before accepted source-change grace expired. Both are
+resolved; precursor run 37864488692 passed all 394 then-existing cases and the
+explicit lifecycle migration check. The freeze above adds the final two privacy
+regressions and passes all 396. No deadline was raised to obtain these results.
+
+### F4: measured fingerprint growth, no redesign
+
+`tools/source_fingerprint_benchmark.py` uses a disposable real PostGIS database,
+three trials per source/size, all three sources populated simultaneously with
+1,000 / 10,000 / 25,000 retained raw rows each (3,000 / 30,000 / 75,000 total).
+Rows include retired and sensitive state. Wall time includes connection,
+transaction, result transfer, datetime normalization, canonical hashing and
+commit; full persistence additionally includes source registration, lifecycle
+state lock, run/provenance writes and retirement-event retrieval. These full
+transaction trials are empty/failed polls, isolating fingerprint overhead from
+HTTP and per-record parsing/normalization. They do not establish peak live-batch
+or 24-hour throughput. Provider-body size is not a fingerprint input.
+
+| Source | Retained rows/source | Fingerprint median ms | Full persist median ms | Raw rows visited / returned | Fingerprint scan |
+| --- | ---: | ---: | ---: | ---: | --- |
+| inaturalist | 1,000 | 9.40 | 15.75 | 3,000 / 1,000 | Seq Scan |
+| wfigs_current | 1,000 | 9.22 | 14.37 | 3,000 / 1,000 | Seq Scan |
+| nws_live_context | 1,000 | 9.08 | 14.30 | 3,000 / 1,000 | Seq Scan |
+| inaturalist | 10,000 | 83.88 | 95.09 | 30,000 / 10,000 | Seq Scan |
+| wfigs_current | 10,000 | 81.40 | 91.69 | 30,000 / 10,000 | Seq Scan |
+| nws_live_context | 10,000 | 82.61 | 92.34 | 30,000 / 10,000 | Seq Scan |
+| inaturalist | 25,000 | 207.20 | 214.37 | 25,000 / 25,000 | Index Scan |
+| wfigs_current | 25,000 | 210.17 | 204.63 | 25,000 / 25,000 | Index Scan |
+| nws_live_context | 25,000 | 207.91 | 212.75 | 25,000 / 25,000 | Index Scan |
+
+Maximum single trial: fingerprint **0.213131s**;
+full persist **0.223444s**. Budgets remain
+30 seconds per shadow transaction and 120 seconds per scheduled poll. Query
+plans and buffers are untruncated in `source-fingerprint-performance.json`;
+row visits above include scan-filter discards. Source-filtered small sequential
+scans and the existing source/identity index at the larger size are planner
+choices, not new indexes. Full persistence time includes its additional audit
+query; this table reports the actual fingerprint query plan, not every SQL plan.
+The measured cost does not threaten either budget. No hash redesign, speculative
+partition, arbitrary deletion, retention shortening or timeout increase was made.
+Growth beyond these retained sizes, larger source sets, cold-cache behavior and
+live write contention need further measurement before unattended operation.
+
+M3A CORRECTNESS = READY
+
+SUPERVISED SHADOW = READY
+
+UNATTENDED LIVE OPERATION = NOT READY
+
+PRODUCTION PROMOTION = NO
