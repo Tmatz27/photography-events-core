@@ -152,8 +152,10 @@ async def test_g1_recent_receipt_cannot_renew_expired_native_fire(db, complete):
         complete=complete,
     )
     assert len(await current(db)) == 1 and (await current(db))[0]["valid_until"] < NOW
-    # An untrustworthy intersecting candidate must not be interpreted as negative.
-    assert await safety(db) == "unknown"
+    # H1 supersedes native expiry for fresh qualifying WFIGS positive evidence.
+    # The generic expiry remains unchanged; receipt age still expires the hold.
+    assert await safety(db) == "hold_candidate"
+    assert await safety(db, 181) == "unknown"
 
 
 @pytest.mark.parametrize("complete", [False, True])

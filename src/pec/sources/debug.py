@@ -268,11 +268,14 @@ async def calibration(db, now):
             )
         ).scalar_one_or_none()
         destination_valid = registry is not False
+        # WFIGS Current receipt proves continued qualifying incident status.
+        # An old geometry edit must not expire that fresh positive evidence;
+        # receipt/order fences still prevent an indefinite hold from stored rows.
         fire = (
             (
                 await c.execute(
                     text("""SELECT count(*)>0 AS intersects,
-            COALESCE(bool_or(n.valid_until>=:now AND n.provider_updated_at<=:future
+            COALESCE(bool_or(n.provider_updated_at<=:future
             AND r.retired_at IS NULL AND r.state_poll_started_at BETWEEN :fresh AND :future
             AND r.fetched_at BETWEEN :fresh AND :future),FALSE) AS positive
             FROM normalized_observations n JOIN raw_observations r
@@ -283,7 +286,6 @@ async def calibration(db, now):
                     dict(
                         lon=PISMO["longitude"],
                         lat=PISMO["latitude"],
-                        now=now,
                         fresh=now - timedelta(seconds=WFIGS.freshness_seconds),
                         future=now + timedelta(seconds=WFIGS.provider_clock_skew_seconds),
                     ),
