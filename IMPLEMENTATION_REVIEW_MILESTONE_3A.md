@@ -485,6 +485,9 @@ M2 serialization already redacts any affected historical member. A rejected
 older/future privacy update cannot change unrelated fields or resurrect a retired
 fact. Protection provenance is retained separately from the accepted source fact
 via `privacy_source_run_id` and sanitized run context. An impossible historical
+protection-only run remains referenced through later accepted corrections and
+retention. An older known-ID public-unavailable response also raises protection
+without retiring the current fact or changing unrelated fields. An impossible historical
 2099 native stamp is retained on its historical assertion; a credible accepted
 correction replaces the current assertion even when content hash is identical.
 
@@ -525,3 +528,45 @@ change, automatic M1 rerun or production promotion is implied. All original
 scientific, working-fire-view, model-weather, bounded refresh, retention and
 daily-volume limitations in section 28 still apply. See
 [shadow operations](docs/LIVE_SHADOW_OPERATIONS.md) for operator cadence.
+
+### Added regression inventory
+
+Thirty-two new collected cases: 30 real-database cases and two portable cases.
+The R10 function has four parameter cases (failed, incomplete, stale and no
+complete snapshot). All test names are listed below for independent replay:
+
+- `test_r1_identical_fire_reappears_hold_and_history`
+- `test_r2_identical_alert_reappears`
+- `test_r3_r5_protected_unavailable_biological_record_reappears`
+- `test_r4_r9_duplicates_reinstated_rejected_distinct`
+- `test_r6_older_late_snapshot_cannot_resurrect_retirement`
+- `test_r6_older_empty_snapshot_cannot_clear_newer_active`
+- `test_r7_incomplete_does_not_retire`
+- `test_r8_explicit_cancel_then_later_fetch_of_stale_alert`
+- `test_r8_legacy_cancel_payload_restores_missing_barrier`
+- `test_r10_negative_safety_requires_current_successful_complete_evidence`
+- `test_t1_future_open_then_older_valid_obscured_protected`
+- `test_t2_future_historical_watermark_does_not_freeze_valid_correction`
+- `test_t2_new_future_provider_version_rejected_not_persisted`
+- `test_t2_identical_legitimate_fact_replaces_invalid_historical_native_stamp`
+- `test_t3_older_open_cannot_downgrade_or_regress_fields`
+- `test_t4_future_forecast_valid_period_allowed_native_issue_now`
+- `test_t5_one_future_clock_isolated_among_many`
+- `test_t6_older_privacy_only_immediately_redacts_current_and_history`
+- `test_t7_older_privacy_update_never_reactivates_retired_fact`
+- `test_t7_out_of_order_privacy_still_elevates_without_other_changes`
+- `test_t1_future_rejected_privacy_still_protects_without_regression`
+- `test_cadence_new_source_poll_marks_watch_outdated_without_m1_rerun`
+- `test_f3_real_production_pool_exhaustion_does_not_block_backoff`
+- `test_concurrent_newer_withdrawal_then_late_response`
+- `test_live_fire_safety_updates_without_new_m1_or_m2`
+- `test_contract_clock_tolerance_configurable_not_forecast_valid_time`
+- `test_f3_backoff_routes_to_shadow_pool_only`
+- `test_t7_older_unavailable_protects_without_retiring_current`
+- `test_t6_protection_provenance_survives_accepted_correction_and_retention`
+
+Files: `tests/test_source_corrections.py` and
+`tests/test_source_corrections_portable.py`. Migration lifecycle seeding is
+also exercised by `tools/migration_acceptance.py seed-lifecycle`. The original
+364 tests remain named and collected; archived JUnit names are compared rather
+than inferring preservation from the total count alone.

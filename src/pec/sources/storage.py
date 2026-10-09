@@ -131,7 +131,9 @@ async def elevate_privacy(c, sid, eid, now, rid):
     changed = not row["sensitive"] or precise
     if changed:
         await c.execute(
-            text("UPDATE raw_observations SET privacy_source_run_id=:rid WHERE id=:raw"),
+            text(
+                "UPDATE raw_observations SET privacy_source_run_id=COALESCE(:rid,privacy_source_run_id) WHERE id=:raw"
+            ),
             dict(raw=row["id"], rid=rid),
         )
     return changed
@@ -493,8 +495,8 @@ async def persist(db, contract, batch, started, completed):
                     )
                 else:
                     await elevate_privacy(c, sid, eid, completed, rid)
-        if ordered:
-            for eid in batch.unavailable_ids:
+        for eid in batch.unavailable_ids:
+            if ordered:
                 await withdraw(
                     c,
                     sid,
@@ -505,6 +507,8 @@ async def persist(db, contract, batch, started, completed):
                     rid=rid,
                     reason="public_unavailable",
                 )
+            elif await elevate_privacy(c, sid, eid, completed, rid):
+                protection_events.append(dict(external_id=eid, basis="public_unavailable"))
         if contract.source_key == "inaturalist" and batch.invalid_numeric_ids:
             # The documented numeric ID can identify a previously known record
             # even when this unreadable correction lost its UUID. It is only
@@ -587,7 +591,7 @@ async def persist(db, contract, batch, started, completed):
                 protection_events=protection_events,
                 invalid_historical_versions=invalid_historical_versions,
                 retirement_events=retirement_events,
-                public_unavailable_ids=sorted(batch.unavailable_ids) if ordered else [],
+                public_unavailable_ids=sorted(batch.unavailable_ids),
             )
         )
         await c.execute(

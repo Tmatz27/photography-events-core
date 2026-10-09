@@ -298,6 +298,33 @@ async def test_cadence_new_source_poll_marks_watch_outdated_without_m1_rerun(db)
     assert await sql(db, "SELECT id FROM assessment_runs") == assessments
 
 
+async def test_t7_older_unavailable_protects_without_retiring_current(db):
+    record = observation(subject="bear")
+    await poll(db, INATURALIST, [record], 2)
+    await poll(db, INATURALIST, minute=1, unavailable=[record["uuid"]], completed=NOW + timedelta(minutes=3))
+    row = (await normals(db))[0]
+    assert row["sensitive"] and not row["point"] and row["superseded_at"] is None
+    assert row["subject_key"] == "Ursus americanus" and row["provider_updated_at"] == NOW
+    run = (await sql(db, "SELECT * FROM source_runs ORDER BY id"))[-1]
+    assert run["context_payload"]["protection_events"][0]["basis"] == "public_unavailable"
+
+
+async def test_t6_protection_provenance_survives_accepted_correction_and_retention(db):
+    from pec.retention import sweep
+
+    await poll(db, INATURALIST, [observation(updated_at=(NOW + timedelta(minutes=30)).isoformat())])
+    await poll(db, INATURALIST, [observation(obscured=True)], 1)
+    protected_run = (await sql(db, "SELECT privacy_source_run_id FROM raw_observations"))[0][
+        "privacy_source_run_id"
+    ]
+    assert protected_run is not None
+    await poll(db, INATURALIST, [observation(updated_at=(NOW + timedelta(minutes=40)).isoformat())], 40)
+    raw = (await sql(db, "SELECT * FROM raw_observations"))[0]
+    assert raw["privacy_source_run_id"] == protected_run and (await current(db))[0]["sensitive"]
+    await db.pattern_transaction(lambda c: sweep(c, NOW + timedelta(days=200)), write=True)
+    assert any(r["id"] == protected_run for r in await sql(db, "SELECT * FROM source_runs"))
+
+
 async def test_f3_real_production_pool_exhaustion_does_not_block_backoff(db):
     state = State(NOW + timedelta(hours=2), 2)
     connections = [await db.engine.connect() for _ in range(5)]
