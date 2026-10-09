@@ -818,3 +818,96 @@ M1 publication, with operator-managed refresh and the existing source-change
 grace. This is sufficient for supervised evaluation only. Live fire safety and
 privacy do not wait for a new pattern generation. No autonomous M1/M2 scheduler,
 unattended retry/rediscovery, release or production promotion is implemented.
+
+### G1 implementation freeze, exact test inventory and validation receipts
+
+Code/test freeze: `4015027599f92abd4b6c1140cdf70d45b13c1df9`. [Full real PostGIS CI](https://github.com/Tmatz27/photography-events-core/actions/runs/37872190529) is
+green. Artifact `11590329877` ZIP SHA-256 `bf3f036f1c161faf143ac085f11d913429b0c84918882d793486e038a7201d51` was independently
+downloaded and verified. Evidence is committed in `docs/evidence/m3a-g1/`;
+`freeze-receipt.json` records file hashes and every new parameter case.
+The final documentation/evidence submission is a descendant with unchanged
+implementation; its exact SHA and final-tip CI are recorded externally in
+`outputs/M3A_G1_FINAL_RECEIPT.md` beside this checkout to avoid self-reference.
+
+**421 passed in 80.88s; zero failures, errors or skips**,
+on real PostgreSQL 18.6 / PostGIS 3.6.4. All 396 prior named cases remain and
+passed, independently compared with baseline JUnit names; 25 real PostGIS G1/G2
+cases were added. Nine assertion updates listed above implement the expressly
+required G1 semantics, not removal or weakening of ordering/privacy fences.
+Local Windows: 151 portable passed / 270 skipped without PostGIS/oracle.
+CI portable: 156 passed / 265 DB skipped, then the full database suite ran.
+Ruff clean. New cases:
+
+- `test_g1_collect_expected_replay_returns_success_not_retry_failure`
+- `test_g1_collect_invalid_fact_remains_retry_failure`
+- `test_g1_complete_positive_negative_and_stale_fire`
+- `test_g1_diagnostics_expose_counts_without_provider_payloads_or_ids`
+- `test_g1_fresh_current_view_retains_unexpired_native_fire_policy[False]`
+- `test_g1_fresh_current_view_retains_unexpired_native_fire_policy[True]`
+- `test_g1_ignored_entire_poll_does_not_advance_or_clear_or_certify[values0]`
+- `test_g1_ignored_entire_poll_does_not_advance_or_clear_or_certify[values1]`
+- `test_g1_incomplete_fire_positive_does_not_make_source_current[False-future]`
+- `test_g1_incomplete_fire_positive_does_not_make_source_current[False-geometry]`
+- `test_g1_incomplete_fire_positive_does_not_make_source_current[True-future]`
+- `test_g1_incomplete_fire_positive_does_not_make_source_current[True-geometry]`
+- `test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties0]`
+- `test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties1]`
+- `test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties2]`
+- `test_g1_nws_original_and_reference_order_repeat_absence[Cancel-False]`
+- `test_g1_nws_original_and_reference_order_repeat_absence[Cancel-True]`
+- `test_g1_nws_original_and_reference_order_repeat_absence[Update-False]`
+- `test_g1_nws_original_and_reference_order_repeat_absence[Update-True]`
+- `test_g1_only_invalid_future_fire_is_unknown`
+- `test_g1_recent_receipt_cannot_renew_expired_native_fire[False]`
+- `test_g1_recent_receipt_cannot_renew_expired_native_fire[True]`
+- `test_g1_stale_seen_record_preserves_current_but_retires_absent_sibling[False]`
+- `test_g1_stale_seen_record_preserves_current_but_retires_absent_sibling[True]`
+- `test_g2_retired_id_not_refreshed_but_incremental_return_can_reinstate`
+
+NWS original+Update and original+Cancel pass in both orders and on repeat polls:
+latest update retained or cancellation stays retired, parser counts stay empty,
+source freshness current for valid complete input, replay counted separately,
+and genuinely absent updates still retire. Expected replay `collect` returns
+200; invalid future-sibling collection truthfully returns 502. Invalid future or
+geometry siblings preserve an accepted intersecting fire hold while keeping
+global source unknown/incomplete. No intersecting valid fire gives unknown for
+incomplete sources; complete no-fire gives no_intersection. Whole older polls
+cannot clear a newer fire or advance the cursor/applied watermark. Expired,
+stale, RX/final/inactive and sensitive-location/privacy cases remain protected.
+The G2 regression proves no retired known-ID refresh and conditional incremental
+return with sensitivity/evidence time preserved, not a rediscovery guarantee.
+
+All F1–F4, M2 A/F/P/B/C/H3 identity/clustering/episode/shadow isolation, L1,
+iNaturalist privacy/provider corrections, NWS ordering, fire retirement/
+reinstatement, quotas, Retry-After, cancellation, pool contention and real DB
+concurrency regressions passed. M1 15/15 legacy fixtures and both independently
+recaptured oracle files are byte-identical; nine pipeline parity cases and
+18,000 seeded evaluator comparisons have zero mismatches.
+
+No migration was created or modified: head 0008 remains. Fresh DB, full
+0001–0008 chain, explicit lifecycle backfill, repeat upgrade, frozen-DB recovery,
+Core/DB restart and Compose passed. Actual backup.sh/restore.sh preserved head
+0008, application ownership, all H3 indexes, current/historical report-group
+identity and M2 episode/generation artifacts. Zero promoted M2 opportunities.
+
+F4 fingerprint measurement reran at 1k/10k/25k retained rows per source.
+Maximum fingerprint trial 0.216496s; full empty/failed
+persist transaction 0.231627s. Full plans/rows touched
+are archived. No optimization or timeout increase is required; budgets remain
+3s production DB, 30s shadow transaction, 120s scheduled poll. This does not
+measure the separate G3 CAP barrier lookup, peak live-batch HTTP throughput or
+24-hour operation. G3 scaling and bounded retired-ID retries remain backlog.
+
+Earlier run 37871719636 passed all 396 baseline and 21 then-new cases, failing
+only the two expiry fixture cases whose model time was incorrectly current while
+their native-update expiry was already past. Correcting both fixture dates made
+the intended expired-assertion checks valid; the freeze above passes all cases.
+No deadline or engine semantics were changed to mask that fixture error.
+
+M3A CORRECTNESS = READY
+
+SUPERVISED SHADOW = READY
+
+UNATTENDED LIVE OPERATION = NOT READY
+
+PRODUCTION PROMOTION = NO

@@ -1,0 +1,151 @@
+{
+  "core_starting_sha": "d2789a1dca0b0b84af0d8081d01944ddb594b9d8",
+  "core_code_freeze_sha": "4015027599f92abd4b6c1140cdf70d45b13c1df9",
+  "ha_starting_and_final_sha": "c76726ece1e485ece03810087927da344289fba7",
+  "ha_changed": false,
+  "ci_run": 37872190529,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/37872190529",
+  "ci_conclusion": "success",
+  "artifact_id": 11590329877,
+  "artifact_sha256": "bf3f036f1c161faf143ac085f11d913429b0c84918882d793486e038a7201d51",
+  "tests_passed": 421,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "test_seconds": 80.88,
+  "preserved_baseline_case_names": 396,
+  "g1_required_existing_test_updates": 9,
+  "new_postgis_cases": 25,
+  "new_case_names": [
+    [
+      "tests.test_g1_sources",
+      "test_g1_collect_expected_replay_returns_success_not_retry_failure"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_collect_invalid_fact_remains_retry_failure"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_complete_positive_negative_and_stale_fire"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_diagnostics_expose_counts_without_provider_payloads_or_ids"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_fresh_current_view_retains_unexpired_native_fire_policy[False]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_fresh_current_view_retains_unexpired_native_fire_policy[True]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_ignored_entire_poll_does_not_advance_or_clear_or_certify[values0]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_ignored_entire_poll_does_not_advance_or_clear_or_certify[values1]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_incomplete_fire_positive_does_not_make_source_current[False-future]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_incomplete_fire_positive_does_not_make_source_current[False-geometry]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_incomplete_fire_positive_does_not_make_source_current[True-future]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_incomplete_fire_positive_does_not_make_source_current[True-geometry]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties0]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties1]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nonqualifying_fire_cannot_supply_incomplete_positive[properties2]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nws_original_and_reference_order_repeat_absence[Cancel-False]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nws_original_and_reference_order_repeat_absence[Cancel-True]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nws_original_and_reference_order_repeat_absence[Update-False]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_nws_original_and_reference_order_repeat_absence[Update-True]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_only_invalid_future_fire_is_unknown"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_recent_receipt_cannot_renew_expired_native_fire[False]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_recent_receipt_cannot_renew_expired_native_fire[True]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_stale_seen_record_preserves_current_but_retires_absent_sibling[False]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g1_stale_seen_record_preserves_current_but_retires_absent_sibling[True]"
+    ],
+    [
+      "tests.test_g1_sources",
+      "test_g2_retired_id_not_refreshed_but_incremental_return_can_reinstate"
+    ]
+  ],
+  "local_portable_passed": 151,
+  "local_without_postgis_oracle_skips": 270,
+  "ci_portable_passed": 156,
+  "ci_database_skips": 265,
+  "migration_head": "0008",
+  "new_migration": false,
+  "committed_migrations_0001_to_0008_unchanged": true,
+  "legacy_fixture_cases": 15,
+  "pipeline_cases": 9,
+  "evaluator_comparisons": 18000,
+  "evaluator_mismatches": 0,
+  "max_fingerprint_seconds": 0.21649645299999065,
+  "max_full_persist_seconds": 0.23162696699998264,
+  "cap_barrier_query_benchmarked": false,
+  "cap_scaling_deferred": true,
+  "retired_id_refresh_added": false,
+  "production_promotion": false,
+  "release_published": false,
+  "unattended_live_operation": false,
+  "evidence_files_sha256": {
+    "acceptance.json": "80486305ecf9feb79afb883f62db1c2ef9b7bd7c0c10e2c2505f895455498096",
+    "pytest.log": "b0d9e4ea5bbabd327cd74b610e98045be4118c9eeedf930071f8fde11450f6de",
+    "tests.xml": "28ff01a67ffcd5ff9b104be6a00ca153823900b251e1a990ed034a4d3e597bfa",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "frozen-database.json": "ed81447e22f3bd252fad823884cd8096b49aa313b602699658f235e6a8433b3d",
+    "m2-performance.json": "a00484d38771239617a130a59a46f4025c531b5409ef68f6aae2c94f16c3cdd2",
+    "collection-performance.json": "e6007c97dcf558d807a4427e810a6a4bf1dbc4fce144ff3f073a6ff43dae0cab",
+    "h3-performance.json": "2d871b826284f88e1148e0748cbdc9caf1ce3b0bebee244dff010f62b59513c9",
+    "source-fingerprint-performance.json": "670570d4397d538d68a3857941bb9448783efad2b1b2322ccd003e0091ce1ab7"
+  },
+  "final_submission_receipt": "outputs/M3A_G1_FINAL_RECEIPT.md records exact documentation descendant and final-tip CI"
+}
