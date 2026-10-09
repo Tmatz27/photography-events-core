@@ -3,6 +3,8 @@
 Sections 1–31 retain the original implementation receipts. The independent
 review correction in section 32 supersedes their implementation freeze, schema
 head and readiness statements; it does not erase the historical 364-test baseline.
+Section 33 records the subsequent G1 correction and supersedes section 32's
+version-rejection and incomplete-positive safety expectations.
 
 ## 1. Executive summary
 
@@ -657,3 +659,162 @@ SUPERVISED SHADOW = READY
 UNATTENDED LIVE OPERATION = NOT READY
 
 PRODUCTION PROMOTION = NO
+
+## 33. G1 INDEPENDENT REVIEW CORRECTION
+
+### Scope, starting receipts and root cause
+
+Verified clean main/origin-main before editing: Core
+`d2789a1dca0b0b84af0d8081d01944ddb594b9d8`; HA
+`c76726ece1e485ece03810087927da344289fba7`, unchanged. The prior accepted
+correction freeze was `d43447faf094aba829dda863bff3ff5c2ba9fecf` with 396 passing
+cases and head 0008. Section 32 remains a historical receipt. G1 supersedes its
+classification of expected version skips and requirement that positive wildfire
+evidence needs a complete source. No provider, HA card, release, production
+default, M1 evaluator, M2 analytical engine or scheduler redesign is changed.
+
+Root cause: `src/pec/sources/storage.py:persist` added every `store_fact`
+version-fence decision to parser errors. Those errors made completeness false,
+set `parser_failure`, suppressed absence handling and caused `collect` to report
+502. `src/pec/sources/debug.py:calibration` used the same source-completeness gate
+for a positive fire hold and a negative result. Both boundaries are corrected.
+
+### Record outcomes versus whole-poll outcomes
+
+| Outcome | Codes / example | Classification and effect |
+| --- | --- | --- |
+| Accepted | New assertion, correction, duplicate or reinstatement | Existing transport and canonical counters; accepted identity contributes to both seen sets |
+| Expected stale version | `stale_provider_update`, individual `out_of_order_poll` | `Batch.skipped`, structured counts, no parser error; do not apply the old version |
+| Expected replay | `stale_reference_replay` | Skip with CAP fence intact; never reactivate cancelled/superseded data |
+| Invalid record | `future_provider_update`, invalid geometry/schema/unreadable input | `Batch.rejected`, `records_rejected`, parser error; cannot certify completeness |
+| Entire older/equal poll | Start does not exceed applied source fence | Existing SQL `failure` status with `poll_outcome=ignored_out_of_order_poll`; never certify completeness or advance cursor/watermark |
+
+`storage.py:VERSION_SKIPS`, `persist`, `models.py:Batch.skipped` and
+`debug.py:OutcomeCounts/Operational` are the exact implementation locations.
+`store_fact` retains all native-version, raw-state, CAP and invalid-clock fences.
+Privacy elevation still occurs before version acceptance/savepoint and applies
+to rejected/skipped/ignored input without regressing other fields or reactivating
+retired facts. An ignored entire poll can record privacy increases but no fact
+version, absence or reinstatement mutation. The existing source row lock and
+shadow pool remain the concurrency boundary; no production deadline is raised.
+
+Completeness requires an ordered poll, completed transport, no invalid-record
+errors and no poll failure code. Expected version skips alone do not make an
+otherwise valid poll incomplete. `Batch.complete` is updated to this effective
+result, so collection HTTP/backoff and known-ID rotation use the same outcome.
+Expected replay polls return 200, not a false retry failure. Invalid sibling
+records still make collection fail/incomplete while their valid siblings persist.
+Newer incomplete attempts retain the existing fail-closed applied-poll fence;
+entire older attempts do not advance it, even if they finish later.
+
+### Authoritative seen set and cancellation ordering
+
+`seen_ids` remains accepted identities for daily unique reporting. New internal
+`snapshot_seen_ids` includes accepted plus valid parsed version-skipped
+identities. Thus an older version appearing in a fresh authoritative snapshot
+does not make its newer current assertion falsely absent. Only complete ordered
+polls use that set to retire genuinely unseen current assertions. Invalid input
+is not reclassified as seen/harmless; it prevents completeness.
+
+Membership never sets active state or resurrects an assertion. An original alert
+in the response can be present in `snapshot_seen_ids` while remaining retired.
+CAP Update/Cancel references supersede it in either order: original-first is
+retired by the accepted reference; reference-first blocks the original using
+the existing retained explicit barrier. Repeat original/reference polls remain
+complete success. An original-only replay does not protect an absent update
+identity, so a complete later snapshot can still retire that update. No fuzzy
+identity, implicit relationship or transitive CAP redesign is introduced.
+
+### Positive versus negative wildfire evidence
+
+Positive safety credibility uses the existing qualifying-current-wildfire flag:
+WF, active candidate, no fire-out time, non-final perimeter, approved, public,
+visible and not deleted, with validated mapped geometry. This is the safety
+qualification gate; the biological `credible` field is not a new fire policy.
+The normalized assertion must be current, unretired and intersect the accepted
+public Pismo point; a restricted/mismatched registry row suppresses it.
+
+The accepted raw receipt and applied record poll start must be within the
+WFIGS three-hour freshness window and not beyond the existing clock allowance.
+Native update must not be impossibly future-dated, and `valid_until` must not be
+expired. The existing safety Fact expiry remains native-update plus 15 days;
+we do not replace it with retrieval time. A fresh qualifying current-view receipt
+can corroborate an unexpired older perimeter, while arbitrary old native dates
+cannot keep a destination held forever. Tests cover both unexpired two-day-old
+and expired sixteen-day-old perimeters under complete/incomplete source status.
+
+Reliable positive evidence supplies `hold_candidate` independently of global
+source completeness/freshness. A valid intersecting fire plus a malformed or
+future sibling therefore holds, while the global source remains unknown and
+parser-failed/incomplete. With no reliable positive evidence, `no_intersection`
+requires current, successful, complete authoritative source evidence and no
+qualifying intersecting candidate. An expired/unreliable intersecting candidate
+yields `unknown`, never a falsely cleared negative. Incomplete/stale/no-fire
+also yields unknown. No raw location, route safety inference or new buffer is
+introduced, and no fresh M2 generation is required for this evaluation.
+
+### G1-C diagnostics and API compatibility
+
+Existing JSONB context stores `outcome_counts`: `accepted`, `duplicate`,
+`reinstated`, `rejected_invalid`, `skipped_stale_version`, `skipped_replay`,
+`ignored_out_of_order_poll`, `incomplete_snapshot`. `skip_reason_counts` holds
+fixed codes only. Accepted/rejected/skip counts describe transport records;
+duplicate/reinstated counters count canonical facts; ignored/incomplete count
+polls. SQL `records_rejected` now means invalid M3 records, excluding expected
+skips; status stays in the existing success/failure/parser_failure enum.
+
+Authenticated source-contract diagnostics add nullable operational
+`outcome_counts`, `poll_outcome` and default-empty `skip_reason_counts`. Earlier
+runs lacking G1 classification return null outcome counts, not invented history.
+No raw payload, provider IDs, private coordinates or PII is projected. Expected
+skips emit no parser-failure log. Contract/parser versions become `m3a-3` /
+`public-contract-3`, preserving provenance for changed semantics. API version
+remains v1 with additive debug fields; there is no HA consumer change.
+
+### G2 retired iNaturalist refresh limitation
+
+`storage.py:collect` selects known numeric IDs only from current unexpired
+assertions, capped at 200 with rotation. A retired unavailable record therefore
+leaves this set. It can reinstate only when the provider returns its UUID through
+the scoped incremental `updated_since` search/cursor overlap or applicable initial
+14-day search. It must be publicly discoverable and match taxon, bbox/date and
+provider-update query constraints. There is no guaranteed rediscovery interval;
+an unchanged returned record may never enter incremental results. The narrow
+G2 test demonstrates empty known-ID selection after retirement and reinstatement
+when an incremental response does contain the UUID. No retired-ID sweep or
+unbounded refresh is added. A bounded retry strategy remains next-milestone work.
+
+### G3 cancellation-barrier performance backlog
+
+The retained-raw JSONB CAP reference query in `store_fact` is unchanged. It must
+be measured at realistic retained alert volumes, update/cancel chains and
+replay-heavy incoming polls before unattended operation. F4's retained-source
+fingerprint benchmark uses empty persistence transactions and does not measure
+this per-alert lookup. No new index or query redesign is justified by that
+unrelated measurement, and none is included in this pass.
+
+### Regression scope and operation limits
+
+All 396 original test names remain collected. Nine existing test functions have
+G1-required assertion updates: R4/R9 ignored attempts; R6 late/empty polls; R7
+incomplete positive evidence; R8 replay; T3 stale version; T6 privacy-only skip;
+W6 invalid geometry sibling; complete-only absence. Their ordering, no-reactivation,
+privacy, malformed isolation and negative-proof checks remain; no case is deleted.
+
+Twenty-five new PostGIS cases in `tests/test_g1_sources.py` cover both item orders
+for Update and Cancel, repeats and absence, expected skip seen membership,
+ignored whole polls, invalid future/geometry siblings with/without intersection,
+complete/stale/expired/unexpired safety, RX/final/inactive distinctions, sanitized
+diagnostics, collection HTTP/backoff outcomes and the G2 limitation. Exact case
+inventory and final CI receipts follow in the validation subsection.
+
+Head stays 0008; no migration 0009 is needed. Committed migrations 0001–0008 are
+unchanged. Full real PostgreSQL/PostGIS, M1 parity, pipeline/fuzz, M2 identity /
+clustering / episodes / shadow isolation, F1–F4, L1, privacy, quota, cancellation,
+concurrency and backup/restore acceptance remain required; results follow below.
+
+Cadence stays iNaturalist ~30m and WFIGS/NWS ~15m. M2 only recomputes after a new
+M1 publication, with operator-managed refresh and the existing source-change
+grace. This is sufficient for supervised evaluation only. Live fire safety and
+privacy do not wait for a new pattern generation. No autonomous M1/M2 scheduler,
+unattended retry/rediscovery, release or production promotion is implemented.

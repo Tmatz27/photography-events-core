@@ -31,6 +31,14 @@ corrections that move outside the spatial/taxon/date search. Missing IDs mean
 publicly unavailable, not proven deletion. The refresh does not cover all
 retained history; old expired records do not establish current evidence.
 
+The known-ID refresh selects only current, unexpired normalized assertions.
+An observation retired as publicly unavailable leaves that refresh set. It can
+return if a later provider response contains the same UUID through incremental
+search (within the taxon/bbox/date filters and `updated_since` cursor/overlap), or
+an applicable initial 14-day search. Provider modification, discoverability and
+scope must permit that response; rediscovery has no guaranteed schedule. A
+bounded retired-ID retry strategy is deferred to operational hardening.
+
 Collection commits raw facts, normalized assertions and diagnostics only. The
 accepted M2 lifecycle remains attached to an independently committed M1
 assessment. Its next **new** M1 publication captures live facts and recalculates
@@ -48,8 +56,15 @@ The accepted M2 source-change grace remains 30 seconds after the changed run
 completes; it is not a periodic recomputation. Privacy redaction has no grace.
 Live WFIGS destination intersection and source freshness are evaluated directly
 from source facts, independently of a new M2 cluster or M1 assessment. A fresh,
-complete, successful current-view snapshot is required for `no_intersection`;
-stale, failed or partial collection yields `unknown`. Identical returning fire
+complete, successful current-view snapshot is required for `no_intersection`.
+A qualifying approved/public/visible active wildfire that intersects Pismo can
+supply `hold_candidate` even when a sibling makes the source incomplete. It
+requires a current accepted assertion, receipt/poll start within three hours,
+native time within the clock tolerance, and the existing native-update-plus-15-day
+validity envelope. A duplicate receipt does not renew that native expiry.
+Incomplete/stale collection without reliable positive evidence yields `unknown`.
+An expired intersecting candidate also yields `unknown`, never a false negative.
+Global source freshness remains unknown for an incomplete poll. Identical returning fire
 facts reinstate a hold after complete absence, without renewing evidence time.
 An older poll cannot override a newer retirement. Explicit CAP cancellations
 retain a provider-time replay fence. A future provider update is rejected with
@@ -66,7 +81,10 @@ Authenticated endpoints:
 
 - `/api/v1/debug/source-contracts`: typed contracts, hashes, native timestamps,
   freshness, sanitized parser codes, backoff, reserved request budget, and UTC
-  daily traffic/correction/duplicate/privacy counts.
+  daily traffic/correction/duplicate/privacy counts; latest operational
+  `skip_reason_counts`, `outcome_counts` and `poll_outcome` distinguish expected
+  version skips, invalid records and ignored entire polls. These additions contain
+  counts and fixed codes only; older runs have unavailable (`null`) outcome counts.
 - `/api/v1/debug/live/calibration`: Signal/developing Watch, condition and safety
   context. Counts are unknown; behavior and major monarch aggregation remain
   unconfirmed. No production eligibility.
@@ -88,6 +106,20 @@ are of accepted records, not inferred population prevalence. Requests reserved
 may exceed completed-run requests after cancellation/process failure. Day
 boundaries are UTC. Native provider age stays separate from successful retrieval;
 an empty biological delta without a native timestamp has unknown native age.
+
+G1 `records_rejected`/daily rejected counts refer to invalid inputs. Expected
+stale versions/replays use separate structured skip counts and no parser event.
+`seen_ids` remains accepted identities for daily unique reporting;
+`snapshot_seen_ids` additionally includes parsed, version-skipped identities
+without reactivating them. Only a newer complete valid poll retires unseen current
+assertions. Explicit CAP references still win over an original alert in either
+item order. Entire older polls remain failure/ignored attempts and never certify
+a new complete snapshot or advance cursor/watermark.
+
+NWS CAP barrier checks still inspect retained JSONB references per incoming
+alert. F4's empty-poll fingerprint benchmark does not measure this lookup.
+Benchmark realistic retained-alert volumes, update/cancel chains and replay-heavy
+polls before unattended operation; no CAP index/query redesign is included here.
 
 Offline tests run in normal CI. To inspect live contracts manually, inside the
 development environment with `PYTHONPATH=src`, run:

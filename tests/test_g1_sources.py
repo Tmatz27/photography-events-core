@@ -144,10 +144,30 @@ async def test_g1_complete_positive_negative_and_stale_fire(db):
 @pytest.mark.parametrize("complete", [False, True])
 async def test_g1_recent_receipt_cannot_renew_expired_native_fire(db, complete):
     old = int((NOW - timedelta(days=16)).timestamp() * 1000)
-    await poll(db, WFIGS, [perimeter(attr_ModifiedOnDateTime_dt=old)], snapshot=True, complete=complete)
+    await poll(
+        db,
+        WFIGS,
+        [perimeter(attr_ModifiedOnDateTime_dt=old, poly_PolygonDateTime=old, poly_DateCurrent=old)],
+        snapshot=True,
+        complete=complete,
+    )
     assert len(await current(db)) == 1 and (await current(db))[0]["valid_until"] < NOW
     # An untrustworthy intersecting candidate must not be interpreted as negative.
     assert await safety(db) == "unknown"
+
+
+@pytest.mark.parametrize("complete", [False, True])
+async def test_g1_fresh_current_view_retains_unexpired_native_fire_policy(db, complete):
+    old = int((NOW - timedelta(days=2)).timestamp() * 1000)
+    await poll(
+        db,
+        WFIGS,
+        [perimeter(attr_ModifiedOnDateTime_dt=old, poly_PolygonDateTime=old, poly_DateCurrent=old)],
+        snapshot=True,
+        complete=complete,
+    )
+    assert (await current(db))[0]["valid_until"] == NOW + timedelta(days=13)
+    assert await safety(db) == "hold_candidate"
 
 
 @pytest.mark.parametrize(
