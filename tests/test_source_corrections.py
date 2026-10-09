@@ -197,6 +197,14 @@ async def test_t2_new_future_provider_version_rejected_not_persisted(db):
     assert len(await normals(db)) == 1
 
 
+async def test_t2_identical_legitimate_fact_replaces_invalid_historical_native_stamp(db):
+    await legacy_future_record(db)
+    await poll(db, INATURALIST, [observation(subject="bear")], 1)
+    rows = await normals(db)
+    assert len(rows) == 2 and rows[0]["superseded_at"]
+    assert rows[1]["provider_updated_at"] == NOW and rows[0]["provider_updated_at"].year == 2099
+
+
 async def test_t3_older_open_cannot_downgrade_or_regress_fields(db):
     await poll(
         db,
@@ -266,6 +274,27 @@ async def test_t7_out_of_order_privacy_still_elevates_without_other_changes(db):
     row = (await normals(db))[0]
     assert row["sensitive"] and row["subject_key"] == "Ursus americanus" and not row["point"]
     assert row["superseded_at"] is None
+
+
+async def test_t1_future_rejected_privacy_still_protects_without_regression(db):
+    await poll(db, INATURALIST, [observation(subject="bear")])
+    batch = await poll(db, INATURALIST, [observation(obscured=True, updated_at="2099-01-01T00:00:00Z")], 1)
+    row = (await normals(db))[0]
+    assert batch.rejected[0][1] == "future_provider_update"
+    assert row["sensitive"] and not row["point"] and row["subject_key"] == "Ursus americanus"
+    assert row["provider_updated_at"] == NOW and row["superseded_at"] is None
+
+
+async def test_cadence_new_source_poll_marks_watch_outdated_without_m1_rerun(db):
+    await poll(db, INATURALIST, [observation(i, subject="bear") for i in range(1, 4)])
+    await generate(db)
+    before = await calibration(db, NOW)
+    assert before["items"][0]["level"] == "developing_watch"
+    assessments = await sql(db, "SELECT id FROM assessment_runs")
+    await poll(db, INATURALIST, [observation(4, subject="bear")], 1)
+    after = await calibration(db, NOW + timedelta(minutes=1))
+    assert after["pattern_analysis_state"] == "outdated" and after["items"][0]["level"] == "signal"
+    assert await sql(db, "SELECT id FROM assessment_runs") == assessments
 
 
 async def test_f3_real_production_pool_exhaustion_does_not_block_backoff(db):

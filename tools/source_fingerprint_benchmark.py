@@ -63,8 +63,8 @@ async def main():
                     await c.execute(
                         text("""INSERT INTO raw_observations(source_id,external_id,observed_at,fetched_at,
                         parser_version,content_sha256,sensitive,provider_updated_at,state_poll_started_at,retired_at,retirement_reason)
-                        SELECT :sid,'retained-'||lpad(i::text,12,'0'),:old,:old,'benchmark',repeat('a',64),i%3=0,:old,:old,
-                        CASE WHEN i%2=0 THEN :old ELSE NULL END,CASE WHEN i%2=0 THEN 'snapshot_absent' ELSE NULL END
+                        SELECT :sid,'retained-'||lpad(i::text,12,'0'),CAST(:old AS timestamptz),CAST(:old AS timestamptz),'benchmark',repeat('a',64),i%3=0,CAST(:old AS timestamptz),CAST(:old AS timestamptz),
+                        CASE WHEN i%2=0 THEN CAST(:old AS timestamptz) ELSE NULL END,CASE WHEN i%2=0 THEN 'snapshot_absent' ELSE NULL END
                         FROM generate_series(1,CAST(:size AS integer)) i"""),
                         dict(sid=sid, old=now - timedelta(days=60), size=size),
                     )

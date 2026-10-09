@@ -81,10 +81,8 @@ def main():
         results["migration_0003_0004_shadow_history"] = "existing run hashes/timestamps preserved with published lifecycle"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
-        try:
-            compose(*test_exec,'tools/source_fingerprint_benchmark.py')
-        finally:
-            compose('cp','photography-events-core:/tmp/source-fingerprint-performance.json',str(EVIDENCE / 'source-fingerprint-performance.json'))
+        compose(*test_exec,'tools/source_fingerprint_benchmark.py')
+        compose('cp','photography-events-core:/tmp/source-fingerprint-performance.json',str(EVIDENCE / 'source-fingerprint-performance.json'))
         compose("cp",str(EVIDENCE / "collection-baselines"),"photography-events-core:/tmp/collection-baselines")
         try:
             compose(*test_exec,"tools/h3_acceptance.py")

@@ -195,7 +195,8 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
     ):
         raise RecordError("out_of_order_poll")
     old_update = previous["provider_updated_at"] if previous else None
-    if previous and future_update(contract, old_update, previous["fetched_at"]):
+    invalid_previous = bool(previous and future_update(contract, old_update, previous["fetched_at"]))
+    if invalid_previous:
         old_update = None  # Invalid historical metadata cannot be a version fence.
     if old_update and old_update > fact.provider_updated_at:
         raise RecordError("stale_provider_update")
@@ -246,7 +247,11 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
     )
     sensitive = fact.sensitive or bool(previous and previous["sensitive"])
     changed = (
-        not previous or previous["content_sha256"] != digest or previous["raw_payload"] is None or reinstated
+        not previous
+        or previous["content_sha256"] != digest
+        or previous["raw_payload"] is None
+        or reinstated
+        or invalid_previous
     )
     if fact.analysis_area:
         valid = (
@@ -561,6 +566,18 @@ async def persist(db, contract, batch, started, completed):
             dict(sid=sid, started=started),
         )
         digest = await source_fingerprint(c, sid)
+        retirement_events = (
+            await c.execute(
+                text(
+                    "SELECT external_id,retirement_reason,retirement_provider_updated_at FROM raw_observations WHERE retired_source_run_id=:rid"
+                ),
+                dict(rid=rid),
+            )
+        ).mappings()
+        retirement_events = [
+            {key: value.isoformat() if isinstance(value, datetime) else value for key, value in row.items()}
+            for row in retirement_events
+        ]
         status = "success" if complete else "parser_failure" if errors else "failure"
         context = canonical(
             dict(
@@ -569,6 +586,8 @@ async def persist(db, contract, batch, started, completed):
                 complete_snapshot=bool(complete and batch.snapshot),
                 protection_events=protection_events,
                 invalid_historical_versions=invalid_historical_versions,
+                retirement_events=retirement_events,
+                public_unavailable_ids=sorted(batch.unavailable_ids) if ordered else [],
             )
         )
         await c.execute(
