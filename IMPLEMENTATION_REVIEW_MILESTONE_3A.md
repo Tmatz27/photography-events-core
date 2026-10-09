@@ -5,6 +5,8 @@ review correction in section 32 supersedes their implementation freeze, schema
 head and readiness statements; it does not erase the historical 364-test baseline.
 Section 33 records the subsequent G1 correction and supersedes section 32's
 version-rejection and incomplete-positive safety expectations.
+Section 34 records the H1 policy correction and supersedes section 33's use of
+generic native expiry for WFIGS Current positive evidence.
 
 ## 1. Executive summary
 
@@ -903,6 +905,208 @@ only the two expiry fixture cases whose model time was incorrectly current while
 their native-update expiry was already past. Correcting both fixture dates made
 the intended expired-assertion checks valid; the freeze above passes all cases.
 No deadline or engine semantics were changed to mask that fixture error.
+
+M3A CORRECTNESS = READY
+
+SUPERVISED SHADOW = READY
+
+UNATTENDED LIVE OPERATION = NOT READY
+
+PRODUCTION PROMOTION = NO
+
+## 34. H1 SAFETY FRESHNESS CORRECTION
+
+### Starting state, reproduction and authoritative policy
+
+Verified clean `main == origin/main` before edits: Core
+`bca72f4522b58e9930c53d9ce3f4ab6f1e5b16d6`; HA
+`c76726ece1e485ece03810087927da344289fba7`, unchanged. The reviewed G1
+implementation freeze was `4015027599f92abd4b6c1140cdf70d45b13c1df9` with 421
+passing cases. That baseline remains accepted for supervised shadow evaluation.
+
+The original H1 reproduction is already captured in G1's real PostGIS fixture
+`test_g1_recent_receipt_cannot_renew_expired_native_fire[False/True]`: model/native
+dates 16 days old, current qualifying active/public mapped incident, fresh
+receipt, stored `valid_until` already past. The reviewed positive query required
+`n.valid_until >= now` and yielded unknown. That was the G1 expectation, now
+explicitly superseded by the authoritative H1 safety-policy decision.
+
+For a qualifying current WFIGS wildfire, last geometry edit age must not
+independently invalidate a freshly verified active incident. Positive status is
+evidence from the current feed, bounded by its accepted receipt age, not an
+invention that the geometry or observation time was renewed. The approximately
+three-hour positive receipt window remains. An old database row without another
+valid receipt cannot maintain a hold indefinitely.
+
+### Narrow code change and unchanged protections
+
+`src/pec/sources/debug.py:calibration` removes `n.valid_until >= :now` only from
+the WFIGS positive-evidence aggregate and removes its unused query binding.
+The qualifying-record filter, enabled source, current normalized assertion,
+unretired raw identity, actual Pismo intersection, accepted raw fetched/poll
+start freshness and future-native-clock bound are unchanged. WFIGS qualification
+still requires WF, active candidate, no fire-out time, non-final perimeter,
+approved/public/visible and not deleted. Prescribed, final, out, restricted,
+unapproved, invisible and inactive records cannot create this positive hold.
+
+`Fact.valid_until` is unchanged, including its generic 15-day safety fallback.
+Native/observed dates and stored expiry are not rewritten. iNaturalist/NWS
+validity checks, provider-clock validation, generic/global source freshness,
+G1 skip classification, poll/cancellation fences, source persistence/backoff,
+M1/M2 engine behavior and default timeouts are unchanged. No source contract/
+parser version or public API schema changes. One existing G1 test function's
+two parameter cases retain their names and now assert fresh old-edit hold,
+unchanged expired generic field and receipt-age expiry under H1. No case deleted.
+
+### Native edit, receipt and snapshot proof remain separate
+
+| Concept | Stored / checked value | H1 meaning |
+| --- | --- | --- |
+| Incident native modification | `n.provider_updated_at`, raw provider stamp | Unchanged last edit; never replaced by HTTP/fetch time; impossible future still barred |
+| Accepted incident current-feed receipt | Raw `fetched_at` and `state_poll_started_at` | Both must be within configured WFIGS freshness window and clock bound; duplicates can refresh, ignored/stale replay cannot |
+| Current qualifying status | Enabled/current/unretired, typed qualifying-wildfire flag and mapped intersection | Fresh current feed asserts the incident still qualifies, independent of edit age |
+| Source snapshot completeness | Successful ordered complete valid traversal | Required to retire unseen identities and certify a negative, not to invalidate an accepted positive sibling |
+| Other evidence expiration | Existing `Fact.valid_until` and iNaturalist/NWS query gates | Unchanged; this is only a WFIGS Current positive-query exception |
+
+Global source freshness continues to use the supplied source-native as-of and
+retrieval status/age. It may honestly display stale while an individually
+accepted fresh positive fire holds. H1-8 deliberately uses an old supplied
+native as-of and verifies stale display, old provider stamps and fresh successful
+retrieval simultaneously. `last_successful_fetch` describes successful complete
+source retrieval, not necessarily an accepted per-incident receipt: a skipped
+stale record cannot use that whole-poll success to refresh its own raw markers.
+An incomplete source can accept a positive without a complete-source success.
+No internal identity or coordinates are added to diagnostics.
+
+### Positive versus negative safety
+
+Positive: a freshly accepted current qualifying intersecting WFIGS incident
+produces `hold_candidate`, even if its geometry was last edited weeks ago or an
+invalid sibling prevents snapshot completeness. Generic expiry alone cannot
+remove this precautionary hold. The raw receipt/order/native-future guards still
+expire stale/unverified evidence after the established positive window.
+
+Negative: unchanged `no_intersection` requires current native source freshness,
+successful complete authoritative snapshot, valid approved destination and no
+qualifying intersection. An old underlying native as-of cannot become current
+just because HTTP retrieval succeeded. If completeness/native freshness is
+uncertain and no fresh qualifying positive remains, output is unknown. Complete
+absence retires the incident; the negative remains unknown when native source
+freshness is stale, and may be no_intersection with genuinely current native
+as-of. This is neither route/highway closure inference nor proof of safe travel.
+
+### H1 test matrix (real PostGIS)
+
+`tests/test_h1_safety.py` adds 25 parameter cases covering all ten requirements:
+
+| Requirement | Regression |
+| --- | --- |
+| H1-1 | 16-day-old edit, fresh complete receipt, expired generic field retained, positive hold |
+| H1-2 | 385 hourly receipts across 16 simulated days; one normalized assertion, 384 duplicates, unchanged native/observed/expiry fields, continuous hold |
+| H1-3 | Hold at the configured three-hour boundary; unknown one second beyond |
+| H1-4 | Old active fire plus future-clock or malformed-geometry sibling; hold with parser-failed/incomplete globally unknown source |
+| H1-5 | Complete absence retires; fresh native source may certify no_intersection, stale native source stays unknown |
+| H1-6 | RX/final/out/internal/restricted/proposed/draft/inactive/invisible/deleted and disabled source never hold |
+| H1-7 | Entire older completion or stale individual version cannot update accepted receipt markers; old receipt yields unknown |
+| H1-8 | Honest stale native debug display, unchanged last edit, fresh retrieval and positive hold coexist |
+| H1-9 | Empty, away-from-destination or aged-receipt incomplete source stays unknown |
+| H1-10 | Unchanged old incident reinstates after complete absence with original native/observed/expired fields and restored hold |
+
+The long-running replay advances the fixture clock, not wall time; it makes no
+provider HTTP calls and does not bypass production quotas in live operation.
+All lifecycle, geometry/intersection and safety queries use actual PostGIS.
+Exact receipt/test inventory and CI validation follow below.
+
+### Scope and remaining operational limits
+
+Migrations 0001–0008 remain committed byte-unchanged; no schema migration is
+needed. No Fact expiry, global freshness or privacy policy change; no HA card,
+new provider, notifications, release, production promotion or timeout increase.
+Live fire safety and immediate privacy remain independent of new M2 generation.
+
+Cadence remains iNaturalist ~30m, WFIGS/NWS ~15m, with M2 only on new M1
+publication and operator-managed refresh. Autonomous M2 recomputation, G2 retired
+ID retry/rediscovery, G3 CAP scaling optimization and broader retention remain
+deferred operational-readiness work. Current mapped perimeters do not establish
+flame precision, closure or safe access. Honest stale native source display can
+coexist with a conservative fresh-receipt hold; supervised evaluation only.
+
+### H1 code freeze, test results and CI receipts
+
+Implementation/test freeze: `551552c99e2e11409c40300b70ff0e63d6d3abf1`. [Real PostGIS H1 validation](https://github.com/Tmatz27/photography-events-core/actions/runs/37875096146)
+is green. Artifact `11591494810` ZIP SHA-256 `f8263750339b2c93e935126fb230020a485313bed9ac0bf0ee9e0316fac13407` was downloaded and
+verified. Complete evidence is archived under `docs/evidence/m3a-h1/`;
+`freeze-receipt.json` records each file hash and exact new parameter-case names.
+The final documentation/evidence submission is a descendant with unchanged
+implementation; its exact SHA/final-tip CI are recorded externally in
+`outputs/M3A_H1_FINAL_RECEIPT.md` beside this checkout, avoiding self-reference.
+
+**446 passed in 91.34s; zero failures, errors or skips**,
+on PostgreSQL 18.6 / PostGIS 3.6.4. All 421 accepted named cases remain and
+passed, verified against baseline JUnit names, plus 25 new real PostGIS H1 cases.
+Only one old G1 function's two parameter expectations are explicitly updated to
+the H1 policy; its generic expiry and receipt-expiry assertions remain. Local
+Windows: 151 portable passed / 295 skipped without PostGIS/oracle. CI portable:
+156 passed / 290 DB skipped, then the full real DB suite ran. Ruff clean.
+
+H1-1 through H1-10 all pass. The 385-receipt hourly replay covers 16 simulated
+days in 6.039s of test runtime, with 384 true duplicates,
+one unchanged normalized assertion, original native/observed/expiry dates and
+continuous hold. The hold ends one second beyond the configured receipt window.
+Future/geometry siblings keep their invalid status and global unknown freshness,
+yet individually accepted old-edit fires hold. Complete absence retires them;
+stale native source cannot certify a negative. Stale versions/older completions
+do not refresh incident receipt markers. Prescribed/final/out/non-public/
+unapproved/inactive/invisible/deleted and disabled source never hold. Old native
+debug stamps remain stale/honest beside a fresh positive receipt. Unchanged
+reappearance reinstates with original dates and restored hold. Exact new cases:
+
+- `test_h1_10_unchanged_old_incident_reinstates_with_original_native_time`
+- `test_h1_1_old_edit_fresh_complete_current_feed_holds`
+- `test_h1_2_unchanged_hourly_receipts_over_sixteen_days_keep_hold`
+- `test_h1_3_receipt_window_boundary_and_expiry`
+- `test_h1_4_old_edit_positive_survives_invalid_sibling[future]`
+- `test_h1_4_old_edit_positive_survives_invalid_sibling[geometry]`
+- `test_h1_5_complete_absence_retires_and_keeps_negative_proof_honest[False]`
+- `test_h1_5_complete_absence_retires_and_keeps_negative_proof_honest[True]`
+- `test_h1_6_disabled_source_cannot_hold`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties0]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties1]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties2]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties3]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties4]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties5]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties6]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties7]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties8]`
+- `test_h1_6_nonqualifying_old_perimeter_never_holds[properties9]`
+- `test_h1_7_replay_cannot_refresh_positive_receipt[older_poll]`
+- `test_h1_7_replay_cannot_refresh_positive_receipt[stale_version]`
+- `test_h1_8_stale_native_debug_and_fresh_receipt_hold_are_distinct`
+- `test_h1_9_incomplete_without_fresh_intersection_never_clears[aged_receipt]`
+- `test_h1_9_incomplete_without_fresh_intersection_never_clears[away]`
+- `test_h1_9_incomplete_without_fresh_intersection_never_clears[empty]`
+
+G1 NWS original/update/cancel ordering, expected skip versus invalid classification,
+F1 reinstatement, F2 monotonic privacy, WFIGS positive/negative asymmetry and receipt
+expiry, M2 identity/clustering/episodes/shadow isolation, L1 malformed isolation,
+iNaturalist privacy, source cancellation/quotas/Retry-After and F3 backoff/pool
+concurrency regressions remain green. F4 and all performance acceptance scripts
+reran without raising default timeouts or changing the fingerprint/CAP design.
+
+M1 15/15 legacy fixtures and both independently recaptured oracle files remain
+byte-identical; nine pipeline parity cases, 18,000 seeded evaluator comparisons,
+zero mismatches. No migration added/modified: fresh head 0008, full 0001–0008
+chain, explicit lifecycle backfill, repeat migration, Core/DB restart and frozen-DB
+failure recovery passed. Actual backup.sh/restore.sh preserved application owner,
+head 0008, all H3 indexes, report-group identity and M2 artifacts. Compose passed;
+zero promoted M2 opportunities. HA stayed unchanged at the starting SHA.
+
+Changed implementation file: `src/pec/sources/debug.py` only. Other changes are
+`tests/test_h1_safety.py`, the H1-superseded G1 assertion, this review packet,
+`docs/LIVE_SHADOW_OPERATIONS.md` and evidence. `Fact.valid_until`, global source
+freshness, persistence/provider parsers, migrations, M1/M2, defaults and HA are
+unchanged. No release, production notification or production promotion occurred.
 
 M3A CORRECTNESS = READY
 

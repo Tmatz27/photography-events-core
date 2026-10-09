@@ -1,0 +1,61 @@
+{
+  "container_build": "passed",
+  "startup": {
+    "core_version": "0.1.0-dev",
+    "api_version": "v1",
+    "schema_version": "0008",
+    "status": "ready"
+  },
+  "fresh_database_to_0008": "passed",
+  "database_versions": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit|POSTGIS=\"3.6.4 94d984b\" [EXTENSION] PGSQL=\"180\" GEOS=\"3.14.1-CAPI-1.20.5\" (compiled against GEOS 3.13.1) PROJ=\"9.8.1 NETWORK_ENABLED=OFF URL_ENDPOINT=https://cdn.proj.org USER_WRITABLE_DIRECTORY=/tmp/proj DATABASE_PATH=/usr/share/proj/proj.db\" (compiled against PROJ 9.6.0) LIBXML=\"2.9.14\" LIBJSON=\"0.18\" LIBPROTOBUF=\"1.5.1\" WAGYU=\"0.5.0 (Internal)\" TOPOLOGY",
+  "migration_0001_round_trip": "passed",
+  "R20_migration_0001_to_0002": "identity and provider data preserved; API reads held legacy context",
+  "migration_0001_0002_0003_0004_0005_0006_0007_0008": "identity, memberships, behavior and held API verified",
+  "migration_0003_0004_shadow_history": "existing run hashes/timestamps preserved with published lifecycle",
+  "repeat_migration": "passed",
+  "migration_0002_downgrade": "forward-only; restore pre-upgrade backup instead of losing history",
+  "fixture_readable": "tule_elk_rut-2026-09-15",
+  "M2_shadow_1000_reports": "one episode; zero promoted opportunities",
+  "bad_token": "401",
+  "core_restart": "data preserved",
+  "M2_core_restart": "episode identity preserved",
+  "R19_frozen_database": {
+    "requests": 8,
+    "deadline": 2,
+    "seconds": [
+      2.0055,
+      2.0046,
+      2.004,
+      2.0037,
+      2.0036,
+      2.0022,
+      2.0022,
+      2.0021
+    ],
+    "checked_out_after_failure": 0,
+    "cold_seconds": [
+      2.0045,
+      2.0042,
+      2.0041,
+      2.0039,
+      2.0038,
+      2.0038,
+      2.0037,
+      2.0036
+    ],
+    "cold_checked_out_after_failure": 0,
+    "recovered": true
+  },
+  "database_stopped": "live 200, ready 503, data 503",
+  "database_restart": "ready and data preserved",
+  "M2_database_restart": "episode identity preserved",
+  "backup_bytes": 301597,
+  "operator_scripts": "backup.sh and restore.sh executed successfully",
+  "restored_application_owner": "photography_events",
+  "restored_h3_indexes": "all three 0006 indexes present",
+  "restored_report_group_identity": "exact current/historical membership digest preserved",
+  "restored_migration_head": "0008",
+  "restored_m2_debug_state": "outdated",
+  "M2_restore": "episode identity and generation artifacts preserved",
+  "restore": "clean DB, extension, pg_restore, migrations, Core readiness and data passed"
+}

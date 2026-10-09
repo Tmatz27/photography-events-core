@@ -1,0 +1,152 @@
+{
+  "core_starting_sha": "bca72f4522b58e9930c53d9ce3f4ab6f1e5b16d6",
+  "core_code_freeze_sha": "551552c99e2e11409c40300b70ff0e63d6d3abf1",
+  "ha_starting_and_final_sha": "c76726ece1e485ece03810087927da344289fba7",
+  "ha_changed": false,
+  "ci_run": 37875096146,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/37875096146",
+  "ci_conclusion": "success",
+  "artifact_id": 11591494810,
+  "artifact_sha256": "f8263750339b2c93e935126fb230020a485313bed9ac0bf0ee9e0316fac13407",
+  "tests_passed": 446,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "test_seconds": 91.343,
+  "preserved_baseline_case_names": 421,
+  "new_postgis_cases": 25,
+  "h1_required_existing_g1_parameter_updates": 2,
+  "new_case_names": [
+    [
+      "tests.test_h1_safety",
+      "test_h1_10_unchanged_old_incident_reinstates_with_original_native_time"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_1_old_edit_fresh_complete_current_feed_holds"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_2_unchanged_hourly_receipts_over_sixteen_days_keep_hold"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_3_receipt_window_boundary_and_expiry"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_4_old_edit_positive_survives_invalid_sibling[future]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_4_old_edit_positive_survives_invalid_sibling[geometry]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_5_complete_absence_retires_and_keeps_negative_proof_honest[False]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_5_complete_absence_retires_and_keeps_negative_proof_honest[True]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_disabled_source_cannot_hold"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties0]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties1]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties2]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties3]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties4]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties5]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties6]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties7]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties8]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_6_nonqualifying_old_perimeter_never_holds[properties9]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_7_replay_cannot_refresh_positive_receipt[older_poll]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_7_replay_cannot_refresh_positive_receipt[stale_version]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_8_stale_native_debug_and_fresh_receipt_hold_are_distinct"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_9_incomplete_without_fresh_intersection_never_clears[aged_receipt]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_9_incomplete_without_fresh_intersection_never_clears[away]"
+    ],
+    [
+      "tests.test_h1_safety",
+      "test_h1_9_incomplete_without_fresh_intersection_never_clears[empty]"
+    ]
+  ],
+  "hourly_replay_receipts": 385,
+  "hourly_replay_days": 16,
+  "hourly_replay_test_seconds": 6.039,
+  "local_portable_passed": 151,
+  "local_without_postgis_oracle_skips": 295,
+  "ci_portable_passed": 156,
+  "ci_database_skips": 290,
+  "migration_head": "0008",
+  "new_migration": false,
+  "committed_migrations_0001_to_0008_unchanged": true,
+  "generic_fact_expiry_unchanged": true,
+  "global_source_freshness_unchanged": true,
+  "legacy_fixture_cases": 15,
+  "pipeline_cases": 9,
+  "evaluator_comparisons": 18000,
+  "evaluator_mismatches": 0,
+  "production_promotion": false,
+  "release_published": false,
+  "production_notifications_enabled": false,
+  "unattended_live_operation": false,
+  "evidence_files_sha256": {
+    "acceptance.json": "5fd9948de073ec5f311a692cbd7e792e529bd5c0e00ef6de8a51c29ca0ca8d3b",
+    "pytest.log": "c80b7f5706181147b0a217ea15811264bd84740790639dc38d46d38f7df71ced",
+    "tests.xml": "24d1a3f3e7d0f890246a1aacf7a2c7925a6aa081578b6ef6932927a5847ba461",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "frozen-database.json": "0cb167bf9ef0457c1b1a6e8434657f0e6d5f8b9fd3f81b78fa1cb832260b9d91",
+    "m2-performance.json": "4a4eb7f6efc94b53119dd9ac3f14a7b7ca49ff73d1350c2a2d6ba94a2e9e3157",
+    "collection-performance.json": "2178528c1bb9afd4716d20312e6817395b15e19445aa12a77267ee07de8f142a",
+    "h3-performance.json": "5fb50183ada9c54811499b979f8a7c8a8f5b264fcbd56adca275af33377665a8",
+    "source-fingerprint-performance.json": "0989bcabd0d234803026996086df0ef4e0099fca0d2c59d99e3f528761cd1dfb"
+  },
+  "final_submission_receipt": "outputs/M3A_H1_FINAL_RECEIPT.md records exact documentation descendant and final-tip CI"
+}

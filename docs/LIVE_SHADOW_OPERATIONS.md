@@ -59,11 +59,15 @@ from source facts, independently of a new M2 cluster or M1 assessment. A fresh,
 complete, successful current-view snapshot is required for `no_intersection`.
 A qualifying approved/public/visible active wildfire that intersects Pismo can
 supply `hold_candidate` even when a sibling makes the source incomplete. It
-requires a current accepted assertion, receipt/poll start within three hours,
-native time within the clock tolerance, and the existing native-update-plus-15-day
-validity envelope. A duplicate receipt does not renew that native expiry.
+requires a current unretired accepted assertion, receipt/poll start within three
+hours and native update not beyond the clock tolerance. H1 does not apply the
+generic native-update-plus-15-day expiry to this WFIGS Current positive test.
+An unchanged qualifying incident freshly received from the current feed continues
+to hold even if its geometry was last edited weeks ago. Its stored native update,
+observation time and generic `valid_until` are not renewed or rewritten.
 Incomplete/stale collection without reliable positive evidence yields `unknown`.
-An expired intersecting candidate also yields `unknown`, never a false negative.
+An intersecting row with an aged/unverified receipt yields `unknown`; repeated
+legitimate receipts maintain the hold, while old database rows alone cannot.
 Global source freshness remains unknown for an incomplete poll. Identical returning fire
 facts reinstate a hold after complete absence, without renewing evidence time.
 An older poll cannot override a newer retirement. Explicit CAP cancellations
@@ -72,6 +76,19 @@ retain a provider-time replay fence. A future provider update is rejected with
 still rises on rejected older/future versions. The source-contract skew allowance
 is initially one hour, a provisional product policy. Forecast valid periods are
 not provider update times and may legitimately be in the future.
+
+Source-native age and positive safety receipt age are distinct. The source debug
+display may remain `stale` because its supplied native as-of is old while a
+freshly verified active fire produces `hold_candidate`. Native incident edit
+stamps remain stored verbatim; the positive query uses per-incident accepted raw
+`fetched_at` and `state_poll_started_at`. `last_successful_fetch` is the last
+complete successful source retrieval, not a replacement for the incident's
+accepted receipt. A successful stale-version skip cannot refresh that incident
+receipt, and an incomplete poll may accept a valid positive without producing
+a complete-source successful-fetch timestamp. No per-incident IDs/coordinates
+are added to public diagnostics. Generic iNaturalist/NWS expiry and global source
+freshness calculations remain unchanged. This evidence does not imply a route
+or highway closure, safe access or production eligibility.
 
 Autonomous shadow recomputation, standalone retry/republication and unattended
 operation are a separately tracked next task. No automatic M1 rerun or broad
