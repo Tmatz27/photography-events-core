@@ -1,5 +1,9 @@
 # Milestone 3A implementation review
 
+Sections 1–31 retain the original implementation receipts. The independent
+review correction in section 32 supersedes their implementation freeze, schema
+head and readiness statements; it does not erase the historical 364-test baseline.
+
 ## 1. Executive summary
 
 First public source slice: iNaturalist bear/monarch observations, NIFC current
@@ -377,3 +381,147 @@ and isolation from M1 production locks/pools/inputs/output. Reproduce all legacy
 and 364 collected checks, exact migration and restore evidence. Decide whether
 the explicit post-M1 recalculation cadence is sufficient for a later supervised
 shadow operation; do not approve production promotion or add deferred sources.
+
+## 32. Independent review correction: F1–F4
+
+### Authority, scope and receipts
+
+Correction starts from verified clean `main == origin/main`:
+Core `ac37ce4ac953b5d81dd49790d2d2e09326fe7329`, HA
+`c76726ece1e485ece03810087927da344289fba7`. The original implementation freeze
+was `b6a7547995f483f6b97df487f28bf9f93fa5daa9`. This correction changes no HA
+file, source adapter set, M1 evaluator or M2 analytical policy/engine. No release,
+production-default flag change, notifications or deferred provider is included.
+Final implementation/CI receipts and measurements are recorded below; the exact
+documentation submission SHA is in `outputs/M3A_CORRECTION_FINAL_RECEIPT.md`
+beside the checkout, avoiding a self-referential committed SHA.
+
+### F1: lifecycle reinstatement and safety
+
+`src/pec/sources/storage.py:store_fact` checks current normalized assertion
+existence independently of raw content hash. An accepted active returning fact
+creates a new current assertion when the preceding assertion is retired, with
+`reinstated` count instead of `duplicates`. Its evidence/native time and validity
+come from the fact; retrieval does not renew observation recency. Superseded
+assertions and stronger sensitivity remain. Active identical current facts stay
+duplicates. Source fingerprints include retirement state, reason and explicit
+reference watermark, so absence and return change analysis currentness.
+
+Poll acceptance is serialized by the existing source polling row lock in the
+shadow transaction. Every applied poll start advances a source fence, including
+incomplete attempts; completion time cannot make a late older response newer.
+An equal/older poll cannot reinstate or retire. Failed/partial snapshots never
+retire missing facts. Snapshot absence and public-unavailability are lifecycle
+changes, not fabricated provider deletion times. Explicit CAP Update/Cancel
+references retain a native-time barrier; stale/equal replay cannot resurrect a
+cancelled alert. Retained pre-0008 CAP references recover historical barriers.
+
+`src/pec/sources/debug.py:calibration/freshness` requires a fresh retrieval,
+credible native as-of, successful complete current-view snapshot and valid
+curated destination for a negative wildfire result. Failed, stale, partial or
+non-snapshot evidence produces `unknown`. A qualifying current perimeter
+intersecting Pismo reinstates `hold_candidate` on identical return. An old
+assertion expiry cannot silently clear a perimeter still in that fresh qualifying
+view. These are working mapped-area facts, not proof of safe travel or a route.
+
+### Explicit lifecycle and acceptance order
+
+```mermaid
+stateDiagram-v2
+    [*] --> New: first explicit source identity
+    New --> Current: accepted active fact
+    Current --> Current: identical current fact / duplicate
+    Current --> Corrected: accepted changed fact
+    Corrected --> Current: supersede old assertion / append new
+    Current --> Retired: newer complete absence / unavailable / inactive / CAP reference
+    Retired --> Reinstated: newer accepted active fact and replay fence satisfied
+    Reinstated --> Current: append assertion with original evidence time
+    Current --> Protected: any credible privacy increase
+    Retired --> Protected: privacy increase without reactivation
+    Protected --> Protected: older or future version raises protection only
+    Protected --> Current: accepted active correction or reinstatement stays sensitive
+    Retired --> Retired: older poll or stale CAP replay rejected
+    Current --> Current: older poll or invalid native clock rejected
+```
+
+`Protected` is a monotonic overlay on current/retired state, not an alternate
+claim that retired evidence is active. Deterministic acceptance precedence:
+
+1. Raise protection across raw/current/history even if other version fields fail.
+2. Validate incoming provider-update clock against poll start and contract skew.
+3. Require newer source poll start and applicable raw lifecycle watermark.
+4. Ignore impossible historical provider version stamps as ordering barriers;
+   otherwise reject lower native versions without regressing fields.
+5. Apply explicit CAP reference replay barrier (also retained legacy bodies).
+6. Distinguish duplicate current content, reinstatement and changed correction.
+7. Only fully successful complete snapshots retire unseen active identities.
+
+### F2: privacy and provider-clock validation
+
+`SourceContract.provider_clock_skew_seconds` is source configurable, initially
+3600 seconds, validated in 0–86400. It is a provisional product clock allowance,
+not a provider guarantee, ecological recency rule or forecast validity limit.
+Incoming impossible native updates yield fixed `future_provider_update` rejection;
+valid sibling records persist. Invalid batch native as-of is replaced only by
+credible sibling native timestamps, never fetch time. Failed collection remains
+incomplete and cannot prove absence. Parser/contract versions are now
+`public-contract-2` / `m3a-2` so changed semantics remain attributable.
+
+Verified provider field semantics: iNaturalist `updated_at` is separate from
+`time_observed_at` / DATE observation time ([official API schema](https://raw.githubusercontent.com/inaturalist/iNaturalistAPI/main/lib/views/swagger_v1.yml.ejs));
+WFIGS native modified/edit times are separate from perimeter observation/model
+time ([official layer metadata](https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0?f=pjson));
+NWS `sent` is message origination, forecast `updateTime` is the last update of
+data used to generate it, and period `startTime`/`endTime` describe validity
+([official OpenAPI](https://api.weather.gov/openapi.json), verified by direct
+JSON read because web rendering rejects its media type). Future forecast periods
+are accepted with a valid native update. No new provider access adapter was added.
+
+`elevate_privacy` runs outside the per-record acceptance savepoint. It marks all
+relevant assertions sensitive, removes public points and the current analytical
+point, and protects raw geometry. It does not rewrite historical subject,
+metadata, observation/native time or internal historical analytical geometry.
+M2 serialization already redacts any affected historical member. A rejected
+older/future privacy update cannot change unrelated fields or resurrect a retired
+fact. Protection provenance is retained separately from the accepted source fact
+via `privacy_source_run_id` and sanitized run context. An impossible historical
+2099 native stamp is retained on its historical assertion; a credible accepted
+correction replaces the current assertion even when content hash is identical.
+
+### F3: backoff pool isolation
+
+New `src/pec/sources/backoff.py` and `api.py:lifespan` route only M3 scheduler
+backoff load/save through `Database.pattern_transaction`. Persistent quotas,
+source row locks, Retry-After and restart behavior remain. Legacy
+`Database.load_backoff/save_backoff` and M1 scheduler behavior/pool are unchanged.
+Regression exhausts all five production connections while M3 backoff saves and
+loads through the shadow pool, then reads the state through a restarted Database.
+This corrects the original packet's overbroad backoff-isolation claim.
+
+### Migration and preserved invariants
+
+Append-only [0008 schema](docs/SCHEMA_0008.md) records source/raw lifecycle
+watermarks, typed retirement reason/CAP native fence, protection/retirement run
+references and reinstatement count. Migrations 0001–0007 are byte unchanged.
+Historical retired rows receive `legacy_retired` without invented deletion
+meaning. Retention protects the new run references. No table partition, arbitrary
+deletion, provider-specific table or fingerprint redesign was introduced.
+Default production/shadow/scheduled deadlines remain 3 / 30 / 120 seconds.
+
+### Cadence and remaining operation limits
+
+iNaturalist polls about every 30 minutes; WFIGS/NWS about every 15 minutes.
+M2 recomputes only on a new M1 publication. A changed source marks existing M2
+analysis outdated; calibration requires current analysis and source evidence for
+`developing_watch`, otherwise downgrades to Signal/none and exposes the outdated
+state after the unchanged 30-second source-change grace. Privacy has no grace.
+Live WFIGS safety/freshness is computed from current source facts without
+waiting for a new M2 cluster. Regression proves source polling creates no M1
+assessment and does not rerun M1. Privacy increases redact immediately.
+
+This pass remains supervised only. Autonomous M2 recomputation/retry and
+unattended operation are a separately tracked next task. No broad scheduler
+change, automatic M1 rerun or production promotion is implied. All original
+scientific, working-fire-view, model-weather, bounded refresh, retention and
+daily-volume limitations in section 28 still apply. See
+[shadow operations](docs/LIVE_SHADOW_OPERATIONS.md) for operator cadence.

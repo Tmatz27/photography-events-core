@@ -91,7 +91,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0007`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0008`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -142,11 +142,13 @@ identity dependency/correction lookups ([schema](docs/SCHEMA_0006.md)); no new
 tables or analytical policy changes are introduced.
 Revision `0007` adds source-neutral time/spatial precision, provider update and
 collection diagnostics, plus generic source polling state ([schema](docs/SCHEMA_0007.md)).
+Revision `0008` adds source lifecycle ordering, retirement/privacy provenance and
+reinstatement counts ([schema](docs/SCHEMA_0008.md)); evidence timestamps stay separate.
 SQLAlchemy provides bounded async connection pooling and transactions; no ORM
 objects cross the API. PostGIS types, the GiST index and extension are written
 manually. Alembic controls revision order and transactional application.
 `python -m alembic upgrade head` is repeat-safe. Take and verify a backup before
-upgrading. Revisions `0002` through `0007` are forward-only; earlier schemas
+upgrading. Revisions `0002` through `0008` are forward-only; earlier schemas
 cannot represent their histories; rollback requires a verified pre-upgrade backup restored to a new DB
 and the pre-upgrade application image. The disposable `0001` downgrade/upgrade
 check remains in CI. Migrated decisions stay incomplete/held until a fresh

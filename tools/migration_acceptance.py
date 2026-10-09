@@ -77,6 +77,23 @@ async def main(mode):
                     VALUES(1,:nid,'explicit_origin_id',:now)"""),{"nid":nid,"now":now})
                 await c.execute(text("INSERT INTO normalized_observation_behaviors VALUES(:nid,'presence',:now)"),{"nid":nid,"now":now})
         await engine.dispose()
+    elif mode == "seed-lifecycle":
+        engine = create_async_engine(settings.database_url)
+        async with engine.begin() as c:
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0007"
+            sid = (await c.execute(text("INSERT INTO sources(key,name,source_type) VALUES('lifecycle-migration','Lifecycle seed','fixture') RETURNING id"))).scalar_one()
+            await c.execute(text("INSERT INTO source_poll_state(source_id) VALUES(:sid)"), {"sid": sid})
+            rid = (await c.execute(text("""INSERT INTO source_runs(source_id,cycle_key,attempt_number,started_at,completed_at,status)
+                VALUES(:sid,'lifecycle-seed',1,:now,:now,'success') RETURNING id"""), {"sid": sid, "now": now})).scalar_one()
+            for label in ("current", "retired"):
+                raw = (await c.execute(text("""INSERT INTO raw_observations(source_id,source_run_id,external_id,observed_at,fetched_at,
+                    raw_payload,parser_version,provider_updated_at) VALUES(:sid,:rid,:eid,:now,:now,'{}','legacy','2099-01-01') RETURNING id"""),
+                    {"sid": sid, "rid": rid, "eid": "lifecycle-" + label, "now": now})).scalar_one()
+                await c.execute(text("""INSERT INTO normalized_observations(raw_observation_id,subject_type,subject_key,
+                    observed_at,valid_until,precision_class,provider_updated_at,superseded_at)
+                    VALUES(:raw,'species','Ursus americanus',:now,:valid,'withheld','2099-01-01',CAST(:retired AS timestamptz))"""),
+                    {"raw": raw, "now": now, "valid": now + timedelta(days=14), "retired": now if label == "retired" else None})
+        await engine.dispose()
     else:
         db = Database(settings)
         await db.ready()
@@ -106,6 +123,12 @@ async def main(mode):
             assert (await c.execute(text("SELECT count(*) FROM observation_report_group_members WHERE superseded_at IS NOT NULL"))).scalar()==2
             assert (await c.execute(text("SELECT spatial_precision FROM normalized_observations WHERE raw_observation_id=1"))).scalar() == "unknown"
             assert set((await c.execute(text("SELECT behavior_code FROM normalized_observation_behaviors"))).scalars()) == {"presence","rut"}
+            lifecycle = (await c.execute(text("SELECT * FROM raw_observations WHERE external_id LIKE 'lifecycle-%' ORDER BY external_id"))).mappings().all()
+            assert len(lifecycle) == 2 and all(r["state_poll_started_at"] == now for r in lifecycle)
+            assert lifecycle[0]["retired_at"] is None and lifecycle[1]["retired_at"] == now
+            assert lifecycle[1]["retirement_reason"] == "legacy_retired"
+            assert all(r["provider_updated_at"].year == 2099 for r in lifecycle)
+            assert (await c.execute(text("SELECT last_applied_poll_started_at FROM source_poll_state p JOIN sources s ON s.id=p.source_id WHERE s.key='lifecycle-migration'"))).scalar_one() == now
         await db.close()
         print("R20 passed: 0001 identity/provider data preserved, 0002 API reads conservative current generation")
 

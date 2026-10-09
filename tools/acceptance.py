@@ -74,6 +74,8 @@ def main():
         compose(*test_exec, "tools/migration_acceptance.py", "seed-shadow")
         compose(*test_exec, "-m", "alembic", "upgrade", "0004")
         compose(*test_exec, "tools/migration_acceptance.py", "seed-final")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0007")
+        compose(*test_exec, "tools/migration_acceptance.py", "seed-lifecycle")
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"

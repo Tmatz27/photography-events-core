@@ -17,6 +17,12 @@ ceilings are 10,000 requests/day for iNaturalist and a conservative 2,000/day fo
 each safety/weather source; the latter are not claims about provider limits.
 There are no additional services or destructive retention changes.
 
+M3 backoff load/save and quota/lifecycle persistence use the shadow pool; legacy
+M1 backoff methods retain their production pool. Default budgets stay 3 seconds
+for production DB work, 30 seconds for shadow transactions and 120 seconds per
+scheduled source poll. Durable reservations, Retry-After and restart behavior
+remain covered. This is one supervised process, not an unattended scheduler.
+
 Only bear/monarch taxa in the source-controlled central-coast rectangle are
 searched. Initial iNaturalist reads cover the trailing 14 days. Subsequent
 incremental reads use verified `updated_since` with five minutes overlap.
@@ -34,6 +40,27 @@ mark prior shadow analysis outdated using consumed source provenance, and
 protection increases redact historical output immediately. An operator/test must
 continue the existing M1 generation lifecycle to obtain a fresh shadow pattern.
 No new production generator or standalone M2 retry was introduced in this slice.
+
+Calibration requires current analysis and current biological source evidence
+for `developing_watch`; an outdated pattern is exposed with
+`pattern_analysis_state=outdated` and cannot retain that current Watch label.
+The accepted M2 source-change grace remains 30 seconds after the changed run
+completes; it is not a periodic recomputation. Privacy redaction has no grace.
+Live WFIGS destination intersection and source freshness are evaluated directly
+from source facts, independently of a new M2 cluster or M1 assessment. A fresh,
+complete, successful current-view snapshot is required for `no_intersection`;
+stale, failed or partial collection yields `unknown`. Identical returning fire
+facts reinstate a hold after complete absence, without renewing evidence time.
+An older poll cannot override a newer retirement. Explicit CAP cancellations
+retain a provider-time replay fence. A future provider update is rejected with
+`future_provider_update`, without blocking valid sibling records; protection
+still rises on rejected older/future versions. The source-contract skew allowance
+is initially one hour, a provisional product policy. Forecast valid periods are
+not provider update times and may legitimately be in the future.
+
+Autonomous shadow recomputation, standalone retry/republication and unattended
+operation are a separately tracked next task. No automatic M1 rerun or broad
+scheduler change is included. Production promotion remains NO.
 
 Authenticated endpoints:
 

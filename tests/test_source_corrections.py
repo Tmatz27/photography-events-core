@@ -292,7 +292,8 @@ async def test_cadence_new_source_poll_marks_watch_outdated_without_m1_rerun(db)
     assert before["items"][0]["level"] == "developing_watch"
     assessments = await sql(db, "SELECT id FROM assessment_runs")
     await poll(db, INATURALIST, [observation(4, subject="bear")], 1)
-    after = await calibration(db, NOW + timedelta(minutes=1))
+    # Preserve the accepted short source-change grace; do not rewrite M2.
+    after = await calibration(db, NOW + timedelta(minutes=1, seconds=1) + db.grace)
     assert after["pattern_analysis_state"] == "outdated" and after["items"][0]["level"] == "signal"
     assert await sql(db, "SELECT id FROM assessment_runs") == assessments
 
