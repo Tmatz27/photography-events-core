@@ -256,14 +256,14 @@ async def test_w6_database_polygon_failure_isolated(db):
     assert len(await sql(db, "SELECT * FROM normalized_observations")) == 2
     run = (await sql(db, "SELECT * FROM source_runs"))[0]
     assert run["records_rejected"] == 1 and run["records_accepted"] == 2 and run["incomplete"]
-    assert (await calibration(db, NOW))["items"][1]["safety"] == "unknown"
+    assert (await calibration(db, NOW))["items"][1]["safety"] == "hold_candidate"
 
 
 async def test_safety_snapshot_absence_only_after_complete(db):
     await save(db, WFIGS, [perimeter()], snapshot=True)
     await save(db, WFIGS, [], 1, complete=False, snapshot=True)
     assert len(await sql(db, "SELECT * FROM normalized_observations WHERE superseded_at IS NULL")) == 1
-    assert (await calibration(db, NOW + timedelta(hours=1)))["items"][1]["safety"] == "unknown"
+    assert (await calibration(db, NOW + timedelta(hours=1)))["items"][1]["safety"] == "hold_candidate"
     await save(db, WFIGS, [], 2, snapshot=True)
     assert not await sql(db, "SELECT * FROM normalized_observations WHERE superseded_at IS NULL")
 

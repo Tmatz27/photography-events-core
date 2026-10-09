@@ -33,8 +33,8 @@ class SourceContract:
     can_prove: tuple[str, ...]
     cannot_prove: tuple[str, ...]
     retention: str
-    parser_version: str = "public-contract-2"
-    version: str = "m3a-2"
+    parser_version: str = "public-contract-3"
+    version: str = "m3a-3"
     provider_clock_skew_seconds: int = 3600
 
     def __post_init__(self):

@@ -9,7 +9,7 @@ from pydantic import Field
 
 from sqlalchemy import text
 
-from .contracts import CONTRACTS, PISMO
+from .contracts import CONTRACTS, PISMO, WFIGS
 from .calibration import condition
 from .contracts import SourceContract
 from ..schemas import Contract
@@ -32,6 +32,17 @@ class Volume(Contract):
     private_percentage: float | None
 
 
+class OutcomeCounts(Contract):
+    accepted: int
+    duplicate: int
+    reinstated: int
+    rejected_invalid: int
+    skipped_stale_version: int
+    skipped_replay: int
+    ignored_out_of_order_poll: int
+    incomplete_snapshot: int
+
+
 class Operational(Contract):
     status: str
     provider_updated_at: datetime | None
@@ -47,6 +58,9 @@ class Operational(Contract):
     last_successful_fetch: datetime | None
     requests_reserved_today: int
     alert_native_asof: str | None
+    skip_reason_counts: dict[str, int] = Field(default_factory=dict)
+    outcome_counts: OutcomeCounts | None = None
+    poll_outcome: Literal["complete", "incomplete", "ignored_out_of_order_poll"] | None = None
 
 
 class ContractView(Contract):
@@ -185,6 +199,10 @@ async def contracts(db, now):
                     row["requests_today"] if row["quota_day"] == now.date() else 0
                 )
                 operational["alert_native_asof"] = (row["context_payload"] or {}).get("alert_asof")
+                for field in ("skip_reason_counts", "outcome_counts", "poll_outcome"):
+                    operational[field] = (row["context_payload"] or {}).get(
+                        field, {} if field == "skip_reason_counts" else None
+                    )
             items.append(
                 dict(
                     contract=asdict(contract),
@@ -251,14 +269,29 @@ async def calibration(db, now):
         ).scalar_one_or_none()
         destination_valid = registry is not False
         fire = (
-            await c.execute(
-                text("""SELECT EXISTS(SELECT 1 FROM normalized_observations n JOIN raw_observations r
+            (
+                await c.execute(
+                    text("""SELECT count(*)>0 AS intersects,
+            COALESCE(bool_or(n.valid_until>=:now AND n.provider_updated_at<=:future
+            AND r.retired_at IS NULL AND r.state_poll_started_at BETWEEN :fresh AND :future
+            AND r.fetched_at BETWEEN :fresh AND :future),FALSE) AS positive
+            FROM normalized_observations n JOIN raw_observations r
             ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id WHERE s.key='wfigs_current' AND s.enabled
-            AND n.superseded_at IS NULL AND n.source_metadata->>'qualifying_current_wildfire'='true'
-            AND ST_Intersects(n.analysis_area,ST_SetSRID(ST_MakePoint(:lon,:lat),4326)))"""),
-                dict(lon=PISMO["longitude"], lat=PISMO["latitude"]),
+            AND n.superseded_at IS NULL AND n.subject_type='safety'
+            AND n.source_metadata->>'qualifying_current_wildfire'='true'
+            AND ST_Intersects(n.analysis_area,ST_SetSRID(ST_MakePoint(:lon,:lat),4326))"""),
+                    dict(
+                        lon=PISMO["longitude"],
+                        lat=PISMO["latitude"],
+                        now=now,
+                        fresh=now - timedelta(seconds=WFIGS.freshness_seconds),
+                        future=now + timedelta(seconds=WFIGS.provider_clock_skew_seconds),
+                    ),
+                )
             )
-        ).scalar_one()
+            .mappings()
+            .one()
+        )
         temp = (
             await c.execute(
                 text("""SELECT n.source_metadata FROM normalized_observations n JOIN raw_observations r
@@ -295,8 +328,13 @@ async def calibration(db, now):
                 else "none"
             )
             safety = (
-                ("hold_candidate" if fire else "no_intersection")
-                if sources["wfigs_current"] == "current" and destination_valid and complete_fire_snapshot
+                "hold_candidate"
+                if destination_valid and fire["positive"]
+                else "no_intersection"
+                if destination_valid
+                and not fire["intersects"]
+                and sources["wfigs_current"] == "current"
+                and complete_fire_snapshot
                 else "unknown"
             )
             weather = condition(

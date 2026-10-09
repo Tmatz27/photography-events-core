@@ -18,6 +18,10 @@ SOURCE_FINGERPRINT_SQL = """SELECT external_id,content_sha256,sensitive,
     retired_at IS NOT NULL AS retired,retirement_reason,retirement_provider_updated_at
     FROM raw_observations WHERE source_id=:sid ORDER BY external_id"""
 
+# These are version-control decisions, never parser failures. Future clocks and
+# malformed facts deliberately remain invalid and prevent certified completeness.
+VERSION_SKIPS = frozenset({"stale_provider_update", "stale_reference_replay", "out_of_order_poll"})
+
 
 async def source_fingerprint(c, sid):
     current = (await c.execute(text(SOURCE_FINGERPRINT_SQL), dict(sid=sid))).mappings()
@@ -424,9 +428,11 @@ async def persist(db, contract, batch, started, completed):
         ).scalar_one()
         counts = Counter()
         errors = Counter(code for _, code in batch.rejected)
+        skips = Counter()
         protection_events = []
         invalid_historical_versions = []
         seen = []
+        snapshot_seen = []
         for fact in batch.records:
             # Transport records are features; incident identity is the union.
             weight = (
@@ -465,14 +471,23 @@ async def persist(db, contract, batch, started, completed):
                     )
             except (RecordError, IntegrityError, DataError) as exc:
                 code = exc.code if isinstance(exc, RecordError) else "invalid_database_fact"
-                batch.rejected.extend((fact.external_id, code) for _ in range(weight))
-                errors[code] += weight
+                if code in VERSION_SKIPS:
+                    batch.skipped.extend((fact.external_id, code) for _ in range(weight))
+                    skips[code] += weight
+                    # Presence is independent of whether an older version can
+                    # replace the accepted assertion. This never reactivates it;
+                    # explicit CAP references still retire it in either order.
+                    snapshot_seen.append(fact.external_id)
+                else:
+                    batch.rejected.extend((fact.external_id, code) for _ in range(weight))
+                    errors[code] += weight
             else:
                 counts["accepted"] += weight
                 counts[disposition] += 1
                 counts["obscured_records"] += fact.spatial_basis == "obscured_cell"
                 counts["private_records"] += fact.spatial_basis == "private_unavailable"
                 seen.append(fact.external_id)
+                snapshot_seen.append(fact.external_id)
         for eid, code in batch.rejected:
             event("parser_failure", source=contract.source_key, code=code)
             if eid and code not in (
@@ -539,7 +554,10 @@ async def persist(db, contract, batch, started, completed):
                     )
                 else:
                     await elevate_privacy(c, sid, eid, completed, rid)
-        complete = batch.complete and not errors
+        complete = bool(ordered and batch.complete and not errors and not batch.failure_code)
+        # Collection HTTP/backoff and refresh rotation must use the effective
+        # outcome, not the transport's pre-persistence completeness flag.
+        batch.complete = complete
         if complete and batch.snapshot:
             missing = (
                 (
@@ -548,7 +566,7 @@ async def persist(db, contract, batch, started, completed):
                 JOIN normalized_observations n ON n.raw_observation_id=r.id
                 WHERE r.source_id=:sid AND n.superseded_at IS NULL AND r.fetched_at<=:started
                 AND NOT r.external_id=ANY(CAST(:seen AS text[]))"""),
-                        dict(sid=sid, started=started, seen=seen),
+                        dict(sid=sid, started=started, seen=snapshot_seen),
                     )
                 )
                 .scalars()
@@ -563,12 +581,13 @@ async def persist(db, contract, batch, started, completed):
                 WHERE source_id=:sid"""),
                 dict(sid=sid, started=started),
             )
-        await c.execute(
-            text(
-                "UPDATE source_poll_state SET last_applied_poll_started_at=GREATEST(last_applied_poll_started_at,:started) WHERE source_id=:sid"
-            ),
-            dict(sid=sid, started=started),
-        )
+        if ordered:
+            await c.execute(
+                text(
+                    "UPDATE source_poll_state SET last_applied_poll_started_at=:started WHERE source_id=:sid"
+                ),
+                dict(sid=sid, started=started),
+            )
         digest = await source_fingerprint(c, sid)
         retirement_events = (
             await c.execute(
@@ -582,10 +601,30 @@ async def persist(db, contract, batch, started, completed):
             {key: value.isoformat() if isinstance(value, datetime) else value for key, value in row.items()}
             for row in retirement_events
         ]
-        status = "success" if complete else "parser_failure" if errors else "failure"
+        status = (
+            "failure" if not ordered else "success" if complete else "parser_failure" if errors else "failure"
+        )
         context = canonical(
             dict(
                 seen_ids=sorted(set(seen)),
+                snapshot_seen_ids=sorted(set(snapshot_seen)) if ordered else [],
+                skip_reason_counts=dict(skips),
+                poll_outcome="ignored_out_of_order_poll"
+                if not ordered
+                else "complete"
+                if complete
+                else "incomplete",
+                outcome_counts=dict(
+                    accepted=counts["accepted"],
+                    duplicate=counts["duplicates"],
+                    reinstated=counts["reinstated"],
+                    rejected_invalid=len(batch.rejected),
+                    skipped_stale_version=skips["stale_provider_update"]
+                    + (skips["out_of_order_poll"] if ordered else 0),
+                    skipped_replay=skips["stale_reference_replay"],
+                    ignored_out_of_order_poll=int(not ordered),
+                    incomplete_snapshot=int(batch.snapshot and not complete),
+                ),
                 alert_asof=batch.alert_asof.isoformat() if batch.alert_asof else None,
                 complete_snapshot=bool(complete and batch.snapshot),
                 protection_events=protection_events,

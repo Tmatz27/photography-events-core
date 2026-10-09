@@ -111,6 +111,7 @@ class Fact:
 class Batch:
     records: list[Fact] = field(default_factory=list)
     rejected: list[tuple[str | None, str]] = field(default_factory=list)
+    skipped: list[tuple[str, str]] = field(default_factory=list)
     received: int = 0
     requests: int = 0
     bytes_received: int = 0

@@ -95,27 +95,28 @@ async def test_r4_r9_duplicates_reinstated_rejected_distinct(db):
     runs = await sql(db, "SELECT * FROM source_runs ORDER BY id")
     assert runs[1]["duplicates"] == 1 and runs[1]["reinstated"] == 0
     assert runs[3]["reinstated"] == 1 and runs[3]["duplicates"] == 0
-    assert runs[4]["records_rejected"] == 1 and runs[4]["records_accepted"] == runs[4]["duplicates"] == 0
+    assert runs[4]["records_rejected"] == 0 and runs[4]["records_accepted"] == runs[4]["duplicates"] == 0
+    assert runs[4]["context_payload"]["outcome_counts"]["ignored_out_of_order_poll"] == 1
 
 
 async def test_r6_older_late_snapshot_cannot_resurrect_retirement(db):
     await poll(db, WFIGS, [perimeter()], snapshot=True)
     await poll(db, WFIGS, minute=2, snapshot=True)
     late = await poll(db, WFIGS, [perimeter()], 1, snapshot=True, completed=NOW + timedelta(minutes=3))
-    assert not await current(db) and late.rejected[0][1] == "out_of_order_poll"
+    assert not await current(db) and late.skipped[0][1] == "out_of_order_poll" and not late.rejected
     assert await safety(db, 3) == "unknown"
 
 
 async def test_r6_older_empty_snapshot_cannot_clear_newer_active(db):
     await poll(db, WFIGS, [perimeter()], 2, snapshot=True)
     await poll(db, WFIGS, minute=1, snapshot=True, completed=NOW + timedelta(minutes=3))
-    assert len(await current(db)) == 1 and await safety(db, 3) == "unknown"
+    assert len(await current(db)) == 1 and await safety(db, 3) == "hold_candidate"
 
 
 async def test_r7_incomplete_does_not_retire(db):
     await poll(db, WFIGS, [perimeter()], snapshot=True)
     await poll(db, WFIGS, minute=1, complete=False, snapshot=True)
-    assert len(await current(db)) == 1 and await safety(db, 1) == "unknown"
+    assert len(await current(db)) == 1 and await safety(db, 1) == "hold_candidate"
 
 
 async def test_r8_explicit_cancel_then_later_fetch_of_stale_alert(db):
@@ -124,7 +125,7 @@ async def test_r8_explicit_cancel_then_later_fetch_of_stale_alert(db):
         db, NWS, [alert(2, messageType="Cancel", references=[{"identifier": "urn:test:1"}])], 1, snapshot=True
     )
     replay = await poll(db, NWS, [alert()], 2, snapshot=True)
-    assert not await current(db) and replay.rejected[0][1] == "stale_reference_replay"
+    assert not await current(db) and replay.skipped[0][1] == "stale_reference_replay" and not replay.rejected
     row = (await sql(db, "SELECT * FROM raw_observations WHERE external_id='urn:test:1'"))[0]
     assert row["retirement_reason"] == "explicit_reference" and row["retirement_provider_updated_at"] == NOW
 
@@ -215,7 +216,7 @@ async def test_t3_older_open_cannot_downgrade_or_regress_fields(db):
     batch = await poll(db, INATURALIST, [observation()], 2)
     row = (await normals(db))[0]
     assert row["sensitive"] and row["subject_key"] == "Ursus americanus" and not row["point"]
-    assert batch.rejected[0][1] == "stale_provider_update"
+    assert batch.skipped[0][1] == "stale_provider_update" and not batch.rejected
 
 
 async def test_t4_future_forecast_valid_period_allowed_native_issue_now(db):
@@ -257,7 +258,8 @@ async def test_t6_older_privacy_only_immediately_redacts_current_and_history(db)
     assert row["sensitive"] and not row["point"] and row["provider_updated_at"] == NOW + timedelta(minutes=30)
     assert row["superseded_at"] is None and row["source_metadata"]["coordinates_obscured"] is False
     run = (await sql(db, "SELECT * FROM source_runs ORDER BY id"))[-1]
-    assert run["context_payload"]["protection_events"] and run["records_rejected"] == 1
+    assert run["context_payload"]["protection_events"] and run["records_rejected"] == 0
+    assert run["context_payload"]["outcome_counts"]["skipped_stale_version"] == 1
 
 
 async def test_t7_older_privacy_update_never_reactivates_retired_fact(db):
