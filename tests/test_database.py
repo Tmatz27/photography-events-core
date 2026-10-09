@@ -36,7 +36,7 @@ async def test_postgis_and_migration_revision(db):
     await db.ready()
     async with db.engine.connect() as c:
         assert (await c.execute(text("SELECT postgis_lib_version()"))).scalar().startswith("3.6")
-        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0007"
+        assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0008"
         assert (await c.execute(text("SELECT ST_SRID(ST_GeomFromText('POINT(-119.8 35.2)',4326))"))).scalar() == 4326
 
 

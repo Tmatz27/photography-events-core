@@ -67,7 +67,7 @@ async def test_health_metadata(app, path):
     r = await get(app, path, None)
     assert r.status_code == 200
     assert r.json()["api_version"] == "v1"
-    assert r.json()["schema_version"] == "0007"
+    assert r.json()["schema_version"] == "0008"
 
 
 @pytest.mark.parametrize("path", ["/health/ready", "/api/v1/opportunities", "/api/v1/opportunities/test", "/api/v1/sources/health"])

@@ -24,6 +24,7 @@ async def sweep(connection, now, batch_size=500):
     runs = await connection.execute(text("""DELETE FROM source_runs WHERE id IN (
         SELECT r.id FROM source_runs r WHERE completed_at < :cutoff
         AND NOT EXISTS(SELECT 1 FROM raw_observations o WHERE o.source_run_id=r.id)
+        AND NOT EXISTS(SELECT 1 FROM raw_observations o WHERE o.retired_source_run_id=r.id OR o.privacy_source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM opportunity_context_evidence e WHERE e.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM legacy_context_evidence e WHERE e.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM assessment_sources a WHERE a.source_run_id=r.id)

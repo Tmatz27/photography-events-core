@@ -61,4 +61,5 @@ jobs:
             evidence/m2-performance.json
             evidence/collection-performance.json
             evidence/h3-performance.json
+            evidence/source-fingerprint-performance.json
           if-no-files-found: warn

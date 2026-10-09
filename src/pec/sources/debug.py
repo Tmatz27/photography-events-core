@@ -23,6 +23,7 @@ class Volume(Contract):
     bytes: int
     corrections: int
     duplicates: int
+    reinstated: int
     obscured: int
     private: int
     rate_limits: int
@@ -95,7 +96,9 @@ def freshness(contract, row, now):
         return "unknown"
     return (
         "stale"
-        if now - stamp > timedelta(seconds=contract.freshness_seconds) or stamp > now + timedelta(hours=1)
+        if now - stamp > timedelta(seconds=contract.freshness_seconds)
+        or now - row.get("completed_at", stamp) > timedelta(seconds=contract.freshness_seconds)
+        or stamp > now + timedelta(seconds=contract.provider_clock_skew_seconds)
         else "current"
     )
 
@@ -132,7 +135,7 @@ async def contracts(db, now):
                         text("""SELECT COALESCE(sum(requests),0) AS requests,COALESCE(sum(records_received),0) AS received,
                 COALESCE(sum(records_accepted),0) AS accepted,COALESCE(sum(records_rejected),0) AS rejected,
                 COALESCE(sum(bytes_received),0) AS bytes,COALESCE(sum(corrections),0) AS corrections,
-                COALESCE(sum(duplicates),0) AS duplicates,COALESCE(sum(obscured_records),0) AS obscured,
+                COALESCE(sum(duplicates),0) AS duplicates,COALESCE(sum(reinstated),0) AS reinstated,COALESCE(sum(obscured_records),0) AS obscured,
                 COALESCE(sum(private_records),0) AS private,COALESCE(sum(rate_limit_count),0) AS rate_limits
                 FROM source_runs r JOIN sources s ON s.id=r.source_id WHERE s.key=:key AND r.started_at>=:day"""),
                         dict(key=key, day=now.replace(hour=0, minute=0, second=0, microsecond=0)),
@@ -203,6 +206,7 @@ async def calibration(db, now):
 
     async def operation(c):
         sources = {}
+        complete_fire_snapshot = False
         for key, contract in CONTRACTS.items():
             row = (
                 (
@@ -217,6 +221,8 @@ async def calibration(db, now):
                 .first()
             )
             sources[key] = freshness(contract, row, now)
+            if key == "wfigs_current" and row:
+                complete_fire_snapshot = (row["context_payload"] or {}).get("complete_snapshot") is True
         presence = (
             (
                 await c.execute(
@@ -248,9 +254,9 @@ async def calibration(db, now):
             await c.execute(
                 text("""SELECT EXISTS(SELECT 1 FROM normalized_observations n JOIN raw_observations r
             ON r.id=n.raw_observation_id JOIN sources s ON s.id=r.source_id WHERE s.key='wfigs_current' AND s.enabled
-            AND n.superseded_at IS NULL AND n.valid_until>=:now AND n.source_metadata->>'qualifying_current_wildfire'='true'
+            AND n.superseded_at IS NULL AND n.source_metadata->>'qualifying_current_wildfire'='true'
             AND ST_Intersects(n.analysis_area,ST_SetSRID(ST_MakePoint(:lon,:lat),4326)))"""),
-                dict(now=now, lon=PISMO["longitude"], lat=PISMO["latitude"]),
+                dict(lon=PISMO["longitude"], lat=PISMO["latitude"]),
             )
         ).scalar_one()
         temp = (
@@ -290,7 +296,7 @@ async def calibration(db, now):
             )
             safety = (
                 ("hold_candidate" if fire else "no_intersection")
-                if sources["wfigs_current"] == "current" and destination_valid
+                if sources["wfigs_current"] == "current" and destination_valid and complete_fire_snapshot
                 else "unknown"
             )
             weather = condition(

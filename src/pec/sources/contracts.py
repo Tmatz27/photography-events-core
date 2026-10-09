@@ -33,8 +33,16 @@ class SourceContract:
     can_prove: tuple[str, ...]
     cannot_prove: tuple[str, ...]
     retention: str
-    parser_version: str = "public-contract-1"
-    version: str = "m3a-1"
+    parser_version: str = "public-contract-2"
+    version: str = "m3a-2"
+    provider_clock_skew_seconds: int = 3600
+
+    def __post_init__(self):
+        if (
+            type(self.provider_clock_skew_seconds) is not int
+            or not 0 <= self.provider_clock_skew_seconds <= 86400
+        ):
+            raise ValueError("Invalid provider clock skew tolerance")
 
     @property
     def hash(self):

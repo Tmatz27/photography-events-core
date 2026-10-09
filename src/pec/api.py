@@ -34,6 +34,7 @@ def create_app(settings=None, database=None, clock=None):
             if settings.live_sources:
                 from .sources.contracts import CONTRACTS
                 from .sources.storage import collect, register
+                from .sources import backoff
                 async def setup(c):
                     await db._check(c)
                     for contract in CONTRACTS.values():
@@ -42,7 +43,7 @@ def create_app(settings=None, database=None, clock=None):
                 for key,contract in CONTRACTS.items():
                     scheduler.add(key,contract.scheduler_policy,
                         lambda contract=contract:collect(db,contract,settings.source_user_agent),
-                        lambda key:db.load_backoff(key,clock()),db.save_backoff)
+                        lambda key:backoff.load(db,key,clock()),lambda key,state:backoff.save(db,key,state))
             yield
         finally:
             await scheduler.close()
