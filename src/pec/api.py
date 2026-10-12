@@ -47,7 +47,7 @@ def create_app(settings=None, database=None, clock=None):
                         continue
                     scheduler.add(key,contract.scheduler_policy,
                         lambda contract=contract:collect_owned(db,contract,settings.source_user_agent),
-                        lambda key:backoff.load(db,key,clock()),lambda key,state:backoff.save(db,key,state))
+                        lambda key:backoff.load(db,key,clock()),clock=clock)
             if settings.retention_enabled:
                 from .retention import sweep
                 from .scheduler import Policy, State

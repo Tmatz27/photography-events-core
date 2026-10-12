@@ -1,4 +1,4 @@
-"""One-process asyncio collector framework, no live collectors registered yet."""
+"""Collector scheduling, including read-only scheduling of durable owned polls."""
 import asyncio
 import math
 import random
@@ -29,6 +29,10 @@ class Policy:
 class State:
     next_allowed_at: datetime
     consecutive_failures: int = 0
+
+
+class CollectionDeferred(Exception):
+    """Internal ownership/due-time refusal; no provider request or HTTP status."""
 
 
 def retry_seconds(value, now, maximum):
@@ -78,7 +82,7 @@ def failure_code(exc):
 
 
 class Scheduler:
-    """Load once; failed saves cannot roll back authoritative live backoff."""
+    """Legacy callbacks save local state; owned collectors persist their own outcomes."""
     def __init__(self):
         self.tasks = {}
         self.stop = asyncio.Event()
@@ -89,7 +93,7 @@ class Scheduler:
         except TimeoutError:
             pass
 
-    def add(self, key, policy, collect, load, save, clock=lambda: datetime.now(UTC)):
+    def add(self, key, policy, collect, load, save=None, clock=lambda: datetime.now(UTC)):
         if key in self.tasks:
             raise ValueError("Source already scheduled")
 
@@ -99,6 +103,21 @@ class Scheduler:
             except Exception:
                 event("scheduler_failure", source=key, code="state_load_failed")
                 state = State(clock() + timedelta(seconds=policy.maximum_backoff), 1)
+
+            async def reload():
+                try:
+                    current = await load(key)
+                    # A disabled source, absent/past deadline or completion race
+                    # must not create an immediate wake loop. This read-only
+                    # floor never overwrites the persisted deadline/failure count.
+                    deadline = current.next_allowed_at
+                    if deadline <= clock():
+                        deadline = clock() + timedelta(seconds=policy.minimum_interval)
+                    return State(deadline, current.consecutive_failures)
+                except Exception:
+                    event("scheduler_failure", source=key, code="state_load_failed")
+                    return State(clock() + timedelta(seconds=policy.maximum_backoff), state.consecutive_failures)
+
             while not self.stop.is_set():
                 await self.wait(max(0, (state.next_allowed_at - clock()).total_seconds()))
                 if self.stop.is_set():
@@ -110,11 +129,19 @@ class Scheduler:
                     success = 200 <= status < 300
                     if not success:
                         event("source_collection_failure", source=key, code=f"http_{status}")
+                except CollectionDeferred:
+                    state = await reload()
+                    continue
                 except Exception as exc:
                     # CancelledError and other BaseExceptions propagate untouched.
                     code, retry = failure_code(exc)
                     event("parser_failure" if code == "parser_failure" else "source_collection_failure",
                           source=key, code=code)
+                if save is None:
+                    # The owned collector finalized under its lease. A stale
+                    # scheduler must never save over another process/manual poll.
+                    state = await reload()
+                    continue
                 state = next_state(policy, state, clock(), success=success, retry_after=retry)
                 try:
                     await save(key, state)

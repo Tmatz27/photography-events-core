@@ -196,6 +196,22 @@ Validation receipts and exact reviewed tip will be appended after successful CI.
 The complete ingestion phase is NOT COMPLETE. This packet is a Batch 1 handoff,
 not a full-product or unattended-operation acceptance.
 
+## J1 correction addendum
+
+Claude accepted the Batch 1 freeze `ec97563` and documentation tip `00a7ad8`
+with the confirmed deferred-as-HTTP-failure defect. The narrow correction and
+current validation receipts are in `IMPLEMENTATION_REVIEW_INGESTION_J1.md`.
+This addendum supersedes the original ownership-return/scheduler-save behavior,
+not the original evidence. Deferral now has a distinct internal outcome, reloads
+authoritative deadlines/failure state, and cannot save stale scheduler backoff.
+Owned outcome finalization is lease-fenced and atomic with lease release.
+
+Do not run installed Unraid collection verification or Batch 2 until this
+correction is independently accepted. Then back up the installed Core/database,
+deploy the accepted correction and use the read-only operator receipt commands
+above. No additional credentials, migration, source adapter or opportunity
+publication is introduced by J1; the 81-entry register remains unchanged.
+
 
 ## Verified Batch 1 freeze and acceptance receipts
 

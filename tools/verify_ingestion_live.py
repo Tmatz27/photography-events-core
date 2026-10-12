@@ -16,10 +16,9 @@ from sqlalchemy.engine import make_url
 from pec.config import Settings
 from pec.database import Database
 from pec.sources.contracts import CONTRACTS
-from pec.sources import backoff
 from pec.sources.debug import freshness
 from pec.sources.ownership import collect_owned
-from pec.scheduler import next_state
+from pec.scheduler import CollectionDeferred
 
 
 async def run(args):
@@ -39,15 +38,19 @@ async def run(args):
         await db.ready()
         for key in keys:
             started=datetime.now(UTC)
-            previous=await backoff.load(db,key,started) if not args.inspect_only else None
             retry=None
             code='verification_failed'
             status=503
+            deferred=False
             if not args.inspect_only:
                 try:
                     async with asyncio.timeout(CONTRACTS[key].scheduler_policy.timeout):
                         status,retry=await collect_owned(db,CONTRACTS[key],settings.source_user_agent)
                     code=None
+                except CollectionDeferred:
+                    status=None
+                    code='collection_deferred'
+                    deferred=True
                 except TimeoutError:
                     code='verification_timeout'
                 except Exception:
@@ -71,16 +74,13 @@ async def run(args):
                     dict(key=key,started=None if args.inspect_only else started))).mappings().first()
                 return dict(row) if row else {}
             row=await db.pattern_transaction(inspect)
-            if row.get('status') and not args.inspect_only:
-                await backoff.save(db,key,next_state(CONTRACTS[key].scheduler_policy,previous,datetime.now(UTC),
-                    success=200<=status<300,retry_after=retry))
             verified=bool(row.get('verified_receipts',0)>0)
             if args.inspect_only:
                 current=datetime.now(UTC)
                 receipt_current=bool(row.get('completed_at') and
                     0<=(current-row['completed_at']).total_seconds()<=CONTRACTS[key].freshness_seconds)
                 status=200 if row.get('status')=='success' and not row.get('incomplete') and receipt_current and row.get('requests',0)>0 else 503
-            item=dict(source=key,http_outcome=status,verification_error=code,
+            item=dict(source=key,http_outcome=status,collection_deferred=deferred,verification_error=code,
                 live_collection_verified=bool(status==200 and row.get('status')=='success' and not row.get('incomplete')),
                 persistence_verified=verified,native_freshness=freshness(CONTRACTS[key],row,datetime.now(UTC)),database=row)
             receipt['items'].append(item)

@@ -51,6 +51,33 @@ HTTP sockets use bounded asynchronous reads, close on cancellation and follow
 no redirects. Explicit CAP reference fences have an indexed identity table,
 backfilled by migration 0009, and survive bulk payload retention.
 
+J1 correction: an ownership refusal is the internal `CollectionDeferred`
+outcome, never HTTP 503, success or a provider failure. Disabled, leased and
+not-yet-due polls emit only `source_collection_deferred`; they do not add a run,
+reserve requests, increment failures, save a scheduler state or apply failure
+backoff. The scheduler reloads the persisted failure count and later of the
+poll/recovery deadline and current lease expiry. Disabled sources are checked
+at their normal polling interval. An absent/past deadline gets a local minimum
+interval wait, and a failed reload gets a local maximum-backoff wait; neither
+fallback changes persisted state. There is no immediate retry loop.
+
+Owned collection now finalizes success/failure/Retry-After backoff and clears its
+lease in one short transaction, guarded by the current unexpired lease token.
+The live scheduler reads this state after each outcome and never writes it;
+a stale wake or completed worker cannot overwrite a newer manual poll or owner.
+Timeout/shutdown cancellation still propagates and persists genuine failure
+backoff. Process death or failed finalization leaves conservative pre-HTTP
+recovery state. Legacy scheduler callbacks and their existing tests retain their
+original save semantics. No migration or source scope change is required.
+
+`verify_ingestion_live.py` uses the same owned finalization. A deferred manual
+attempt records `collection_deferred=true`, `http_outcome=null` and no new
+verified collection; it never fabricates HTTP success or failure. Read-only
+`--operator --inspect-only` remains the installed verification command after
+independent correction acceptance, backup and deployment. Existing historical
+failure counts created by J1 are not blindly reset; the next authorized complete
+successful collection resets consecutive failures through normal finalization.
+
 `CORE_SOURCE_KEYS` selects approved registry entries (`all` keeps pending sources
 visible but only implemented contracts execute). The authenticated
 `/api/v1/debug/ingestion` projection reports the entire program, credential
