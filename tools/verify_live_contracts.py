@@ -31,7 +31,10 @@ async def main(source, bounded_poll=False):
         import time
 
         start = time.monotonic()
-        batch = await fetch(contract, client, datetime.now(UTC), max_pages=2)
+        try:
+            batch = await fetch(contract, client, datetime.now(UTC), max_pages=2)
+        finally:
+            await client.close()
         report.update(
             status="passed" if batch.complete and not batch.rejected else "incomplete",
             scope="Bounded initial live query (iNat trailing 14 days; current fire/weather); <=2 result pages, no DB mutation; not a daily volume estimate",
@@ -115,6 +118,8 @@ async def main(source, bounded_poll=False):
         report["status"] = "passed"
     except (FetchError, KeyError, TypeError, ValueError) as exc:
         report.update(status="not_verified", code=getattr(exc, "code", "schema_drift"))
+    finally:
+        await client.close()
     report.update(
         requests=client.requests, bytes_received=client.bytes_received, rate_limit_count=client.rate_limited
     )

@@ -39,6 +39,7 @@ class ProviderView(Contract):
     historical_coverage: str
     collection_interval_seconds: int | None
     adapter_key: str | None
+    upstream_lineage: str
     adapter_implemented: bool
     selected: bool
     credentials_configured: bool
@@ -89,6 +90,7 @@ async def read(db, settings, now):
                 historical_coverage=p.historical_coverage,
                 collection_interval_seconds=CONTRACTS[adapter_key].polling_seconds if implemented else None,
                 adapter_key=adapter_key if implemented else None,
+                upstream_lineage=p.upstream_lineage,
                 credential_variables=p.credentials, access_requirement=p.access,
                 state=state, operational=row))
         return dict(generated_at=now, production_promotion=False, phase_complete=False,

@@ -735,6 +735,11 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
         )
         await asyncio.shield(persist(db, contract, failed, started, clock(), lease=lease))
         raise
+    except Exception:
+        # Runtime/transport bugs remain failed attempts with fixed diagnostics;
+        # neither exception text nor provider response bodies enter logs.
+        batch = Batch(complete=False,http_status=502,failure_code='collection_adapter_failure',
+            requests=client.requests,bytes_received=client.bytes_received,rate_limited=client.rate_limited)
     finally:
         await client.close()
     await persist(db, contract, batch, started, clock(), lease=lease)

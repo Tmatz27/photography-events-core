@@ -1,5 +1,5 @@
 """Full approved ingestion program; a scope entry is never a working adapter."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 
 @dataclass(frozen=True)
@@ -17,6 +17,7 @@ class Provider:
     ranked_priority: int | None = None
     retention: str = 'Normalized history retained; licensed raw/archive policy requires provider validation'
     historical_coverage: str = 'Not yet verified for Core coverage area'
+    upstream_lineage: str = 'Native upstream identity must be retained; independence is not inferred from adapter count'
 
 
 PROVIDERS = (
@@ -111,6 +112,44 @@ PROVIDERS = (
     Provider('harbor_seal_reports', 'Official harbor-seal seasonal reports', 5,kind='reference',legacy='SOURCE_VALIDATION.md',measurements=('seasonal_reference','reported_count'),evidence_kind='published reference/report'),
     Provider('noaa_solar', 'NOAA solar/space-weather observations', 2,measurements=('solar_weather',),evidence_kind='measurement/model product; distinct from OVATION'),
 )
+_MEASUREMENTS = {
+    'inaturalist': ('reported_presence',), 'inaturalist_plants': ('reported_plant_presence',),
+    'wfigs_current': ('mapped_wildfire_perimeter',), 'nws_live_context': ('weather_alert','forecast_temperature'),
+    'nps': ('park_alert','access_restriction'), 'open_meteo': ('cloud_layers','wind','temperature','rainfall','snowfall'),
+    'open_meteo_air_quality': ('aerosol_optical_depth','air_quality'), 'sunsetwx': ('sunrise_sunset_model_quality',),
+    'ovation': ('aurora_nowcast',), 'ebird_notable': ('reported_bird_presence','reported_count'),
+    'ebird_species': ('reported_bird_presence','reported_count'), 'condor_express': ('dated_operator_report',),
+    'field_reports': ('dated_field_report',), 'email_reports': ('dated_field_report',),
+    'ndbc': ('wave_height','wave_period','wave_direction'), 'king_tides': ('published_tide_calendar',),
+    'grunion': ('published_run_schedule',), 'theodore_payne': ('dated_bloom_report',),
+    'desertusa': ('dated_bloom_report',), 'california_fall_color': ('dated_foliage_report',),
+    'seasonal_references': ('published_seasonal_reference',), 'legacy_seasonal_references': ('published_seasonal_reference',),
+    'nasa_eclipses': ('eclipse_catalog','eclipse_path_geometry'), 'meteor_reference': ('shower_peak','radiant'),
+    'astronomical_inputs': ('lunar_solar_geometry',),
+}
+_KINDS = {
+    'inaturalist':'reported observation; presence only', 'wfigs_current':'published mapped perimeter',
+    'nws_live_context':'published alert and model forecast; separate datasets share one accepted collector',
+    'nps':'published access restriction', 'open_meteo':'forecast', 'open_meteo_air_quality':'model',
+    'sunsetwx':'forecast', 'ovation':'nowcast', 'ebird_notable':'reported observation', 'ebird_species':'reported observation',
+    'condor_express':'dated operator report', 'field_reports':'dated field report', 'email_reports':'dated field report',
+    'ndbc':'measured offshore observation', 'king_tides':'published calendar', 'grunion':'published schedule',
+    'theodore_payne':'published field report', 'desertusa':'published field report', 'california_fall_color':'published field report',
+    'nasa_eclipses':'scientific reference catalog', 'meteor_reference':'scientific reference catalog',
+    'astronomical_inputs':'versioned computation inputs; no phenomenon scoring',
+}
+_LINEAGE = {
+    **{k:'iNaturalist native observation UUID; API/taxon views do not create independent reports' for k in ('inaturalist','inaturalist_plants')},
+    **{k:'eBird checklist/submission/observation identity; API views may repeat the same report' for k in ('ebird_notable','ebird_species','ebird_checklists')},
+    **{k:'NEXRAD radar provenance; derived BirdCast and raw radar are complementary, not independent measurements' for k in ('birdcast','nexrad')},
+    'nws_active_alerts':'NWS CAP identifier/references; shared with nws_live_context',
+    'nws_hourly_forecast':'NWS grid and issue/valid period; shared with nws_live_context',
+    'cal_fire':'Official incident identity; potential NIFC/WFIGS overlap must be resolved from explicit metadata',
+    'watchduty':'Reporter/official-feed provenance; do not assume independent confirmation',
+    'whale_safe':'Retain source detection/report/model lineage; acoustic and visual evidence are distinct',
+}
+PROVIDERS = tuple(replace(p, measurements=_MEASUREMENTS.get(p.key,p.measurements),
+    evidence_kind=_KINDS.get(p.key,p.evidence_kind),upstream_lineage=_LINEAGE.get(p.key,p.upstream_lineage)) for p in PROVIDERS)
 INVENTORY = {p.key: p for p in PROVIDERS}
 CREDENTIAL_NAMES = frozenset(name for p in PROVIDERS for name in p.credentials)
 

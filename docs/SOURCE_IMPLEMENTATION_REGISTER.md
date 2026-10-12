@@ -149,6 +149,43 @@ They are not speculative authenticated clients. A requested unimplemented source
 stays `not_implemented`, with credential availability independently visible.
 Missing access never becomes a successful empty collection.
 
+## Measurement organization, redundancy and provenance
+
+`src/pec/sources/inventory.py` is the permanent machine-readable registry. Every
+entry has measurement/evidence kind, original rank (when relevant), batch, static
+versus live/event/group type, credentials/access, native lineage and retention/
+historical-coverage status. Live diagnostics add the actual current collector
+schedule, native/receipt timestamps, received/accepted/rejected outcomes through
+the existing contract endpoint, backoff and PostgreSQL identity/assertion counts.
+Unimplemented entries keep unknown schedules/coverage; their contracts cannot
+be invented from a research ranking. Scope groups are not artificial polls.
+
+| Measurement | Primary / alternate observation candidates | Complementary context; not equivalent replacement |
+| --- | --- | --- |
+| Snow accumulation | CDEC snow stations; HPWREN camera records offer visual evidence | NWS/Open-Meteo snowfall is forecast; camera labels are not fabricated |
+| Bird migration | BirdCast products and independently processed NEXRAD | Both may use the same radar; eBird/USFWS/Motus observe different populations/coverage |
+| Whale presence | Dated visual/operator reports and Whale Alert reports | MBARI acoustics and CoastWatch ocean products establish different facts; Whale Safe lineage may overlap |
+| River/waterfall conditions | USGS/CDEC gauge measurements where site/variable/time match | NWPS/NWS forecasts cannot replace measured discharge or prove a moonbow |
+| Ocean waves | NDBC and CDIP measured series with honest station/basis | CDIP nearshore models remain models; offshore waves do not certify coastal access |
+| Cloud/fog | GOES imagery/products and HPWREN camera/weather observations | NWS/Open-Meteo forecasts are complementary, not observed visibility |
+| Wildfire/access | NWS alerts, WFIGS perimeters, official CAL FIRE and road/agency restrictions | WatchDuty/reporting overlap is retained; no absence means universal safe access |
+| Bloom/foliage | Dated field/seasonal reports and public plant observations | Sentinel-2/Landsat indices and CDEC soil moisture are complementary environmental records |
+| Bioluminescence | Approved dated nighttime field reports | CalHABMAP/ocean/lunar conditions are context, never synthesized glow observations |
+
+All accessible complementary and alternate providers remain scheduled for
+integration; a successful primary never disables the others. Measurement/site,
+units, valid time, precision, lineage and license must match before any future
+comparison could regard records as equivalent. eBird API views of one checklist,
+iNaturalist taxon views of one UUID, syndicated reports and multiple NEXRAD-derived
+products do not create independent confirmation. No scientific fusion runs here.
+
+Current accepted iNaturalist coverage remains the bear/monarch coastal slice,
+not all requested wildlife/plant taxa. The accepted NWS collector combines CAP
+and hourly temperature context; the new dataset entries explicitly share that
+collector and its operational counters. Full grid fields/discussions and independent
+dataset-level lifecycle/health are pending their ingestion batch. Broader future
+coverage and these additional measurements are not claimed by existing adapters.
+
 ## Batch 1 operational verification and blockers
 
 New real schema migration 0009 adds per-source lease ownership/checkpoints and

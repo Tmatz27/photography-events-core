@@ -94,6 +94,20 @@ async def test_owned_cancellation_records_failure_releases_lease_and_keeps_backo
     assert (await backoff.load(db,'inaturalist',NOW)).next_allowed_at>NOW
 
 
+async def test_unexpected_transport_failure_is_persisted_without_secret_exception(db,caplog):
+    from pec.sources.http import Client
+    async def failed(url,ua):
+        raise RuntimeError('private-provider-token')
+    async def noop():
+        pass
+    transport=Client(INATURALIST,'PhotographyEventsCore-test',reserve=noop,transport=failed)
+    status,_=await collect(db,INATURALIST,'PhotographyEventsCore-test',client=transport,clock=lambda:NOW)
+    assert status==502
+    row=(await sql(db,'SELECT * FROM source_runs'))[0]
+    assert row['error_code']=='collection_adapter_failure' and row['status']=='failure'
+    assert 'private-provider-token' not in caplog.text
+
+
 async def test_retired_inaturalist_id_is_refreshed_and_reinstated_without_new_search_hit(db):
     record=observation()
     await poll(db,INATURALIST,[record])

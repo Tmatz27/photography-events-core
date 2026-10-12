@@ -102,6 +102,8 @@ def main():
         # failures remain explicit and never stand in for offline provider tests.
         compose(*test_exec,'tools/verify_ingestion_live.py')
         compose('cp','photography-events-core:/tmp/ingestion-live.json',str(EVIDENCE/'ingestion-live.json'))
+        compose(*test_exec,'tools/collector_operations_acceptance.py')
+        compose('cp','photography-events-core:/tmp/collector-operations.json',str(EVIDENCE/'collector-operations.json'))
         results["migration_0002_downgrade"] = "forward-only; restore pre-upgrade backup instead of losing history"
         compose("cp",str(EVIDENCE / "collection-baselines"),"photography-events-core:/tmp/collection-baselines")
         compose(*test_exec,"tools/collection_benchmark.py")

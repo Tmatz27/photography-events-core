@@ -33,6 +33,7 @@ def create_app(settings=None, database=None, clock=None):
         try:
             if settings.live_sources:
                 from .sources.contracts import CONTRACTS
+                from .sources.inventory import INVENTORY
                 from .sources.storage import register
                 from .sources.ownership import collect_owned
                 from .sources import backoff
@@ -42,7 +43,6 @@ def create_app(settings=None, database=None, clock=None):
                         await register(c,contract)
                 await db.pattern_transaction(setup,write=True)
                 for key,contract in CONTRACTS.items():
-                    from .sources.inventory import INVENTORY
                     if not any((INVENTORY[k].adapter or k)==key for k in settings.source_keys):
                         continue
                     scheduler.add(key,contract.scheduler_policy,
