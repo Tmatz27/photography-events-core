@@ -220,7 +220,7 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
             WHERE source_id=:sid AND external_id=:eid"""),
                 dict(sid=sid, eid=fact.external_id),
             )
-        ).scalar_one()
+        ).scalar_one_or_none()
         if barrier and fact.provider_updated_at <= barrier:
             raise RecordError("stale_reference_replay")
     current = (
@@ -741,7 +741,9 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
         batch = Batch(complete=False,http_status=502,failure_code='collection_adapter_failure',
             requests=client.requests,bytes_received=client.bytes_received,rate_limited=client.rate_limited)
     finally:
-        await client.close()
+        close = getattr(client,'close',None)
+        if close is not None:
+            await close()
     await persist(db, contract, batch, started, clock(), lease=lease)
     if batch.complete and not batch.rejected and contract.source_key == "inaturalist":
 

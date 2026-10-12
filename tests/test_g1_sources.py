@@ -264,5 +264,7 @@ async def test_g2_retired_id_not_refreshed_but_incremental_return_can_reinstate(
         )
         assert status == 200
         assert len(await current(db)) == (0 if minute == 2 else 1)
-    assert selected == [{}, {}] and (await current(db))[0]["sensitive"]
+    # Ingestion Batch 1 supersedes the recorded G2 limitation: retained recent
+    # IDs are now refreshed even after public-unavailable retirement.
+    assert selected == [{record['id']:record['uuid']}, {record['id']:record['uuid']}] and (await current(db))[0]["sensitive"]
     assert (await current(db))[0]["observed_at"] == NOW and (await latest(db))["reinstated"] == 1
