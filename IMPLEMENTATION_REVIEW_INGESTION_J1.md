@@ -66,3 +66,37 @@ Independent acceptance remains pending. After acceptance the operator will back
 up, deploy and verify installed Unraid Core; only then proceed to Batch 2.
 The 81-entry scope is unchanged. Full ingestion is NOT COMPLETE. No release,
 notification, scoring, HA change or M2 production promotion is authorized here.
+
+
+## Verified J1 correction receipts
+
+Code/test/tool freeze: `762ab90b9ae3bba232a6a6697ad3f819ad27fbbc`. [Complete CI](https://github.com/Tmatz27/photography-events-core/actions/runs/38215256052) passed.
+Artifact `11732376914` downloaded ZIP SHA-256: `34f43c65bbf961f0af4c181603d64b00420b56bd96d0e625cc349ab73fd2fbdb`.
+Committed evidence: `docs/evidence/ingestion-j1/receipt.json` and adjacent raw
+workflow artifacts; the receipt enumerates all 20 new J1 case identities/hashes.
+
+**491 passed in 82.166s**, zero errors/failures/skips in the
+complete real PostgreSQL/PostGIS suite. All **471 accepted Batch 1 identities**
+and all **446 historical H1 identities** remain; no old test was edited. The
+20 new cases include 4 portable and 16 database cases. Local portable verification:
+164 passed, 327 expected DB/POSIX/oracle skips. CI portable: 169 passed, 322
+expected database skips, followed by the complete real database suite. Ruff
+and compilation also passed.
+
+Both independent legacy recaptures remained byte-identical; 15 fixture cases,
+nine pipeline cases and 18,000 evaluator comparisons, zero mismatches. Full/repeat
+migrations, failure injection/restart and actual backup/restore passed; schema
+remains 0009 and nonempty collector state/provenance survived restore. All accepted
+privacy/safety/M2 isolation/quota/lifecycle cases remain green. No migrations,
+provider contracts/parsers/storage, source inventory or phenomenon engine changed.
+
+The workflow's genuine live collection receipt is separate from synthetic J1
+test responses and is preserved verbatim. It is disposable CI database evidence,
+not installed Unraid acceptance; per-source failures/empty data/native staleness
+must be read truthfully from that receipt. The user will back up and inspect
+installed Core after independent correction acceptance. No Unraid connection or
+deployment was performed. The 81-entry scope remains; full ingestion NOT COMPLETE.
+
+J1 implementation and CI = READY FOR CLAUDE CORRECTION REVIEW.
+Independent acceptance / installed backup and verification / Batch 2 = PENDING.
+Production release / promotion / notifications = NO.

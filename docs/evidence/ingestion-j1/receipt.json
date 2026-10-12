@@ -1,0 +1,236 @@
+{
+  "starting_sha": "00a7ad8b9f1324ac954da93fcc0edfbbdf5a32b1",
+  "code_freeze_sha": "762ab90b9ae3bba232a6a6697ad3f819ad27fbbc",
+  "ci_run": 38215256052,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/38215256052",
+  "ci_conclusion": "success",
+  "artifact_id": 11732376914,
+  "artifact_zip_sha256": "34f43c65bbf961f0af4c181603d64b00420b56bd96d0e625cc349ab73fd2fbdb",
+  "tests_passed": 491,
+  "historical_h1_case_identities_preserved": 446,
+  "accepted_batch1_case_identities_preserved": 471,
+  "accepted_tests_edited": false,
+  "new_j1_cases": 20,
+  "new_case_names": [
+    [
+      "tests.test_j1_scheduler",
+      "test_j1_deferred_reload_is_read_only_and_never_retries_immediately[future]"
+    ],
+    [
+      "tests.test_j1_scheduler",
+      "test_j1_deferred_reload_is_read_only_and_never_retries_immediately[past]"
+    ],
+    [
+      "tests.test_j1_scheduler",
+      "test_j1_deferred_reload_is_read_only_and_never_retries_immediately[unavailable]"
+    ],
+    [
+      "tests.test_j1_scheduler",
+      "test_j1_owned_http_failure_reloads_persisted_failure_and_retry_after"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_expired_lease_authorizes_recovery_at_persisted_deadline"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_expired_lease_still_defers_until_recovery_deadline"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_failed_finalization_keeps_recovery_deadline_without_provider_failure"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_genuine_http_failure_persists_once_with_retry_after[429]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_genuine_http_failure_persists_once_with_retry_after[503]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_manual_success_then_stale_scheduler_wake_preserves_zero_failures"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_refusals_do_not_request_save_fail_or_change_persisted_state[active_lease]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_refusals_do_not_request_save_fail_or_change_persisted_state[disabled]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_refusals_do_not_request_save_fail_or_change_persisted_state[not_due]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_reload_waits_for_active_lease_even_if_backoff_deadline_is_earlier"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_repeated_genuine_failures_use_authoritative_exponential_backoff"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_restart_loads_recovery_deadline_before_any_provider_request"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_stale_owner_cannot_overwrite_newer_backoff_or_release_owner[200]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_stale_owner_cannot_overwrite_newer_backoff_or_release_owner[429]"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_stale_successful_scheduler_cannot_overwrite_later_manual_failure"
+    ],
+    [
+      "tests.test_j1_scheduler_database",
+      "test_j1_timeout_preserves_recovery_and_cancelled_attempt"
+    ]
+  ],
+  "test_seconds": 82.166,
+  "local_portable_passed": 164,
+  "local_expected_skips": 327,
+  "registry_entries": 81,
+  "source_scope_unchanged": true,
+  "migrations_unchanged": true,
+  "schema_version": "0009",
+  "pipeline_cases": 9,
+  "evaluator_comparisons": 18000,
+  "evaluator_mismatches": 0,
+  "legacy_fixture_byte_parity": "both independent recaptures byte-identical",
+  "unraid_modified": false,
+  "installed_verification": "pending correction acceptance, operator backup/deployment",
+  "independent_claude_review": "pending",
+  "phase_complete": false,
+  "production_promotion": false,
+  "release": false,
+  "notifications": false,
+  "live_verification": {
+    "started_at": "2026-10-12T07:02:16.580749+00:00",
+    "genuine_network": true,
+    "inspection_only": false,
+    "mode": "disposable_postgis",
+    "production_promotion": false,
+    "items": [
+      {
+        "source": "inaturalist",
+        "http_outcome": 200,
+        "collection_deferred": false,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": true,
+        "native_freshness": "current",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 65,
+          "records_accepted": 65,
+          "records_rejected": 0,
+          "requests": 1,
+          "bytes_received": 6369953,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-12T01:56:20+00:00",
+          "completed_at": "2026-10-12T07:02:18.412933+00:00",
+          "content_sha256": "5e46b032ab673a23f9bf25198c9581da38f967c96c8b302d9a742af061edf653",
+          "cursor_updated_at": "2026-10-12T07:02:16.654075+00:00",
+          "persisted_identities": 65,
+          "persisted_assertions": 65,
+          "verified_receipts": 65
+        }
+      },
+      {
+        "source": "wfigs_current",
+        "http_outcome": 200,
+        "collection_deferred": false,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": false,
+        "native_freshness": "current",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 0,
+          "records_accepted": 0,
+          "records_rejected": 0,
+          "requests": 3,
+          "bytes_received": 86093,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-12T05:47:58.438000+00:00",
+          "completed_at": "2026-10-12T07:02:20.849820+00:00",
+          "content_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cursor_updated_at": "2026-10-12T07:02:18.742129+00:00",
+          "persisted_identities": 0,
+          "persisted_assertions": 0,
+          "verified_receipts": 0
+        }
+      },
+      {
+        "source": "nws_live_context",
+        "http_outcome": 200,
+        "collection_deferred": false,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": true,
+        "native_freshness": "current",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 158,
+          "records_accepted": 158,
+          "records_rejected": 0,
+          "requests": 3,
+          "bytes_received": 177976,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-12T06:26:21+00:00",
+          "completed_at": "2026-10-12T07:02:23.181627+00:00",
+          "content_sha256": "65f68db7d5e66ab77a82b6af043301b8da0d27d730cd34f5dd289041c665329f",
+          "cursor_updated_at": "2026-10-12T07:02:20.867301+00:00",
+          "persisted_identities": 158,
+          "persisted_assertions": 158,
+          "verified_receipts": 158
+        }
+      }
+    ],
+    "completed_at": "2026-10-12T07:02:23.879890+00:00"
+  },
+  "changed_files": [
+    "IMPLEMENTATION_REVIEW_INGESTION_BATCH_1.md",
+    "IMPLEMENTATION_REVIEW_INGESTION_J1.md",
+    "docs/LIVE_SHADOW_OPERATIONS.md",
+    "src/pec/api.py",
+    "src/pec/scheduler.py",
+    "src/pec/sources/backoff.py",
+    "src/pec/sources/ownership.py",
+    "tests/test_j1_scheduler.py",
+    "tests/test_j1_scheduler_database.py",
+    "tools/verify_ingestion_live.py"
+  ],
+  "evidence_sha256": {
+    "acceptance.json": "d0ec1218f8c743c87593974f017638311c3d05381f89d677576886b181d16eee",
+    "collection-performance.json": "ccf1cc469b50dd8794b36dbc59e09bc84982d00eeaad3a6ff7ee385fcf3e879c",
+    "collector-operations.json": "d1c3747718959b8c0252675987b94ba35a2e3945048ee49818adbc11dde3e784",
+    "frozen-database.json": "51475f7aa9c5385217b01999852ed19b92e76618378db280fae5cb61f37c3b71",
+    "h3-performance.json": "243bd9e1df5bff8a77f48a50744f6ce12a7654f49f113db1e44ec5586cd30eab",
+    "ingestion-live.json": "36b473ee99d72a68a8e6be65b6e7c4eb7b556aa24e59708084fd5bcefda88133",
+    "m2-performance.json": "b1d3b4111e7ac0bbce95847150c877901bddb38ea5e72f9c4ee15be3add252a5",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "pytest.log": "e5902d1860131334c393707b6d04b597ead962e12063e10cb111cf88213889b3",
+    "source-fingerprint-performance.json": "463fac22349509a4f3cca486c5a9400e3b52f9c14c41d0dadcd04fba7308cf97",
+    "tests.xml": "7f22457a14e1fd657db9bdb3877a2664e6d306ad192242354e919dc9d9a0233e"
+  }
+}

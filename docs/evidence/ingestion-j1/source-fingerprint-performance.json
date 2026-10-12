@@ -1,0 +1,883 @@
+{
+  "shadow_transaction_budget_seconds": 30.0,
+  "scheduled_poll_budget_seconds": 120,
+  "method": "Three fingerprint trials and three full empty/failed persist trials per source/size, all sources seeded simultaneously; EXPLAIN ANALYZE BUFFERS; no index/partition/retention changes",
+  "measurements": [
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 3000,
+      "fingerprint_seconds": [
+        0.009777881000019306,
+        0.008274434000014708,
+        0.0077311069999836945
+      ],
+      "fingerprint_median_seconds": 0.008274434000014708,
+      "full_persist_seconds": [
+        0.01704433699998731,
+        0.012995594000017263,
+        0.01220450700000697
+      ],
+      "full_persist_median_seconds": 0.012995594000017263,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 2000,
+          "loops": 1,
+          "shared_hit_blocks": 77
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 164.33,
+            "Total Cost": 166.83,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.653,
+            "Actual Total Time": 0.692,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 77,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 114.5,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.005,
+                "Actual Total Time": 0.232,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '1'::bigint)",
+                "Rows Removed by Filter": 2000,
+                "Shared Hit Blocks": 77,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.049,
+          "Triggers": [],
+          "Execution Time": 0.732
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 3000,
+      "fingerprint_seconds": [
+        0.007721541000023535,
+        0.007587977999975237,
+        0.0077377400000102625
+      ],
+      "fingerprint_median_seconds": 0.007721541000023535,
+      "full_persist_seconds": [
+        0.01180271499998753,
+        0.011684034000012389,
+        0.011640975999995362
+      ],
+      "full_persist_median_seconds": 0.011684034000012389,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 2000,
+          "loops": 1,
+          "shared_hit_blocks": 77
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 164.33,
+            "Total Cost": 166.83,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.638,
+            "Actual Total Time": 0.678,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 77,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 114.5,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.044,
+                "Actual Total Time": 0.208,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '2'::bigint)",
+                "Rows Removed by Filter": 2000,
+                "Shared Hit Blocks": 77,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.063,
+          "Triggers": [],
+          "Execution Time": 0.718
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 3000,
+      "fingerprint_seconds": [
+        0.007734644000009894,
+        0.007615647999983821,
+        0.007526004999988345
+      ],
+      "fingerprint_median_seconds": 0.007615647999983821,
+      "full_persist_seconds": [
+        0.011510111000006873,
+        0.01157681800000887,
+        0.011640806999992037
+      ],
+      "full_persist_median_seconds": 0.01157681800000887,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 2000,
+          "loops": 1,
+          "shared_hit_blocks": 77
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 164.33,
+            "Total Cost": 166.83,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.608,
+            "Actual Total Time": 0.651,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 77,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 114.5,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.08,
+                "Actual Total Time": 0.198,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '3'::bigint)",
+                "Rows Removed by Filter": 2000,
+                "Shared Hit Blocks": 77,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.068,
+          "Triggers": [],
+          "Execution Time": 0.69
+        }
+      ]
+    },
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 30000,
+      "fingerprint_seconds": [
+        0.07701914300000112,
+        0.07517545700000028,
+        0.07292570699999601
+      ],
+      "fingerprint_median_seconds": 0.07517545700000028,
+      "full_persist_seconds": [
+        0.10502771200000893,
+        0.07898529400000598,
+        0.07814003600000774
+      ],
+      "full_persist_median_seconds": 0.07898529400000598,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 20000,
+          "loops": 1,
+          "shared_hit_blocks": 770
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 1809.39,
+            "Total Cost": 1834.39,
+            "Plan Rows": 10000,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.946,
+            "Actual Total Time": 7.376,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 770,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 1145.0,
+                "Plan Rows": 10000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.012,
+                "Actual Total Time": 2.72,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '1'::bigint)",
+                "Rows Removed by Filter": 20000,
+                "Shared Hit Blocks": 770,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.106,
+          "Triggers": [],
+          "Execution Time": 7.732
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 30000,
+      "fingerprint_seconds": [
+        0.07133945999999014,
+        0.07213215900000591,
+        0.07240883299999723
+      ],
+      "fingerprint_median_seconds": 0.07213215900000591,
+      "full_persist_seconds": [
+        0.07880992500000161,
+        0.10282615499997405,
+        0.08256996499997626
+      ],
+      "full_persist_median_seconds": 0.08256996499997626,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 20000,
+          "loops": 1,
+          "shared_hit_blocks": 770
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 1809.39,
+            "Total Cost": 1834.39,
+            "Plan Rows": 10000,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.945,
+            "Actual Total Time": 7.369,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 770,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 1145.0,
+                "Plan Rows": 10000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.636,
+                "Actual Total Time": 2.744,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '2'::bigint)",
+                "Rows Removed by Filter": 20000,
+                "Shared Hit Blocks": 770,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.111,
+          "Triggers": [],
+          "Execution Time": 7.713
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 30000,
+      "fingerprint_seconds": [
+        0.07339444699999831,
+        0.07753458099998056,
+        0.07788191200000938
+      ],
+      "fingerprint_median_seconds": 0.07753458099998056,
+      "full_persist_seconds": [
+        0.08258557400000655,
+        0.08362332600000855,
+        0.10402836899999102
+      ],
+      "full_persist_median_seconds": 0.08362332600000855,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Seq Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 20000,
+          "loops": 1,
+          "shared_hit_blocks": 770
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 1809.39,
+            "Total Cost": 1834.39,
+            "Plan Rows": 10000,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.951,
+            "Actual Total Time": 7.363,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 770,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 0.0,
+                "Total Cost": 1145.0,
+                "Plan Rows": 10000,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.243,
+                "Actual Total Time": 2.744,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "(source_id = '3'::bigint)",
+                "Rows Removed by Filter": 20000,
+                "Shared Hit Blocks": 770,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.106,
+          "Triggers": [],
+          "Execution Time": 7.718
+        }
+      ]
+    },
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 75000,
+      "fingerprint_seconds": [
+        0.1722194150000007,
+        0.17036892000001558,
+        0.20301836799998796
+      ],
+      "fingerprint_median_seconds": 0.1722194150000007,
+      "full_persist_seconds": [
+        0.18472177500001408,
+        0.20369699799999808,
+        0.17601306899999258
+      ],
+      "full_persist_median_seconds": 0.18472177500001408,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Index Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Index Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Scan Direction": "Forward",
+            "Index Name": "raw_observations_source_id_external_id_key",
+            "Relation Name": "raw_observations",
+            "Alias": "raw_observations",
+            "Startup Cost": 0.42,
+            "Total Cost": 4787.26,
+            "Plan Rows": 25105,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.022,
+            "Actual Total Time": 4.736,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Index Cond": "(source_id = '1'::bigint)",
+            "Rows Removed by Index Recheck": 0,
+            "Index Searches": 1,
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.106,
+          "Triggers": [],
+          "Execution Time": 5.617
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 75000,
+      "fingerprint_seconds": [
+        0.19079875700001026,
+        0.16302617599998825,
+        0.18801536099999794
+      ],
+      "fingerprint_median_seconds": 0.18801536099999794,
+      "full_persist_seconds": [
+        0.17374337100000048,
+        0.17394457500000726,
+        0.19917701900001816
+      ],
+      "full_persist_median_seconds": 0.17394457500000726,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Index Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 796
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Index Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Scan Direction": "Forward",
+            "Index Name": "raw_observations_source_id_external_id_key",
+            "Relation Name": "raw_observations",
+            "Alias": "raw_observations",
+            "Startup Cost": 0.42,
+            "Total Cost": 4781.22,
+            "Plan Rows": 25053,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.02,
+            "Actual Total Time": 4.603,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Index Cond": "(source_id = '2'::bigint)",
+            "Rows Removed by Index Recheck": 0,
+            "Index Searches": 1,
+            "Shared Hit Blocks": 796,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.112,
+          "Triggers": [],
+          "Execution Time": 5.462
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 75000,
+      "fingerprint_seconds": [
+        0.16429439399999524,
+        0.1883089190000078,
+        0.16430598100001248
+      ],
+      "fingerprint_median_seconds": 0.16430598100001248,
+      "full_persist_seconds": [
+        0.21355315399998176,
+        0.17454187300000967,
+        0.19693935600000145
+      ],
+      "full_persist_median_seconds": 0.19693935600000145,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Index Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Index Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Scan Direction": "Forward",
+            "Index Name": "raw_observations_source_id_external_id_key",
+            "Relation Name": "raw_observations",
+            "Alias": "raw_observations",
+            "Startup Cost": 0.42,
+            "Total Cost": 4770.72,
+            "Plan Rows": 24842,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.022,
+            "Actual Total Time": 4.615,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Index Cond": "(source_id = '3'::bigint)",
+            "Rows Removed by Index Recheck": 0,
+            "Index Searches": 1,
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.115,
+          "Triggers": [],
+          "Execution Time": 5.445
+        }
+      ]
+    }
+  ],
+  "max_fingerprint_seconds": 0.20301836799998796,
+  "max_full_persist_seconds": 0.21355315399998176,
+  "optimization_required": false
+}
