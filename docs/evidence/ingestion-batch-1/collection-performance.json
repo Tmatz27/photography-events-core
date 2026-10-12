@@ -1,0 +1,272 @@
+{
+  "baseline_m1_sha": "52db568d6b28cc7716c9329be396786906f65072",
+  "baseline_m2_sha": "9ee41f1428ffe245f43e9dcc3763c9672cb80fb8",
+  "default_collection_timeout_seconds": 3,
+  "note": "Same current schema/instance; two fresh-table trials per implementation/size. Failed deadlines and rolled-back assertions are retained. Per-record equivalent is only reported for complete collections. Shadow collection excludes deferred M2 enrichment.",
+  "measurements": [
+    {
+      "implementation": "accepted_m1",
+      "records": 100,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.153869,
+      "per_record_ms": 1.538693,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "accepted_m1",
+      "records": 100,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.168216,
+      "per_record_ms": 1.682162,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 100,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.43994,
+      "per_record_ms": 4.399398,
+      "queries_attempted": 1110,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 100,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.445118,
+      "per_record_ms": 4.451177,
+      "queries_attempted": 1110,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 100,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.17246,
+      "per_record_ms": 1.724604,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 100,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.130553,
+      "per_record_ms": 1.30553,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 100,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.153979,
+      "per_record_ms": 1.539789,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 100,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.15164,
+      "per_record_ms": 1.516401,
+      "queries_attempted": 410,
+      "succeeded": true,
+      "committed_assertions": 100
+    },
+    {
+      "implementation": "accepted_m1",
+      "records": 500,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.716495,
+      "per_record_ms": 1.432991,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "accepted_m1",
+      "records": 500,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.796376,
+      "per_record_ms": 1.592753,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 500,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 3.001463,
+      "per_record_ms": null,
+      "queries_attempted": 3664,
+      "succeeded": false,
+      "committed_assertions": 0
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 500,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 2.01301,
+      "per_record_ms": 4.02602,
+      "queries_attempted": 5510,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 500,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.861084,
+      "per_record_ms": 1.722168,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 500,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.878246,
+      "per_record_ms": 1.756492,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 500,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.748083,
+      "per_record_ms": 1.496167,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 500,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 0.746557,
+      "per_record_ms": 1.493114,
+      "queries_attempted": 2010,
+      "succeeded": true,
+      "committed_assertions": 500
+    },
+    {
+      "implementation": "accepted_m1",
+      "records": 1000,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.342778,
+      "per_record_ms": 1.342778,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    },
+    {
+      "implementation": "accepted_m1",
+      "records": 1000,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.360651,
+      "per_record_ms": 1.360651,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 1000,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 3.001008,
+      "per_record_ms": null,
+      "queries_attempted": 8169,
+      "succeeded": false,
+      "committed_assertions": 0
+    },
+    {
+      "implementation": "pre_fix_m2_off",
+      "records": 1000,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 3.000904,
+      "per_record_ms": null,
+      "queries_attempted": 7881,
+      "succeeded": false,
+      "committed_assertions": 0
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 1000,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.571637,
+      "per_record_ms": 1.571637,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    },
+    {
+      "implementation": "corrected_m2_off",
+      "records": 1000,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.315336,
+      "per_record_ms": 1.315336,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 1000,
+      "trial": 1,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.531141,
+      "per_record_ms": 1.531141,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    },
+    {
+      "implementation": "corrected_m2_shadow",
+      "records": 1000,
+      "trial": 2,
+      "deadline_seconds": 3.0,
+      "collection_seconds": 1.405431,
+      "per_record_ms": 1.405431,
+      "queries_attempted": 4010,
+      "succeeded": true,
+      "committed_assertions": 1000
+    }
+  ]
+}

@@ -195,3 +195,71 @@ pending an authenticated, trusted operator connection and independent acceptance
 Validation receipts and exact reviewed tip will be appended after successful CI.
 The complete ingestion phase is NOT COMPLETE. This packet is a Batch 1 handoff,
 not a full-product or unattended-operation acceptance.
+
+
+## Verified Batch 1 freeze and acceptance receipts
+
+Code/test/tool freeze: `ec97563956859c73254df3d409db5430f25ae6ed`. [Full PostGIS CI](https://github.com/Tmatz27/photography-events-core/actions/runs/38204670198) is green.
+Artifact `11726329417`, ZIP SHA-256 `4a2025d86db84d17cb0a968dca09a777e6a86ec9208c672c9bd474ad3d87251b`, was downloaded and verified.
+Evidence is committed under `docs/evidence/ingestion-batch-1/`; freeze-receipt.json
+lists hashes and the exact 25 new named cases. The final documentation descendant
+and final-tip CI are recorded externally in `outputs/INGESTION_BATCH_1_FINAL_RECEIPT.md`
+beside the checkout, avoiding a self-referential Git commit.
+
+**471 passed in 83.578s**, zero failures/errors/skips on
+PostgreSQL 18.6 / PostGIS 3.6.4. All 446 accepted H1 case identities are preserved,
+plus 25 new cases. Schema/version/route assertions and one superseded G2 known-ID
+expectation changed as documented; no accepted test was deleted. Local Windows:
+160 portable passed, 311 expected DB/POSIX/oracle skips. CI portable: 165 passed,
+306 DB skips, followed by the complete real DB suite. Ruff/compile checks passed.
+
+Genuine provider collection ran in a fresh, separately migrated
+`photography_events_live_test` database, through owned collectors, durable quota,
+accepted parsers and persistence. It contains no offline test fixtures:
+
+| Source | Real collection | Actual database result | Native freshness |
+| --- | --- | --- | --- |
+| iNaturalist | Complete success; 1 request, 65 accepted, 0 rejected | Exactly 65 raw identities, 65 normalized assertions and 65 verified fresh receipts | Current |
+| NWS live context | Complete success; 3 requests, 158 accepted, 0 rejected | Exactly 158 identities/assertions/fresh receipts | Stale native forecast issue time, truthfully retained |
+| WFIGS current | Complete success; 3 requests, valid empty scope snapshot | Source run/cursor/native service timestamp persisted; zero fire identities/assertions | Current |
+
+WFIGS positive-fire row persistence was not exercised by this empty real snapshot.
+It is covered by real PostGIS safety/lifecycle tests; no fire was fabricated for
+live evidence. NWS HTTP success does not replace its original native forecast time
+or turn its stale native freshness into current. Shared NWS dataset counters remain
+clearly identified; independent expanded dataset coverage/health is pending Batch 2.
+
+M1 15/15 fixture cases and both independent legacy oracle files remain byte-identical;
+nine pipeline cases, 18,000 comparisons, zero mismatches. M2 isolation, G1 order,
+F1 reinstatement, F2 privacy (including expired-worker protection), H1 old-edit
+receipt safety, quotas/cancellation/Retry-After/backoff and failure recovery passed.
+Migration 0009/backfill/repeat/restart/Compose and actual backup.sh/restore.sh passed.
+Nonempty collector lease/checkpoint/reference/provenance state survived restore,
+alongside existing owner/H3 indexes/report-group/M2 artifacts; zero M2 promotions.
+
+At 100,000 retained explicit CAP barriers, the actual plan used the primary-key
+Index Scan and returned one row; median isolated lookup
+0.658 ms across ten samples. This is synthetic
+load testing in a disposable database, separate from genuine provider evidence.
+
+Changed implementation/deployment/configuration files and commits are listed by
+the final receipt; major changes are sources/ownership.py, http.py, storage.py,
+inventory.py, diagnostics.py, models.py, config.py, api.py, retention.py, logging.py,
+schema version/migration 0009, Compose/locks/Dockerfile, verification/acceptance
+tools and targeted tests. Photographic evaluators, M2 engine, HA and migrations
+0001–0008 are unchanged. CORE_LIVE_SOURCES=false, patterns off and retention off
+remain default; all promotion/notifications/releases remain disabled.
+
+The user will run installed Unraid verification after review. The handoff includes
+read-only operator commands and no secret-bearing outputs. Claude independent
+acceptance and installed runtime evidence are pending. Remaining provider adapters,
+credentials/permissions/licensed storage terms and source-specific coverage must
+be completed in later ingestion batches. The full phase is **NOT COMPLETE**.
+
+Batch 1 code and CI = READY FOR INDEPENDENT REVIEW
+
+Installed Unraid collection/persistence = OPERATOR VERIFICATION PENDING
+
+Complete multi-source ingestion = NOT COMPLETE
+
+Production promotion / notifications / release = NO

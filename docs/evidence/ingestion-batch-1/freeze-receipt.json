@@ -1,0 +1,242 @@
+{
+  "starting_core_sha": "b14014760beee2c18d02a2b1f36756f6faee93a0",
+  "code_freeze_sha": "ec97563956859c73254df3d409db5430f25ae6ed",
+  "ha_reference_sha": "95a746cbcc3c97b95dd05774481cc13fad2c6955",
+  "ha_changed": false,
+  "ci_run": 38204670198,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/38204670198",
+  "ci_conclusion": "success",
+  "artifact_id": 11726329417,
+  "artifact_sha256": "4a2025d86db84d17cb0a968dca09a777e6a86ec9208c672c9bd474ad3d87251b",
+  "tests_passed": 471,
+  "baseline_named_cases_preserved": 446,
+  "new_cases": 25,
+  "new_case_names": [
+    [
+      "tests.test_ingestion_operations_database",
+      "test_cap_index_survives_payload_retention_and_allows_newer_reference"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_checkpoint_only_advances_with_valid_complete_owned_poll[complete]"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_checkpoint_only_advances_with_valid_complete_owned_poll[expired]"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_checkpoint_only_advances_with_valid_complete_owned_poll[incomplete]"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_checkpoint_only_advances_with_valid_complete_owned_poll[out_of_order]"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_checkpoint_only_advances_with_valid_complete_owned_poll[too_large]"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_concurrent_process_claims_have_single_owner_and_no_pool_held"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_disabled_source_cannot_be_claimed"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_expired_owner_cannot_mutate_or_release_new_owner"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_expired_owner_may_only_raise_existing_privacy_without_renewing_evidence"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_full_inventory_diagnostics_are_honest_and_do_not_expose_coordinates_or_credentials"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_new_database_process_preserves_poll_ownership_and_recovery_backoff"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_old_native_edit_fresh_receipt_does_not_prune_live_payload_or_history"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_owned_cancellation_records_failure_releases_lease_and_keeps_backoff"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_retired_inaturalist_id_is_refreshed_and_reinstated_without_new_search_hit"
+    ],
+    [
+      "tests.test_ingestion_operations_database",
+      "test_unexpected_transport_failure_is_persisted_without_secret_exception"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_entire_approved_scope_is_retained_in_inventory"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_env_and_compose_describe_every_committed_credential"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_real_http_cancellation_closes_socket_without_background_thread"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_real_stream_size_json_redirect_and_retry_bounds[bad_json]"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_real_stream_size_json_redirect_and_retry_bounds[oversized]"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_real_stream_size_json_redirect_and_retry_bounds[rate_limit]"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_real_stream_size_json_redirect_and_retry_bounds[redirect]"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_selection_and_environment_do_not_echo_unknown_secrets"
+    ],
+    [
+      "tests.test_ingestion_operations_portable",
+      "test_unimplemented_credentials_are_not_integration_claims_and_secrets_are_redacted"
+    ]
+  ],
+  "test_seconds": 83.578,
+  "registry_entries": 81,
+  "registry_includes_groups": true,
+  "implemented_collectors": 3,
+  "migrations_0001_to_0008_unchanged": true,
+  "new_migration": "0009",
+  "legacy_parity_cases": 15,
+  "pipeline_cases": 9,
+  "evaluator_comparisons": 18000,
+  "evaluator_mismatches": 0,
+  "live_verification": {
+    "started_at": "2026-10-12T04:42:51.039573+00:00",
+    "genuine_network": true,
+    "inspection_only": false,
+    "mode": "disposable_postgis",
+    "production_promotion": false,
+    "items": [
+      {
+        "source": "inaturalist",
+        "http_outcome": 200,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": true,
+        "native_freshness": "current",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 65,
+          "records_accepted": 65,
+          "records_rejected": 0,
+          "requests": 1,
+          "bytes_received": 6369953,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-12T01:56:20+00:00",
+          "completed_at": "2026-10-12T04:42:52.017047+00:00",
+          "content_sha256": "5e46b032ab673a23f9bf25198c9581da38f967c96c8b302d9a742af061edf653",
+          "cursor_updated_at": "2026-10-12T04:42:51.116375+00:00",
+          "persisted_identities": 65,
+          "persisted_assertions": 65,
+          "verified_receipts": 65
+        }
+      },
+      {
+        "source": "wfigs_current",
+        "http_outcome": 200,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": false,
+        "native_freshness": "current",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 0,
+          "records_accepted": 0,
+          "records_rejected": 0,
+          "requests": 3,
+          "bytes_received": 86093,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-12T04:39:18.067000+00:00",
+          "completed_at": "2026-10-12T04:42:54.450160+00:00",
+          "content_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cursor_updated_at": "2026-10-12T04:42:52.341640+00:00",
+          "persisted_identities": 0,
+          "persisted_assertions": 0,
+          "verified_receipts": 0
+        }
+      },
+      {
+        "source": "nws_live_context",
+        "http_outcome": 200,
+        "verification_error": null,
+        "live_collection_verified": true,
+        "persistence_verified": true,
+        "native_freshness": "stale",
+        "database": {
+          "enabled": true,
+          "status": "success",
+          "incomplete": false,
+          "error_code": null,
+          "records_received": 158,
+          "records_accepted": 158,
+          "records_rejected": 0,
+          "requests": 3,
+          "bytes_received": 177943,
+          "corrections": 0,
+          "duplicates": 0,
+          "provider_updated_at": "2026-10-11T20:41:44+00:00",
+          "completed_at": "2026-10-12T04:42:56.606941+00:00",
+          "content_sha256": "d09ef6759b1ed1d50a72f98abd8db3d5e7acb8cb9a3955f352feb6fad7ef0dbe",
+          "cursor_updated_at": "2026-10-12T04:42:54.468782+00:00",
+          "persisted_identities": 158,
+          "persisted_assertions": 158,
+          "verified_receipts": 158
+        }
+      }
+    ],
+    "completed_at": "2026-10-12T04:42:57.307305+00:00"
+  },
+  "indexed_cap_barrier_load": 100000,
+  "cap_lookup_median_seconds": 0.0006576975000029961,
+  "unraid_verification": "operator will supply installed-state receipt after independent review",
+  "standalone_m3c_spec": "not available; conformance not claimed",
+  "phase_complete": false,
+  "production_promotion": false,
+  "notifications_enabled": false,
+  "release_published": false,
+  "evidence_sha256": {
+    "acceptance.json": "ca6aaa431e498dbc83be888f765a4ad89b03d74beb262ae0d4eb0a083986f3d2",
+    "collection-performance.json": "e959a3f1f710cdbe70c50b46bd24da73ab4ce00cd54849a1b8c522b46cee6160",
+    "collector-operations.json": "37c769b8fc0c28cb8f8e66e7e5859b539173540dd7d805b2d5c0f2bef3ffe93b",
+    "frozen-database.json": "b67dc73ae1ade6f08bcfb5a6a670857dd6bad17608df85913fae1394645b1478",
+    "h3-performance.json": "e74b328135b3df6793e2d464c896bdd7b63e8da5625ce8f6364497a1d24a8a73",
+    "ingestion-live.json": "bcf2be7dae183a7c1ef07017c9b2c16a5a244ed65a92eadf56a59ed848f84dfe",
+    "m2-performance.json": "89fddf770a6a723bea45844291ad854bf3b0583c0b7764d8fa1ef1db917bcbbc",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "pytest.log": "154a763c135c81534159cb034d34b065382467371c1bf2c6942646bb61776b7a",
+    "source-fingerprint-performance.json": "ec3fab1de00b04afef5ddf595bbf6377716863608934143042964d141ee63ae5",
+    "tests.xml": "778cc146d62d82968a96069ab9c8c7bb38c8fb13d2c7a1a5555d26bd703d1643"
+  },
+  "final_tip_receipt": "outputs/INGESTION_BATCH_1_FINAL_RECEIPT.md beside checkout"
+}
