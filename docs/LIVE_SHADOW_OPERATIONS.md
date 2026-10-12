@@ -45,7 +45,8 @@ historical IDs is not claimed. Privacy protection never decreases on return.
 Batch 1 adds durable poll leases and conservative pre-HTTP recovery backoff.
 No connection/publication lock is held over network reads. A killed process
 cannot reset quota, native cursors or immediately repeat the same collection;
-an expired/replaced worker cannot certify a snapshot or mutate current evidence.
+an expired/replaced worker cannot certify a snapshot or renew/replace/retire current
+evidence. F2 privacy protection may still only increase from out-of-order facts.
 HTTP sockets use bounded asynchronous reads, close on cancellation and follow
 no redirects. Explicit CAP reference fences have an indexed identity table,
 backfilled by migration 0009, and survive bulk payload retention.

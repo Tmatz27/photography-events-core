@@ -67,6 +67,20 @@ async def test_expired_owner_cannot_mutate_or_release_new_owner(db):
     assert run['status']=='failure' and run['error_code']=='collection_lease_lost'
 
 
+async def test_expired_owner_may_only_raise_existing_privacy_without_renewing_evidence(db):
+    record=observation()
+    await poll(db,INATURALIST,[record])
+    first=await claim(db,INATURALIST,NOW+timedelta(seconds=1))
+    before=(await sql(db,'SELECT * FROM raw_observations'))[0]
+    batch=Batch(received=1,records=[inaturalist.parse(observation(geoprivacy='private',geojson=None))])
+    await persist(db,INATURALIST,batch,NOW+timedelta(seconds=1),first.until+timedelta(seconds=1),lease=first)
+    after=(await sql(db,'SELECT * FROM raw_observations'))[0]
+    assert after['sensitive'] and after['fetched_at']==before['fetched_at'] and after['source_run_id']==before['source_run_id']
+    rows=await current(db)
+    assert len(rows)==1 and rows[0]['sensitive'] and rows[0]['analysis_geometry'] is None
+    assert not batch.complete and (await sql(db,'SELECT * FROM source_runs ORDER BY id'))[-1]['error_code']=='collection_lease_lost'
+
+
 async def test_disabled_source_cannot_be_claimed(db):
     lease=await claim(db,WFIGS,NOW)
     await release(db,WFIGS,lease)

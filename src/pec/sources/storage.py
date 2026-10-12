@@ -400,14 +400,11 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
             state["last_applied_poll_started_at"] is None or started > state["last_applied_poll_started_at"]
         )
         if lease is not None and (state['lease_token'] != lease.token or state['lease_until'] <= completed):
-            # No privacy/current/cursor mutation from a worker whose ownership
-            # expired. Its completed batch is never a certified snapshot.
+            # Expired ownership cannot renew/replace/retire current evidence or
+            # certify a snapshot. Accepted F2 protection may still ONLY increase
+            # privacy, like any other out-of-order poll, before version admission.
             batch.complete = False
             batch.failure_code = 'collection_lease_lost'
-            batch.records.clear()
-            batch.unavailable_ids.clear()
-            batch.invalid_numeric_ids.clear()
-            batch.rejected.clear()
             ordered = False
         if not ordered:
             batch.complete = False

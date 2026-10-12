@@ -48,8 +48,10 @@ cannot reset the interval on every restart; normal completion resumes the existi
 Scheduler's persistent success/failure/Retry-After policy.
 
 Persistence checks an optional ownership token/expiry while holding the source
-state row. An expired or replaced worker cannot change current assertions,
-privacy state, native cursor/checkpoint or certify an absence snapshot. It records
+state row. An expired or replaced worker cannot renew/replace/retire current
+assertions, advance native cursor/checkpoint or certify an absence snapshot. The
+accepted F2 rule still permits only protection increases from out-of-order facts;
+an expired worker cannot lower privacy or revive evidence. It records
 a truthful failed attempt. Cleanup only releases its own token; another owner's
 lease cannot be cleared. Existing explicit test/manual persistence without a lease
 is preserved; the automatic production collector path always uses ownership.
