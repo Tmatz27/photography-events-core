@@ -100,7 +100,11 @@ def main():
                 compose("cp", "photography-events-core:/tmp/core-tests.xml", str(EVIDENCE / "tests.xml"))
         # Independent actual network collection uses the disposable test DB only;
         # failures remain explicit and never stand in for offline provider tests.
-        compose(*test_exec,'tools/verify_ingestion_live.py')
+        compose('exec','-T','photography-events-db','createdb','-U','postgres','-O','photography_events','photography_events_live_test')
+        compose('exec','-T','photography-events-db','psql','-U','postgres','-d','photography_events_live_test','-c','CREATE EXTENSION postgis')
+        live_exec=('exec','-T','-e','POSTGRES_DB=photography_events_live_test','photography-events-core','python')
+        compose(*live_exec,'-m','alembic','upgrade','head')
+        compose(*live_exec,'tools/verify_ingestion_live.py')
         compose('cp','photography-events-core:/tmp/ingestion-live.json',str(EVIDENCE/'ingestion-live.json'))
         compose(*test_exec,'tools/collector_operations_acceptance.py')
         compose('cp','photography-events-core:/tmp/collector-operations.json',str(EVIDENCE/'collector-operations.json'))
@@ -159,6 +163,24 @@ def main():
         results["database_restart"] = "ready and data preserved"
         assert check("/api/v1/debug/patterns")["items"][0]["episode_key"] == episode_key
         results["M2_database_restart"] = "episode identity preserved"
+        # Explicitly synthetic collector restore markers in the disposable CI DB.
+        # They are never fed to live verification or an installed Unraid system.
+        compose('exec','-T','photography-events-db','psql','-U','postgres','-d','photography_events','-c',"""
+            INSERT INTO source_poll_state(source_id,checkpoint,lease_token,lease_until)
+            SELECT id,'{"restore_test":"synthetic-only","page":7}'::jsonb,
+                '00000000-0000-4000-8000-000000000009'::uuid,now()+interval '1 hour'
+            FROM sources WHERE key='fixture_observations';
+            INSERT INTO source_reference_barriers(source_id,external_id,provider_updated_at,source_run_id)
+            SELECT source_id,'synthetic-restore-reference',completed_at,id FROM source_runs
+            WHERE source_id=(SELECT id FROM sources WHERE key='fixture_observations') ORDER BY id DESC LIMIT 1;
+        """)
+        collector_restore_sql="""SELECT md5(string_agg(value,'|' ORDER BY value)) FROM (
+            SELECT concat_ws(':','state',source_id,checkpoint::text,lease_token::text,lease_until::text) AS value
+            FROM source_poll_state UNION ALL
+            SELECT concat_ws(':','reference',source_id,external_id,provider_updated_at::text,source_run_id) FROM source_reference_barriers
+        ) t"""
+        before_collector=compose('exec','-T','photography-events-db','psql','-U','postgres','-d','photography_events',
+            '-Atc',collector_restore_sql,capture_output=True,text=True).stdout.strip()
         # Execute the operator scripts themselves, not merely equivalent commands.
         backup_result = run("sh", "scripts/backup.sh", env={**os.environ, "BACKUP_DIR": str(EVIDENCE / "backups")},
                             capture_output=True, text=True)
@@ -178,6 +200,14 @@ def main():
             "SELECT tableowner FROM pg_tables WHERE schemaname='public' AND tablename='opportunities'", capture_output=True, text=True).stdout.strip()
         assert owners == "photography_events", owners
         results["restored_application_owner"] = owners
+        after_collector=compose('exec','-T','photography-events-db','psql','-U','postgres','-d','photography_events_restore_test',
+            '-Atc',collector_restore_sql,capture_output=True,text=True).stdout.strip()
+        assert before_collector==after_collector
+        results['restored_collector_state']='nonempty lease/checkpoint/reference/provenance digest preserved'
+        collector_owner=compose('exec','-T','photography-events-db','psql','-U','postgres','-d','photography_events_restore_test',
+            '-Atc',"SELECT DISTINCT tableowner FROM pg_tables WHERE schemaname='public' AND tablename IN ('source_poll_state','source_reference_barriers')",
+            capture_output=True,text=True).stdout.strip()
+        assert collector_owner=='photography_events'
         m2_owners=compose("exec","-T","photography-events-db","psql","-U","postgres",
             "-d","photography_events_restore_test","-Atc","""SELECT DISTINCT tableowner FROM pg_tables
             WHERE schemaname='public' AND tablename IN

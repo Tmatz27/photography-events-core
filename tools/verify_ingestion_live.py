@@ -16,8 +16,9 @@ from sqlalchemy.engine import make_url
 from pec.config import Settings
 from pec.database import Database
 from pec.sources.contracts import CONTRACTS
+from pec.sources import backoff
 from pec.sources.ownership import collect_owned
-from pec.sources.storage import collect
+from pec.scheduler import next_state
 
 
 async def run(args):
@@ -36,10 +37,12 @@ async def run(args):
         await db.ready()
         for key in keys:
             started=datetime.now(UTC)
+            previous=await backoff.load(db,key,started)
+            retry=None
             code='verification_failed'
             try:
                 async with asyncio.timeout(CONTRACTS[key].scheduler_policy.timeout):
-                    status,_=await (collect_owned if args.operator else collect)(db,CONTRACTS[key],settings.source_user_agent)
+                    status,retry=await collect_owned(db,CONTRACTS[key],settings.source_user_agent)
                 code=None
             except TimeoutError:
                 status=503
@@ -61,6 +64,9 @@ async def run(args):
                     dict(key=key,started=started))).mappings().first()
                 return dict(row) if row else {}
             row=await db.pattern_transaction(inspect)
+            if row.get('status'):
+                await backoff.save(db,key,next_state(CONTRACTS[key].scheduler_policy,previous,datetime.now(UTC),
+                    success=200<=status<300,retry_after=retry))
             verified=bool(row.get('verified_receipts',0)>0)
             item=dict(source=key,http_outcome=status,verification_error=code,
                 live_collection_verified=bool(status==200 and row.get('status')=='success' and not row.get('incomplete')),

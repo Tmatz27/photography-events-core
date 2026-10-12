@@ -43,6 +43,7 @@ class ProviderView(Contract):
     adapter_implemented: bool
     selected: bool
     credentials_configured: bool
+    authentication_status: Literal['not_required','configured','credentials_needed','access_pending']
     credential_variables: tuple[str, ...]
     access_requirement: str
     state: Literal['not_implemented','not_configured','disabled','never_collected','incomplete',
@@ -85,6 +86,8 @@ async def read(db, settings, now):
                 else 'incomplete' if row['incomplete'] else row['status'])
             items.append(dict(key=p.key, provider=p.name, batch=p.batch, kind=p.kind,
                 adapter_implemented=implemented, selected=selected, credentials_configured=ready,
+                authentication_status=('configured' if ready else 'credentials_needed') if p.credentials
+                    else 'not_required' if p.access=='public' else 'access_pending',
                 measurements=p.measurements,evidence_kind=p.evidence_kind,ranked_priority=p.ranked_priority,
                 retention_policy=CONTRACTS[adapter_key].retention if implemented else p.retention,
                 historical_coverage=p.historical_coverage,

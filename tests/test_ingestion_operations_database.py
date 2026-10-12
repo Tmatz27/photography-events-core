@@ -36,6 +36,21 @@ async def test_concurrent_process_claims_have_single_owner_and_no_pool_held(db):
     assert await claim(db,INATURALIST,NOW+timedelta(seconds=1800)) is not None
 
 
+async def test_new_database_process_preserves_poll_ownership_and_recovery_backoff(db):
+    from pec.config import Settings
+    from pec.database import Database
+    first=await claim(db,INATURALIST,NOW)
+    restarted=Database(Settings(db.pattern_engine.url,SETTINGS.api_token))
+    try:
+        assert await claim(restarted,INATURALIST,NOW+timedelta(seconds=1)) is None
+        state=await backoff.load(restarted,'inaturalist',NOW)
+        assert state.next_allowed_at==NOW+timedelta(seconds=1800) and state.consecutive_failures==1
+        rows=await sql(restarted,'SELECT lease_token FROM source_poll_state')
+        assert rows[0]['lease_token']==first.token
+    finally:
+        await restarted.close()
+
+
 async def test_expired_owner_cannot_mutate_or_release_new_owner(db):
     first=await claim(db,INATURALIST,NOW)
     later=NOW+timedelta(seconds=1801)

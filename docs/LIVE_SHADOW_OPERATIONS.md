@@ -1,7 +1,12 @@
 # M3A shadow operations
 
-This is developer infrastructure, not a release or production promotion. HA's
-local engine and the locked M1 fixture decision pipeline remain authoritative.
+This is developer infrastructure, not a release or production promotion. Core
+owns provider collection; HA v0.17 is a thin read-only client. The locked M1
+fixture decision pipeline remains unchanged and is not satisfied by renaming
+live source keys. Missing fixture-era assessment inputs remain visibly incomplete.
+The current priority is complete source ingestion, described in
+`SOURCE_IMPLEMENTATION_REGISTER.md`; scoring, presentation and production
+assessment integration remain separate gates.
 
 Live collection is disabled by default. Explicitly set `CORE_PATTERNS_MODE=shadow`
 and `CORE_LIVE_SOURCES=true` together in a development `.env`, with a descriptive
@@ -31,13 +36,30 @@ corrections that move outside the spatial/taxon/date search. Missing IDs mean
 publicly unavailable, not proven deletion. The refresh does not cover all
 retained history; old expired records do not establish current evidence.
 
-The known-ID refresh selects only current, unexpired normalized assertions.
-An observation retired as publicly unavailable leaves that refresh set. It can
-return if a later provider response contains the same UUID through incremental
-search (within the taxon/bbox/date filters and `updated_since` cursor/overlap), or
-an applicable initial 14-day search. Provider modification, discoverability and
-scope must permit that response; rediscovery has no guaranteed schedule. A
-bounded retired-ID retry strategy is deferred to operational hardening.
+The known-ID refresh now selects the latest retained, unexpired assertion even
+when its public observation was retired. Up to 200 numeric IDs rotate using the
+existing persistent pointer, allowing unchanged reappearance without a new
+incremental search hit. Old expired history is excluded; rediscovery across all
+historical IDs is not claimed. Privacy protection never decreases on return.
+
+Batch 1 adds durable poll leases and conservative pre-HTTP recovery backoff.
+No connection/publication lock is held over network reads. A killed process
+cannot reset quota, native cursors or immediately repeat the same collection;
+an expired/replaced worker cannot certify a snapshot or mutate current evidence.
+HTTP sockets use bounded asynchronous reads, close on cancellation and follow
+no redirects. Explicit CAP reference fences have an indexed identity table,
+backfilled by migration 0009, and survive bulk payload retention.
+
+`CORE_SOURCE_KEYS` selects approved registry entries (`all` keeps pending sources
+visible but only implemented contracts execute). The authenticated
+`/api/v1/debug/ingestion` projection reports the entire program, credential
+availability and actual collector history/operations without raw points, native
+IDs, cursor bodies, lease tokens or secrets. `CORE_RETENTION_ENABLED=true` enables
+one 500-row sweep hourly through the existing scheduler and isolated pool. The
+default remains false. For live raw bodies, the existing 90-day envelope uses
+last verified receipt; normalized historical assertions and CAP fence provenance
+remain retained. Provider-specific licensing/retention must be validated before
+each later dataset is archived. No schema migration 0001–0008 was changed.
 
 Collection commits raw facts, normalized assertions and diagnostics only. The
 accepted M2 lifecycle remains attached to an independently committed M1
