@@ -213,17 +213,12 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
     ):
         raise RecordError("stale_reference_replay")
     if contract.source_key == "nws_live_context" and fact.subject_key == "nws_alert":
-        # Recover barriers from retained pre-0008 CAP bodies too. These are
-        # explicit provider references, never fuzzy time/species relationships.
+        # Indexed explicit references backfilled in 0009 survive blob retention.
         barrier = (
             await c.execute(
-                text("""SELECT max(r.provider_updated_at) FROM raw_observations r
-            WHERE source_id=:sid AND r.raw_payload->'properties'->>'messageType' IN ('Cancel','Update')
-            AND r.provider_updated_at<=r.fetched_at+make_interval(secs=>:skew)
-            AND EXISTS(SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.raw_payload->'properties'->'references')='array'
-            THEN r.raw_payload->'properties'->'references' ELSE '[]'::jsonb END) p
-            WHERE p->>'identifier'=:eid)"""),
-                dict(sid=sid, eid=fact.external_id, skew=contract.provider_clock_skew_seconds),
+                text("""SELECT provider_updated_at FROM source_reference_barriers
+            WHERE source_id=:sid AND external_id=:eid"""),
+                dict(sid=sid, eid=fact.external_id),
             )
         ).scalar_one()
         if barrier and fact.provider_updated_at <= barrier:
@@ -359,6 +354,11 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
     else:
         await withdraw(c, sid, fact.external_id, now, started=started, rid=rid, reason="provider_inactive")
     for eid in fact.metadata.get("supersedes", []):
+        await c.execute(text("""INSERT INTO source_reference_barriers VALUES(:sid,:eid,:updated,:rid)
+            ON CONFLICT(source_id,external_id) DO UPDATE SET provider_updated_at=EXCLUDED.provider_updated_at,
+            source_run_id=EXCLUDED.source_run_id
+            WHERE source_reference_barriers.provider_updated_at<EXCLUDED.provider_updated_at"""),
+            dict(sid=sid,eid=eid,updated=fact.provider_updated_at,rid=rid))
         await withdraw(
             c,
             sid,
@@ -372,7 +372,17 @@ async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=
     return "reinstated" if reinstated else "corrections" if previous else "unique_records"
 
 
-async def persist(db, contract, batch, started, completed):
+async def persist(db, contract, batch, started, completed, *, lease=None):
+    checkpoint = None
+    if batch.checkpoint is not None:
+        try:
+            checkpoint = canonical(batch.checkpoint)
+            if not isinstance(batch.checkpoint, dict) or len(checkpoint.encode()) > 16384:
+                raise ValueError()
+        except (TypeError, ValueError, OverflowError):
+            batch.complete = False
+            batch.failure_code = 'invalid_checkpoint'
+            checkpoint = None
     async def operation(c):
         await db._check(c)
         sid = await register(c, contract)
@@ -389,9 +399,19 @@ async def persist(db, contract, batch, started, completed):
         ordered = (
             state["last_applied_poll_started_at"] is None or started > state["last_applied_poll_started_at"]
         )
+        if lease is not None and (state['lease_token'] != lease.token or state['lease_until'] <= completed):
+            # No privacy/current/cursor mutation from a worker whose ownership
+            # expired. Its completed batch is never a certified snapshot.
+            batch.complete = False
+            batch.failure_code = 'collection_lease_lost'
+            batch.records.clear()
+            batch.unavailable_ids.clear()
+            batch.invalid_numeric_ids.clear()
+            batch.rejected.clear()
+            ordered = False
         if not ordered:
             batch.complete = False
-            batch.failure_code = "out_of_order_poll"
+            batch.failure_code = batch.failure_code or "out_of_order_poll"
         if future_update(contract, batch.provider_updated_at, started):
             batch.complete = False
             batch.failure_code = "future_provider_update"
@@ -581,6 +601,9 @@ async def persist(db, contract, batch, started, completed):
                 WHERE source_id=:sid"""),
                 dict(sid=sid, started=started),
             )
+            if checkpoint is not None:
+                await c.execute(text("UPDATE source_poll_state SET checkpoint=CAST(:checkpoint AS jsonb) WHERE source_id=:sid"),
+                    dict(sid=sid,checkpoint=checkpoint))
         if ordered:
             await c.execute(
                 text(
@@ -661,7 +684,7 @@ async def persist(db, contract, batch, started, completed):
     return await db.pattern_transaction(operation, write=True)
 
 
-async def collect(db, contract, user_agent, *, client=None, clock=lambda: datetime.now(UTC)):
+async def collect(db, contract, user_agent, *, client=None, clock=lambda: datetime.now(UTC), lease=None):
     started = clock()
 
     async def state(c):
@@ -680,8 +703,9 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
                 (
                     await c.execute(
                         text("""SELECT r.external_id,(n.source_metadata->>'provider_numeric_id')::bigint AS pid
-                FROM raw_observations r JOIN normalized_observations n ON n.raw_observation_id=r.id
-                WHERE r.source_id=:sid AND n.superseded_at IS NULL AND n.valid_until>=:now
+                FROM raw_observations r JOIN LATERAL(SELECT source_metadata,valid_until
+                FROM normalized_observations WHERE raw_observation_id=r.id ORDER BY id DESC LIMIT 1) n ON TRUE
+                WHERE r.source_id=:sid AND n.valid_until>=:now
                 AND (n.source_metadata->>'provider_numeric_id')::bigint>:after ORDER BY pid LIMIT 200"""),
                         dict(sid=sid, now=started, after=row["refresh_after_id"]),
                     )
@@ -709,9 +733,11 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
             bytes_received=client.bytes_received,
             rate_limited=client.rate_limited,
         )
-        await asyncio.shield(persist(db, contract, failed, started, clock()))
+        await asyncio.shield(persist(db, contract, failed, started, clock(), lease=lease))
         raise
-    await persist(db, contract, batch, started, clock())
+    finally:
+        await client.close()
+    await persist(db, contract, batch, started, clock(), lease=lease)
     if batch.complete and not batch.rejected and contract.source_key == "inaturalist":
 
         async def rotate(c):

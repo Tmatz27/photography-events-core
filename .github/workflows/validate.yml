@@ -62,4 +62,5 @@ jobs:
             evidence/collection-performance.json
             evidence/h3-performance.json
             evidence/source-fingerprint-performance.json
+            evidence/ingestion-live.json
           if-no-files-found: warn

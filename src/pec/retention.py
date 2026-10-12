@@ -17,9 +17,10 @@ async def sweep(connection, now, batch_size=500):
                 'coordinate_uncertainty_meters','spatial_precision','credible','withdrawn','behavior','behaviors'))
             || '{"_m2_retained_metadata": true}'::jsonb
         ELSE NULL END
-        WHERE id IN (SELECT id FROM raw_observations WHERE COALESCE(observed_at,fetched_at) < :cutoff AND raw_payload IS NOT NULL
+        WHERE id IN (SELECT r.id FROM raw_observations r JOIN sources s ON s.id=r.source_id
+        WHERE CASE WHEN s.source_type='public_api_shadow' THEN r.fetched_at ELSE COALESCE(r.observed_at,r.fetched_at) END < :cutoff AND raw_payload IS NOT NULL
         AND NOT raw_payload @> '{"_m2_retained_metadata": true}'::jsonb
-        ORDER BY fetched_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
+        ORDER BY fetched_at LIMIT :batch FOR UPDATE OF r SKIP LOCKED)"""),
         {"cutoff": now - timedelta(days=90), "batch": batch_size})
     runs = await connection.execute(text("""DELETE FROM source_runs WHERE id IN (
         SELECT r.id FROM source_runs r WHERE completed_at < :cutoff
@@ -30,6 +31,7 @@ async def sweep(connection, now, batch_size=500):
         AND NOT EXISTS(SELECT 1 FROM assessment_sources a WHERE a.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM pattern_generation_sources p WHERE p.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM normalized_observations n WHERE n.source_run_id=r.id)
+        AND NOT EXISTS(SELECT 1 FROM source_reference_barriers b WHERE b.source_run_id=r.id)
         ORDER BY completed_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
         {"cutoff": now - timedelta(days=90), "batch": batch_size})
     return {"payloads_redacted": raw.rowcount, "runs_deleted": runs.rowcount}

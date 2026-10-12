@@ -94,6 +94,20 @@ async def main(mode):
                     VALUES(:raw,'species','Ursus americanus',:now,:valid,'withheld','2099-01-01',CAST(:retired AS timestamptz))"""),
                     {"raw": raw, "now": now, "valid": now + timedelta(days=14), "retired": now if label == "retired" else None})
         await engine.dispose()
+    elif mode == 'seed-collector':
+        engine=create_async_engine(settings.database_url)
+        async with engine.begin() as c:
+            assert (await c.execute(text('SELECT version_num FROM alembic_version'))).scalar()=='0008'
+            sid=(await c.execute(text("INSERT INTO sources(key,name,source_type) VALUES('nws_live_context','CAP migration test','public_api_shadow') RETURNING id"))).scalar_one()
+            rid=(await c.execute(text("""INSERT INTO source_runs(source_id,cycle_key,attempt_number,started_at,completed_at,status)
+                VALUES(:sid,'collector-migration-test',1,:now,:now,'success') RETURNING id"""),dict(sid=sid,now=now))).scalar_one()
+            await c.execute(text('INSERT INTO source_poll_state(source_id) VALUES(:sid)'),dict(sid=sid))
+            for label,stamp in (('valid',now),('future',now+timedelta(days=10))):
+                payload=json.dumps({'properties':{'messageType':'Cancel','references':[{'identifier':'migration-'+label}]}})
+                await c.execute(text("""INSERT INTO raw_observations(source_id,source_run_id,external_id,fetched_at,
+                    raw_payload,parser_version,provider_updated_at) VALUES(:sid,:rid,:eid,:now,CAST(:payload AS jsonb),'migration-test',:stamp)"""),
+                    dict(sid=sid,rid=rid,eid='migration-cap-'+label,now=now,payload=payload,stamp=stamp))
+        await engine.dispose()
     else:
         db = Database(settings)
         await db.ready()
@@ -104,7 +118,10 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0008"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0009"
+            barriers=(await c.execute(text("SELECT external_id FROM source_reference_barriers"))).scalars().all()
+            assert barriers==['migration-valid']
+            assert not (await c.execute(text('SELECT EXISTS(SELECT 1 FROM source_poll_state WHERE lease_token IS NOT NULL OR checkpoint!=\'{}\'::jsonb)'))).scalar()
             for name in ("ix_raw_local_report_identity","ix_raw_explicit_origin","ix_normalized_superseded_raw"):
                 assert (await c.execute(text("SELECT to_regclass(:name)"),{"name":name})).scalar() is not None
             run=(await c.execute(text("SELECT * FROM pattern_generation_runs WHERE assessment_run_id=1"))).mappings().one()

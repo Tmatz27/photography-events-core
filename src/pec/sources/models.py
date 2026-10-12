@@ -125,6 +125,7 @@ class Batch:
     snapshot: bool = False
     failure_code: str | None = None
     alert_asof: datetime | None = None
+    checkpoint: dict | None = None
 
     def parse(self, values, parser):
         for value in values:

@@ -58,8 +58,8 @@ def main():
     try:
         compose("up", "-d", "--wait", "--wait-timeout", "150")
         results["startup"] = wait_ready()
-        assert results["startup"]["schema_version"] == "0008"
-        results["fresh_database_to_0008"] = "passed"
+        assert results["startup"]["schema_version"] == "0009"
+        results["fresh_database_to_0009"] = "passed"
         versions = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events", "-Atc", "SELECT version(),postgis_full_version()", capture_output=True, text=True).stdout
         results["database_versions"] = versions.strip()
         compose("exec", "-T", "photography-events-db", "createdb", "-U", "postgres", "-O", "photography_events", "photography_events_test")
@@ -76,10 +76,13 @@ def main():
         compose(*test_exec, "tools/migration_acceptance.py", "seed-final")
         compose(*test_exec, "-m", "alembic", "upgrade", "0007")
         compose(*test_exec, "tools/migration_acceptance.py", "seed-lifecycle")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0008")
+        compose(*test_exec, "tools/migration_acceptance.py", "seed-collector")
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
         results["migration_0001_0002_0003_0004_0005_0006_0007_0008"] = "identity, memberships, behavior and held API verified"
+        results['migration_0008_0009']='lease/checkpoint defaults preserved; valid CAP references backfilled, future clocks excluded'
         results["migration_0003_0004_shadow_history"] = "existing run hashes/timestamps preserved with published lifecycle"
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
         results["repeat_migration"] = "passed"
@@ -95,6 +98,10 @@ def main():
                 compose(*test_exec, "tools/database_tests.py", stdout=log, stderr=subprocess.STDOUT)
             finally:
                 compose("cp", "photography-events-core:/tmp/core-tests.xml", str(EVIDENCE / "tests.xml"))
+        # Independent actual network collection uses the disposable test DB only;
+        # failures remain explicit and never stand in for offline provider tests.
+        compose(*test_exec,'tools/verify_ingestion_live.py')
+        compose('cp','photography-events-core:/tmp/ingestion-live.json',str(EVIDENCE/'ingestion-live.json'))
         results["migration_0002_downgrade"] = "forward-only; restore pre-upgrade backup instead of losing history"
         compose("cp",str(EVIDENCE / "collection-baselines"),"photography-events-core:/tmp/collection-baselines")
         compose(*test_exec,"tools/collection_benchmark.py")
@@ -189,7 +196,7 @@ def main():
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         restored_ready=wait_ready(8100)
-        assert restored_ready["schema_version"]=="0008"
+        assert restored_ready["schema_version"]=="0009"
         assert check("/api/v1/opportunities/" + key, port=8100)["occurrence_key"] == key
         restored_debug=check("/api/v1/debug/patterns", port=8100)
         assert restored_debug["items"][0]["episode_key"] == episode_key

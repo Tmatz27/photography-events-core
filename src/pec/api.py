@@ -33,7 +33,8 @@ def create_app(settings=None, database=None, clock=None):
         try:
             if settings.live_sources:
                 from .sources.contracts import CONTRACTS
-                from .sources.storage import collect, register
+                from .sources.storage import register
+                from .sources.ownership import collect_owned
                 from .sources import backoff
                 async def setup(c):
                     await db._check(c)
@@ -41,9 +42,24 @@ def create_app(settings=None, database=None, clock=None):
                         await register(c,contract)
                 await db.pattern_transaction(setup,write=True)
                 for key,contract in CONTRACTS.items():
+                    from .sources.inventory import INVENTORY
+                    if not any((INVENTORY[k].adapter or k)==key for k in settings.source_keys):
+                        continue
                     scheduler.add(key,contract.scheduler_policy,
-                        lambda contract=contract:collect(db,contract,settings.source_user_agent),
+                        lambda contract=contract:collect_owned(db,contract,settings.source_user_agent),
                         lambda key:backoff.load(db,key,clock()),lambda key,state:backoff.save(db,key,state))
+            if settings.retention_enabled:
+                from .retention import sweep
+                from .scheduler import Policy, State
+                async def retain():
+                    await db.pattern_transaction(lambda c:sweep(c,clock(),batch_size=500),write=True)
+                    event('source_retention',code='bounded_sweep_complete')
+                    return 200,None
+                async def load_retention(key):
+                    return State(clock())
+                async def save_retention(key,state):
+                    pass
+                scheduler.add('retention',Policy(minimum_interval=3600,timeout=30),retain,load_retention,save_retention)
             yield
         finally:
             await scheduler.close()
@@ -92,6 +108,11 @@ def create_app(settings=None, database=None, clock=None):
         return Health(**VERSION, status="ready")
 
     secured = [Depends(auth)]
+
+    from .sources.diagnostics import read as read_ingestion, IngestionResponse
+    @app.get('/api/v1/debug/ingestion',response_model=IngestionResponse,dependencies=secured)
+    async def ingestion_diagnostics():
+        return await read_ingestion(db,settings,clock())
 
     from .sources.debug import contracts as read_contracts, calibration as read_calibration
     from .sources.debug import ContractResponse, CalibrationResponse

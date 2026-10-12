@@ -15,8 +15,16 @@ class Settings:
     pattern_timeout: float = 30.0
     live_sources: bool = False
     source_user_agent: str = 'PhotographyEventsCore-shadow (+https://github.com/Tmatz27/photography-events-core)'
+    source_keys: tuple[str, ...] = ('inaturalist', 'wfigs_current', 'nws_live_context')
+    provider_secrets: dict[str, str] = field(default_factory=dict, repr=False, compare=False)
+    retention_enabled: bool = False
 
     def __post_init__(self):
+        from .sources.inventory import CREDENTIAL_NAMES, INVENTORY
+        if len(set(self.source_keys)) != len(self.source_keys) or any(k not in INVENTORY for k in self.source_keys):
+            raise ValueError('Invalid approved source selection')
+        if any(k not in CREDENTIAL_NAMES for k in self.provider_secrets):
+            raise ValueError('Unknown provider credential variable')
         if self.live_sources and self.patterns_mode!='shadow':
             raise ValueError('Live sources require explicit shadow mode')
         if (len(self.source_user_agent)<10 or not self.source_user_agent.isascii()
@@ -37,6 +45,7 @@ class Settings:
 
     @classmethod
     def from_env(cls):
+        from .sources.inventory import CREDENTIAL_NAMES, selection
         url = os.environ.get("CORE_DATABASE_URL")
         if not url:
             password = os.environ.get("POSTGRES_PASSWORD", "")
@@ -49,5 +58,8 @@ class Settings:
                    float(os.environ.get("CORE_EVALUATION_GRACE", "30")), os.environ.get("CORE_PATTERNS_MODE", "off"),
                    float(os.environ.get("CORE_PATTERN_TIMEOUT", "30")),
                    os.environ.get('CORE_LIVE_SOURCES','false').lower()=='true',
-                   os.environ.get('CORE_SOURCE_USER_AGENT',cls.__dataclass_fields__['source_user_agent'].default))
+                   os.environ.get('CORE_SOURCE_USER_AGENT',cls.__dataclass_fields__['source_user_agent'].default),
+                   selection(os.environ.get('CORE_SOURCE_KEYS', 'inaturalist,wfigs_current,nws_live_context')),
+                   {name: os.environ[name] for name in CREDENTIAL_NAMES if os.environ.get(name)},
+                   os.environ.get('CORE_RETENTION_ENABLED','false').lower()=='true')
 
