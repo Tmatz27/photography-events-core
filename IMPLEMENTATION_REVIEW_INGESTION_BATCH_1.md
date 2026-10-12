@@ -152,10 +152,24 @@ pending an authenticated, trusted operator connection and independent acceptance
 5. Keep retention disabled until the raw archive/license policy is approved, or
    explicitly opt into the bounded existing sweep after backup/retention review.
 6. Read authenticated `/api/v1/debug/ingestion` and source-contract diagnostics.
-   Run `tools/verify_ingestion_live.py --operator --output /tmp/ingestion-live.json`
-   inside a test/operator image with the real installed database environment. It
-   obeys ownership/next-allowed/quota state; it cannot force a poll past those guards.
-   The runtime image omits tools, so do not assume the script exists in that image.
+   Copy the approved verification tool into the runtime container and inspect
+   actual installed state without a poll or cursor/lease mutation:
+
+   ```sh
+   docker cp ./tools/verify_ingestion_live.py photography-events-core:/tmp/verify_ingestion_live.py
+   docker exec photography-events-core python /tmp/verify_ingestion_live.py --operator --inspect-only --output /tmp/ingestion-live.json
+   docker cp photography-events-core:/tmp/ingestion-live.json ./ingestion-live-unraid.json
+   ```
+
+   Run these from the reviewed repository checkout after rebuilding/migrating
+   the installed Core. The receipt contains counts/status/times/digests only;
+   do not send `.env` or raw provider bodies. A manual collection attempt omits
+   `--inspect-only`; it obeys ownership/next-allowed/quota state and cannot force
+   a poll past those guards. The runtime image normally omits tools; the explicit
+   copy above avoids assuming a test image is installed. Operator inspection
+   records that this command made no network request; it verifies the actual
+   collector's stored run/receipts. Native freshness may be stale beside a fresh
+   successful receipt and is reported independently.
 7. Verify source_runs, raw identities, native times, latest accepted receipt and
    normalized history directly in PostgreSQL. Keep all raw wildlife details private.
    An M1 incomplete opportunity response is expected without real accepted assessment
