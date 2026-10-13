@@ -53,7 +53,7 @@
   },
   "evidence_sha256": {
     "acceptance.json": "e180ab7e7ef5669fe6db5ae915572d4fdc519815a07280d338c4275937c82f99",
-    "anonymous-registry.json": "aef7e2eff208992f8c620e3256b17c13afc421dbb6be16bd0d296eef3e2a5345",
+    "anonymous-registry.json": "4623562fbb8025ab80b01e1aa6d3b29f81f1b197cfa582f03b4a24c44d600cce",
     "image-stack.json": "cb7ff181a26aae4b23d38a56fde06f5b11c6eb810a4436e72e774ff694b1f58d",
     "ingestion-live.json": "6e33f1a6352f79d60027ba24f5b21af1eac225b73265b8ff931cbfde91a0b13c",
     "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
