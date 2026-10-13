@@ -30,6 +30,12 @@ def main():
     prefix = ['docker', 'compose', '-p', 'pec-release-test', '-f', str(ROOT / 'compose.unraid.yaml')]
     receipt = dict(image=args.image, release_commit=args.commit, production_modified=False,
         synthetic_observations_imported=False, installed_unraid_verified=False)
+    # Docker creates missing bind parents as root. Prepare the runner-owned
+    # evidence parent first, before it starts either container.
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / 'evidence').mkdir(exist_ok=True)
+    Path(env['DB_DATA_PATH']).mkdir(parents=True, exist_ok=True)
+    Path(env['CORE_DATA_PATH']).mkdir(parents=True, exist_ok=True)
 
     def run(*command, capture=False):
         result = subprocess.run(command, cwd=ROOT, env=env, check=True,
@@ -96,9 +102,10 @@ def main():
         receipt['provider_collection_enabled_for_unraid_template'] = True
         receipt['provider_collection_disabled_for_disposable_smoke_test'] = True
     finally:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(receipt, indent=2) + '\n')
-        compose('down', '--remove-orphans')
+        try:
+            args.output.write_text(json.dumps(receipt, indent=2) + '\n')
+        finally:
+            compose('down', '--remove-orphans')
     print(json.dumps(receipt, indent=2))
 
 
