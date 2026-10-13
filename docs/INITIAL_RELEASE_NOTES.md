@@ -1,4 +1,4 @@
-# v0.1.0-rc.1 — manual release deployment
+# v0.1.0-rc.2 — manual release deployment
 
 Approved pre-release deployment infrastructure for Photography Events Core on
 Unraid. This does not complete the 81-entry source ingestion phase, enable
@@ -25,4 +25,4 @@ shadow mode with `CORE_SOURCE_KEYS=all`; no source/engine/HA changes in this rel
 First GHCR publication requires making the linked package Public once. Release
 readiness requires the workflow's successful anonymous pull and pulled-image
 verification, not merely successful publishing. See
-[release and update instructions](https://github.com/Tmatz27/photography-events-core/blob/v0.1.0-rc.1/docs/RELEASE_DEPLOYMENT.md).
+[release and update instructions](https://github.com/Tmatz27/photography-events-core/blob/v0.1.0-rc.2/docs/RELEASE_DEPLOYMENT.md).

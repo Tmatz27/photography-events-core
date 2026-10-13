@@ -11,7 +11,7 @@ Failed validation or stack testing prevents image publication.
 ## Release tags and approval
 
 - `ghcr.io/tmatz27/photography-events-core:vX.Y.Z`: approved stable version.
-- `ghcr.io/tmatz27/photography-events-core:v0.1.0-rc.1`: initial approved pre-release.
+- `ghcr.io/tmatz27/photography-events-core:v0.1.0-rc.2`: initial approved pre-release.
 - `ghcr.io/tmatz27/photography-events-core:sha-<full-40-character-commit>`:
   immutable traceability tag; the workflow refuses replacing existing version/SHA tags.
 - `latest`: only a published stable release without a prerelease suffix/flag.
@@ -103,6 +103,11 @@ If a migration fails, Core fails closed. Keep the backup; restoring a database i
 an explicit operator recovery step, never an automatic image downgrade.
 
 ## Verification receipts
+
+The original `v0.1.0-rc.1` publication gate caught a runner-owned evidence-directory
+bug before any application image was pushed. Its release/tag remains at the
+original SHA as a failed attempt. The corrected first deployment image is
+`v0.1.0-rc.2`; no published image or immutable tag was overwritten.
 
 Complete development/release validation includes the historical 491 accepted
 cases, portable tests, Ruff, migrations, independent M1 byte parity and 18,000
