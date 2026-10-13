@@ -119,3 +119,34 @@ artifacts with exact revision, Linux AMD64 image identity/digest, non-superuser
 ownership and preserved existing-volume data. No credentials are recorded.
 Actual first-publication image/tag/digest and anonymous-pull receipts are recorded
 after successful publication; instructions alone do not certify deployment readiness.
+
+
+## Verified initial publication
+
+[v0.1.0-rc.2 pre-release](https://github.com/Tmatz27/photography-events-core/releases/tag/v0.1.0-rc.2) was published at exact commit
+`1b59779831e96bbff32e8a4547a4f0d577fdb537`. [Release workflow](https://github.com/Tmatz27/photography-events-core/actions/runs/38410713797) passed every gate before publishing
+and then actually pulled all three public GHCR tags **without login** on a new
+GitHub runner. Verified Linux AMD64 digest: `sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4`.
+
+- `ghcr.io/tmatz27/photography-events-core:v0.1.0-rc.2`
+- `ghcr.io/tmatz27/photography-events-core:sha-1b59779831e96bbff32e8a4547a4f0d577fdb537`
+- `ghcr.io/tmatz27/photography-events-core:preview`
+
+All three identify the same image. `latest` is absent and was not created or
+replaced by this pre-release. The package is Public. The exact tested image ID
+before push and after anonymous pull matches. Both fresh initialization and
+existing-volume recreate reached healthy, with PostgreSQL 18/PostGIS 3.6,
+non-superuser application ownership, original password and data preserved.
+
+**501 real PostGIS tests passed**; all 491 accepted J1/Batch 1 cases (and the 446
+H1 subset) remain. Ten release/deployment cases were added. Portable tests, Ruff,
+complete/repeat migrations, restart/backup/restore and independent M1 byte parity
+passed, including 18,000 comparisons with zero mismatches. Evidence and artifact
+hashes are in `docs/evidence/release-v0.1.0-rc.2/receipt.json`.
+
+This proves a real published/pulled deployment image, not installed Unraid state.
+No running Unraid container or database was changed. Perform the one-time backed-up
+stack migration in Compose Manager, retaining your secrets/paths/project/LAN
+configuration; then every ordinary update is **Pull & Up**, wait for **healthy**.
+The full ingestion phase, installed collection and production intelligence remain
+separate pending work. This pre-release does not complete or promote them.

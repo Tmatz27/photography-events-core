@@ -1,0 +1,44 @@
+{
+  "image": "ghcr.io/tmatz27/photography-events-core:v0.1.0-rc.2",
+  "release_commit": "1b59779831e96bbff32e8a4547a4f0d577fdb537",
+  "production_modified": false,
+  "synthetic_observations_imported": false,
+  "installed_unraid_verified": false,
+  "image_id": "sha256:0a105feeead4ae0011d0c3e268b7b92766f77ab1aee7178d629de40c5280085b",
+  "platform": "linux/amd64",
+  "labels": {
+    "org.opencontainers.image.revision": "1b59779831e96bbff32e8a4547a4f0d577fdb537",
+    "org.opencontainers.image.source": "https://github.com/Tmatz27/photography-events-core",
+    "org.opencontainers.image.version": "v0.1.0-rc.2"
+  },
+  "registry_digests": [
+    "ghcr.io/tmatz27/photography-events-core@sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4"
+  ],
+  "fresh_image_stack": {
+    "core_version": "0.1.0-dev",
+    "api_version": "v1",
+    "schema_version": "0009",
+    "status": "ready"
+  },
+  "role_separation": {
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "replication": false,
+    "bypassrls": false,
+    "login": true,
+    "owns_database": true,
+    "postgres_major": 18,
+    "postgis": "3.6.4"
+  },
+  "existing_volume_recreated": {
+    "core_version": "0.1.0-dev",
+    "api_version": "v1",
+    "schema_version": "0009",
+    "status": "ready"
+  },
+  "data_and_role_preserved": true,
+  "init_password_did_not_rotate_existing_role": true,
+  "provider_collection_enabled_for_unraid_template": true,
+  "provider_collection_disabled_for_disposable_smoke_test": true
+}

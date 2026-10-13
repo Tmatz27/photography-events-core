@@ -1,0 +1,25 @@
+{
+  "anonymous": true,
+  "image": "ghcr.io/tmatz27/photography-events-core",
+  "release_commit": "1b59779831e96bbff32e8a4547a4f0d577fdb537",
+  "tags": {
+    "v0.1.0-rc.2": {
+      "status": 200,
+      "digest": "sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4",
+      "media_type": "application/vnd.docker.distribution.manifest.v2+json"
+    },
+    "sha-1b59779831e96bbff32e8a4547a4f0d577fdb537": {
+      "status": 200,
+      "digest": "sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4",
+      "media_type": "application/vnd.docker.distribution.manifest.v2+json"
+    },
+    "preview": {
+      "status": 200,
+      "digest": "sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4",
+      "media_type": "application/vnd.docker.distribution.manifest.v2+json"
+    },
+    "latest": {
+      "status": 404
+    }
+  }
+}

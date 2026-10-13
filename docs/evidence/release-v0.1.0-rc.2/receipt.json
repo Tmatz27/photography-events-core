@@ -1,0 +1,65 @@
+{
+  "release_version": "v0.1.0-rc.2",
+  "prerelease": true,
+  "release_commit": "1b59779831e96bbff32e8a4547a4f0d577fdb537",
+  "release_url": "https://github.com/Tmatz27/photography-events-core/releases/tag/v0.1.0-rc.2",
+  "release_run": 38410713797,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/38410713797",
+  "ci_conclusion": "success",
+  "image_digest": "sha256:ce8644271de64f4c9cc4c82d19685e66e26db399a1907abdb9c9d879bb0924a4",
+  "image_id": "sha256:0a105feeead4ae0011d0c3e268b7b92766f77ab1aee7178d629de40c5280085b",
+  "platform": "linux/amd64",
+  "anonymous_docker_pull_verified": true,
+  "package_public": true,
+  "latest_created_or_replaced": false,
+  "version_tag": "v0.1.0-rc.2",
+  "immutable_sha_tag": "sha-1b59779831e96bbff32e8a4547a4f0d577fdb537",
+  "prerelease_channel": "preview",
+  "tests_passed": 501,
+  "prior_j1_case_identities_preserved": 491,
+  "historical_h1_case_identities_preserved": 446,
+  "new_deployment_tests": 10,
+  "test_seconds": 94.735,
+  "m1_parity": "15 fixtures and independent oracle recaptures byte-identical; 9 pipeline cases",
+  "evaluator_comparisons": 18000,
+  "evaluator_mismatches": 0,
+  "source_engine_ha_inventory_changed": false,
+  "full_ingestion_complete": false,
+  "installed_unraid_modified": false,
+  "installed_verification": "pending operator UI migration",
+  "fresh_postgis_initialized": true,
+  "existing_roles_password_data_preserved": true,
+  "validation_artifacts": [
+    {
+      "name": "core-milestone-evidence",
+      "file": "release-full-validation",
+      "artifact_id": 11823000568
+    },
+    {
+      "name": "release-stack-candidate",
+      "file": "release-stack-candidate",
+      "artifact_id": 11823160831
+    },
+    {
+      "name": "release-publication",
+      "file": "release-publication",
+      "artifact_id": 11822940896
+    }
+  ],
+  "artifact_zip_sha256": {
+    "release-full-validation": "7f5fbc1d2386759db9d502b99be1ccf0de0716b3d72fa665849ce28b6734a537",
+    "release-stack-candidate": "4cd8c23e5d2f3853ef5f3bab397c4c513a269253a6eb91726f180c6b478eeeae",
+    "release-publication": "5678c7fee4eedd8ed24c1bce838b34588793f2d341f403212240ca75052166a9"
+  },
+  "evidence_sha256": {
+    "acceptance.json": "e180ab7e7ef5669fe6db5ae915572d4fdc519815a07280d338c4275937c82f99",
+    "anonymous-registry.json": "aef7e2eff208992f8c620e3256b17c13afc421dbb6be16bd0d296eef3e2a5345",
+    "image-stack.json": "cb7ff181a26aae4b23d38a56fde06f5b11c6eb810a4436e72e774ff694b1f58d",
+    "ingestion-live.json": "6e33f1a6352f79d60027ba24f5b21af1eac225b73265b8ff931cbfde91a0b13c",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "pytest.log": "c8bc62f6fcd000967303ad2c2c8e6b8444da431b62db916b665887cd06395587",
+    "runtime-after-anonymous-pull.json": "ad71f0dbdd29d17d782d01cb2d9401b45a56cfbe6ec406b1c5512181dbec9b90",
+    "runtime-before-push.json": "9e5987427c22acc2ec863ce4dd7505be7078f46432b3968971ef87038b6f1f38",
+    "tests.xml": "0c25ae4badd3c5b318e78faf5e885b0d803ef09acb0ca40cacd555c53fb5e7c9"
+  }
+}
