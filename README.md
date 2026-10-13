@@ -1,9 +1,10 @@
-# Photography Events Core — Milestone 3A shadow development
+# Photography Events Core — ingestion and shadow development
 
 A LAN-only Python service for the Photography Events regret-prevention product.
 The Home Assistant v0.16.1 local engine remains authoritative. Core is a
-foundation and deterministic Carrizo Plain Tule Elk parity slice, not a public
-release or a replacement for the existing integration.
+foundation and deterministic Carrizo Plain Tule Elk parity slice. Versioned
+pre-release container deployment does not complete the multi-source ingestion
+phase or promote shadow intelligence to production.
 
 The accepted [Milestone 1 review](IMPLEMENTATION_REVIEW_MILESTONE_1.md) records
 the foundation. The [Milestone 2 review](IMPLEMENTATION_REVIEW_MILESTONE_2.md)
@@ -30,18 +31,19 @@ for PostgreSQL. Only two services run: `photography-events-core` and the dedicat
 `photography-events-db` (`postgis/postgis:18-3.6`). No other application's database
 is reused. Database port 5432 is not published in production Compose.
 
-1. Clone this repository under `/mnt/cache/appdata/photography-events-core/repo`.
-2. Create `/mnt/cache/appdata/photography-events-db/` and
-   `/mnt/cache/appdata/photography-events-core/`. Use cache storage, not `/mnt/user`
-   for the active DB. Paths can be changed with `DB_DATA_PATH` and `CORE_DATA_PATH`.
-3. Copy `.env.example` to `.env`. Generate **three separate** random secrets (for
-   example, `openssl rand -hex 32`) for `POSTGRES_ADMIN_PASSWORD`,
-   `POSTGRES_PASSWORD`, and `CORE_API_TOKEN`. Do not commit or print `.env`.
-4. Set `CORE_BIND_IP` to the Unraid host's LAN IP, `CORE_PORT=8099`, and
-   `CORE_DATABASE_TIMEOUT=3`. Default binding is loopback for safe development.
-   Set `BACKUP_DIR` to the existing mounted Synology backup directory.
-5. Run `docker compose config -q`, then `docker compose up -d --build --wait`.
-6. Check `http://<LAN-IP>:8099/health/live` and `/health/ready`.
+Use the [manual release deployment guide](docs/RELEASE_DEPLOYMENT.md), complete
+[image-only stack](compose.unraid.yaml) and matching [.env template](.env.unraid.example).
+Paste the stack into Unraid Compose Manager and retain existing credentials,
+paths, project name and LAN binding. Fresh installations need three separate
+generated admin/application/API secrets. Existing installations need a backup
+before the one-time stack migration; do not replace their working credentials.
+
+Every ordinary update is entirely in Compose Manager: open the Photography Events
+stack, select **Pull & Up**, then wait for **healthy**. Images are published only
+by approved GitHub Releases after full validation. `preview` follows approved
+pre-releases; `latest` follows approved stable releases only. No server Git
+checkout, local build, main-push deployment or hourly automatic update is used.
+`compose.yaml` and `.env.example` remain developer/CI build configuration only.
 
 No public listener, proxy tunnel, Cloudflare exposure or router port forwarding
 is part of this setup. Both services share an internal Compose database network;
@@ -51,10 +53,11 @@ The [PostGIS image's PostgreSQL 18 volume contract](https://github.com/postgis/d
 mounts **`/var/lib/postgresql`**, with PGDATA below `18/docker`. Mounting only the
 old `/var/lib/postgresql/data` location would fail to preserve the intended data.
 
-The image initializes PostGIS, then `scripts/20-app-user.sh` creates the dedicated
-non-superuser application role `photography_events`. Core connects using that
-role; the admin password stays in the DB container. Initialization scripts only
-run on an empty volume. Changing `.env` does not rotate an existing DB password.
+The image-only stack supplies its application-role init hook inline, after
+PostGIS initialization. It creates the dedicated non-superuser application role
+`photography_events` only on an empty volume. Core connects using that role;
+the admin password stays in the DB container. Existing databases/roles are
+preserved on pull/recreate. Changing `.env` does not rotate an existing DB password.
 
 Core runs as UID 10001. It does not need to write its appdata mount in M1; all
 application state is in PostgreSQL. Both services use `unless-stopped` restart
@@ -91,7 +94,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0008`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0009`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -118,8 +121,9 @@ validated in CI; interactive documentation endpoints are not exposed.
 
 **M1 scope of “complete” is the installed Tule Elk slice only**, not all of the
 HA product. The synthetic source adapter is explicitly labelled in source names.
-No fixture data is seeded at startup and there are no live collectors. To
-exercise the persisted slice deliberately:
+No fixture data is seeded at startup. Live source collection is opt-in shadow
+infrastructure and remains separate from the fixture parity slice. To exercise
+the persisted slice deliberately in an isolated developer/CI environment only:
 
 ```sh
 docker compose exec photography-events-core python -m pec tests/fixtures/legacy_tule_elk.json

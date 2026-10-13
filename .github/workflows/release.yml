@@ -1,0 +1,148 @@
+name: Publish approved GitHub Release
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+concurrency:
+  group: ghcr-release-publication
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.metadata.outputs.commit }}
+      version: ${{ steps.metadata.outputs.version }}
+      image: ${{ steps.metadata.outputs.image }}
+      version_image: ${{ steps.metadata.outputs.version_image }}
+      sha_image: ${{ steps.metadata.outputs.sha_image }}
+      channel_image: ${{ steps.metadata.outputs.channel_image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - id: metadata
+        name: Validate published release and exact tag commit
+        run: python tools/release_metadata.py
+  validation:
+    needs: release
+    uses: ./.github/workflows/validate.yml
+    with:
+      commit: ${{ needs.release.outputs.commit }}
+  publish:
+    needs: [release, validation]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.receipt.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.commit }}
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Refuse replacement of immutable version or commit tags
+        env:
+          VERSION_IMAGE: ${{ needs.release.outputs.version_image }}
+          SHA_IMAGE: ${{ needs.release.outputs.sha_image }}
+        run: |
+          for image in "$VERSION_IMAGE" "$SHA_IMAGE"; do
+            if docker manifest inspect "$image" >/dev/null 2>&1; then
+              echo 'Version/commit tag already exists; use a new reviewed version/commit.' >&2
+              exit 1
+            fi
+          done
+      - name: Build exact validated runtime for Linux AMD64
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          target: runtime
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: ${{ needs.release.outputs.version_image }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Tmatz27/photography-events-core
+            org.opencontainers.image.revision=${{ needs.release.outputs.commit }}
+            org.opencontainers.image.version=${{ needs.release.outputs.version }}
+      - name: Verify image-only stack, fresh init and preserved existing database
+        env:
+          RELEASE_IMAGE: ${{ needs.release.outputs.version_image }}
+          RELEASE_COMMIT: ${{ needs.release.outputs.commit }}
+        run: python tools/verify_release_stack.py --image "$RELEASE_IMAGE" --commit "$RELEASE_COMMIT" --output evidence/release-stack-candidate.json
+      - name: Publish only the tested image and approved channel
+        env:
+          VERSION_IMAGE: ${{ needs.release.outputs.version_image }}
+          SHA_IMAGE: ${{ needs.release.outputs.sha_image }}
+          CHANNEL_IMAGE: ${{ needs.release.outputs.channel_image }}
+        run: |
+          docker tag "$VERSION_IMAGE" "$SHA_IMAGE"
+          docker tag "$VERSION_IMAGE" "$CHANNEL_IMAGE"
+          docker push "$VERSION_IMAGE"
+          docker push "$SHA_IMAGE"
+          docker push "$CHANNEL_IMAGE"
+      - id: receipt
+        name: Record registry digest
+        env:
+          VERSION_IMAGE: ${{ needs.release.outputs.version_image }}
+        run: |
+          digest=$(docker image inspect "$VERSION_IMAGE" --format '{{index .RepoDigests 0}}')
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-stack-candidate
+          path: evidence/release-stack-candidate.json
+  verify-public:
+    needs: [release, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.commit }}
+      - name: Pull version tag anonymously and verify all registry tags
+        env:
+          VERSION_IMAGE: ${{ needs.release.outputs.version_image }}
+          SHA_IMAGE: ${{ needs.release.outputs.sha_image }}
+          CHANNEL_IMAGE: ${{ needs.release.outputs.channel_image }}
+          EXPECTED_DIGEST: ${{ needs.publish.outputs.digest }}
+        run: |
+          export DOCKER_CONFIG=$(mktemp -d)
+          # First publication defaults private: owner sets package visibility once.
+          # No token/login is supplied; failures never count as verified pulls.
+          pulled=false
+          for attempt in $(seq 1 30); do
+            if docker pull --platform linux/amd64 "$VERSION_IMAGE"; then
+              pulled=true
+              break
+            fi
+            sleep 10
+          done
+          test "$pulled" = true
+          test "$(docker image inspect "$VERSION_IMAGE" --format '{{index .RepoDigests 0}}')" = "$EXPECTED_DIGEST"
+          for image in "$SHA_IMAGE" "$CHANNEL_IMAGE"; do
+            docker pull --platform linux/amd64 "$image"
+            test "$(docker image inspect "$image" --format '{{index .RepoDigests 0}}')" = "$EXPECTED_DIGEST"
+          done
+          printf 'DOCKER_CONFIG=%s\n' "$DOCKER_CONFIG" >> "$GITHUB_ENV"
+      - name: Verify publicly pulled image and image-only stack
+        env:
+          RELEASE_IMAGE: ${{ needs.release.outputs.version_image }}
+          RELEASE_COMMIT: ${{ needs.release.outputs.commit }}
+        run: python tools/verify_release_stack.py --image "$RELEASE_IMAGE" --commit "$RELEASE_COMMIT" --output evidence/release-publication.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-publication
+          path: evidence/release-publication.json

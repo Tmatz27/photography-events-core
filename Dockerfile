@@ -21,5 +21,7 @@ COPY tests /app/tests
 COPY tools /app/tools
 COPY compose.yaml /app/compose.yaml
 COPY .env.example /app/.env.example
+COPY compose.unraid.yaml .env.unraid.example /app/
+COPY .github/workflows /app/.github/workflows
 COPY scripts /app/scripts
 USER 10001:10001

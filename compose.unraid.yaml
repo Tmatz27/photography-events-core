@@ -1,0 +1,86 @@
+# Paste this complete file into the existing Unraid Compose Manager stack.
+# Keep the same stack/project name and existing .env secrets, paths and LAN IP.
+services:
+  photography-events-db:
+    image: postgis/postgis:18-3.6
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: photography_events
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set POSTGRES_ADMIN_PASSWORD}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    # Self-contained initdb hook; PostgreSQL only runs it for an EMPTY data volume.
+    # Existing databases/roles/passwords are never recreated or reset here.
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        cat > /docker-entrypoint-initdb.d/20-app-user.sh <<'INIT'
+        #!/bin/sh
+        set -eu
+        psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "$$POSTGRES_DB" --set=app_password="$$APP_DB_PASSWORD" <<'SQL'
+        CREATE ROLE photography_events LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD :'app_password';
+        ALTER DATABASE photography_events OWNER TO photography_events;
+        GRANT USAGE, CREATE ON SCHEMA public TO photography_events;
+        SQL
+        INIT
+        chmod 0644 /docker-entrypoint-initdb.d/20-app-user.sh
+        exec /usr/local/bin/docker-entrypoint.sh "$$@"
+      - photography-events-db-entrypoint
+    command: [postgres]
+    volumes:
+      - ${DB_DATA_PATH:-/mnt/cache/appdata/photography-events-db}:/var/lib/postgresql
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d photography_events"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+  photography-events-core:
+    image: ${CORE_IMAGE:-ghcr.io/tmatz27/photography-events-core:preview}
+    platform: linux/amd64
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      CORE_API_TOKEN: ${CORE_API_TOKEN:?Set CORE_API_TOKEN}
+      CORE_DATABASE_TIMEOUT: ${CORE_DATABASE_TIMEOUT:-3}
+      CORE_EVALUATION_GRACE: ${CORE_EVALUATION_GRACE:-30}
+      CORE_PATTERNS_MODE: ${CORE_PATTERNS_MODE:-shadow}
+      CORE_PATTERN_TIMEOUT: ${CORE_PATTERN_TIMEOUT:-30}
+      CORE_LIVE_SOURCES: ${CORE_LIVE_SOURCES:-true}
+      CORE_SOURCE_KEYS: ${CORE_SOURCE_KEYS:-all}
+      CORE_RETENTION_ENABLED: ${CORE_RETENTION_ENABLED:-false}
+      CORE_EBIRD_API_KEY: ${CORE_EBIRD_API_KEY:-}
+      CORE_NPS_API_KEY: ${CORE_NPS_API_KEY:-}
+      CORE_PURPLEAIR_API_KEY: ${CORE_PURPLEAIR_API_KEY:-}
+      CORE_SUNSETWX_CLIENT_ID: ${CORE_SUNSETWX_CLIENT_ID:-}
+      CORE_SUNSETWX_CLIENT_SECRET: ${CORE_SUNSETWX_CLIENT_SECRET:-}
+      CORE_COPERNICUS_CLIENT_ID: ${CORE_COPERNICUS_CLIENT_ID:-}
+      CORE_COPERNICUS_CLIENT_SECRET: ${CORE_COPERNICUS_CLIENT_SECRET:-}
+      CORE_MBARI_API_TOKEN: ${CORE_MBARI_API_TOKEN:-}
+      CORE_IMAP_HOST: ${CORE_IMAP_HOST:-}
+      CORE_IMAP_USERNAME: ${CORE_IMAP_USERNAME:-}
+      CORE_IMAP_PASSWORD: ${CORE_IMAP_PASSWORD:-}
+      CORE_SOURCE_USER_AGENT: ${CORE_SOURCE_USER_AGENT:-PhotographyEventsCore-shadow (+https://github.com/Tmatz27/photography-events-core)}
+    volumes:
+      - ${CORE_DATA_PATH:-/mnt/cache/appdata/photography-events-core}:/var/lib/photography-events-core
+    ports:
+      - "${CORE_BIND_IP:-127.0.0.1}:${CORE_PORT:-8099}:8099"
+    networks: [database, api]
+    depends_on:
+      photography-events-db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8099/health/ready', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    stop_grace_period: 20s
+networks:
+  database:
+    internal: true
+  api: {}
