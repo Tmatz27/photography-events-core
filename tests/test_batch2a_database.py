@@ -181,6 +181,27 @@ async def test_retention_prunes_raw_blobs_preserves_history_values_and_run_prove
     assert len(await sql(db, "SELECT * FROM source_runs")) == 1
 
 
+async def test_reference_knowledge_survives_bulk_payload_retention(db):
+    fact = m.nps(
+        dict(
+            id="park",
+            parkCode="yose",
+            fullName="Yosemite",
+            operatingHours=[{"description": "native seasonal hours"}],
+            weatherInfo="official seasonal context",
+        ),
+        "parks",
+    )
+    await save(db, "nps", fact)
+    await db.pattern_transaction(lambda c: sweep(c, NOW + timedelta(days=100)), write=True)
+    value = (await rows(db))[0]
+    assert value["raw_payload"] is None
+    assert (
+        value["metadata"]["reference_content"]["operatingHours"][0]["description"] == "native seasonal hours"
+    )
+    assert value["metadata"]["reference_content"]["weatherInfo"] == "official seasonal context"
+
+
 async def test_environment_diagnostics_separate_native_freshness_and_credential_blocker(db):
     from pec.sources.diagnostics import read, IngestionResponse
     from test_api import SETTINGS

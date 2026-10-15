@@ -238,6 +238,25 @@ def nps(row, endpoint):
             "endpoint": endpoint,
             "native_indexed_at": modified,
             "current_access_proven": False,
+            "reference_content": {
+                k: row[k]
+                for k in (
+                    "id",
+                    "parkCode",
+                    "title",
+                    "description",
+                    "category",
+                    "fullName",
+                    "operatingHours",
+                    "weatherInfo",
+                    "directionsInfo",
+                    "entranceFees",
+                    "entrancePasses",
+                    "url",
+                    "addresses",
+                )
+                if k in row
+            },
             "planning_fields": [
                 k
                 for k in (

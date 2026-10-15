@@ -176,7 +176,14 @@ async def nwps(client, batch, stations, start, end):
                 meta,
                 kind="reference",
                 geometry=geometry,
-                metadata={"usgs_id": meta.get("usgsId")},
+                metadata={
+                    "usgs_id": meta.get("usgsId"),
+                    "reference_content": {
+                        k: meta[k]
+                        for k in ("lid", "usgsId", "name", "flood", "datums", "dataAttribution")
+                        if k in meta
+                    },
+                },
             )
         )
         body = await client.get(base + "/stageflow")
@@ -268,6 +275,8 @@ async def nps(client, batch, parks, max_pages, now, checkpoint):
                 metadata={
                     "snapshot_complete": True,
                     "absence_means": "not in this endpoint snapshot, not proven deletion",
+                    "native_ids": sorted(identities),
+                    "parks": parks,
                 },
             )
         )

@@ -104,7 +104,9 @@ deadline/failure/lease algorithms are unchanged. Missing NPS credentials disable
 its scheduler task while keeping its registry/diagnostics entry visible.
 
 Normalized numerical/reference revision history and provenance are retained
-long-term. Raw JSON blobs are pruned after 90 days only through the existing
+long-term, including structured park hours/context and NWPS flood thresholds in
+`metadata.reference_content` and native snapshot membership. Gauge height remains
+local gauge stage, not an invented above-sea-level elevation. Raw JSON blobs are pruned after 90 days only through the existing
 opt-in bounded sweep; required source-run provenance is protected. The installed
 `CORE_RETENTION_ENABLED=false` setting is preserved.
 
