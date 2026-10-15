@@ -31,6 +31,9 @@ def window(key, options, checkpoint, now, cursor, history):
     if type(station_index) is not int or not 0 <= station_index < len(options[key]):
         raise FetchError("invalid_history_checkpoint")
     start = timestamp(checkpoint.get("next_start", options["history_start"] + "T00:00:00Z"))
+    if key == "nwps" and not checkpoint.get("next_start"):
+        # NWPS supplies a rolling observed series, not an arbitrary archive API.
+        start = max(start, now - timedelta(days=29))
     end = now - timedelta(hours=6)
     if options["history_end"] != "recent":
         end = min(timestamp(options["history_end"] + "T00:00:00Z"), end)
@@ -157,7 +160,7 @@ async def cdec(client, batch, key, stations, start, end):
             raise FetchError("cdec_no_measurements_for_station")
 
 
-async def nwps(client, batch, stations, start, end):
+async def nwps(client, batch, stations, start, end, *, history=False):
     for station in stations:
         base = ENVIRONMENT_CONTRACTS["nwps"].interface + "/gauges/" + station
         meta = await client.get(base)
@@ -190,6 +193,8 @@ async def nwps(client, batch, stations, start, end):
         if set(body) != {"observed", "forecast"}:
             raise FetchError("invalid_nwps_products")
         for product, section in body.items():
+            if history and product == "forecast":
+                continue
             if (
                 not isinstance(section, dict)
                 or not isinstance(section.get("data"), list)
@@ -295,7 +300,7 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
     start, end, progress = window(key, options, checkpoint, now, cursor, history)
     stations = options[key]
     if history:
-        if key not in ("usgs_water", "cdec_river", "cdec_rainfall", "cdec_snow"):
+        if key not in ("usgs_water", "cdec_river", "cdec_rainfall", "cdec_snow", "nwps"):
             raise FetchError("provider_has_no_history_interface")
         if start == end:
             batch.checkpoint = {**progress, "scope_hash": scope_hash}
@@ -306,7 +311,7 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
     elif key.startswith("cdec_"):
         await cdec(client, batch, key, stations, start, end)
     elif key == "nwps":
-        await nwps(client, batch, stations, start, end)
+        await nwps(client, batch, stations, start, end, history=history)
     else:
         checked = await nps(client, batch, stations, max_pages, now, checkpoint)
         progress = {**(progress or {}), "parks_checked_at": checked}

@@ -42,7 +42,7 @@ async def run(args):
             if key not in ENVIRONMENT_CONTRACTS:
                 raise ValueError("Unimplemented Batch 2A source")
             variants = [CONTRACTS[key]]
-            if args.history and key in ("usgs_water", "cdec_river", "cdec_rainfall", "cdec_snow"):
+            if args.history and key in ("usgs_water", "cdec_river", "cdec_rainfall", "cdec_snow", "nwps"):
                 variants.append(history_contract(CONTRACTS[key]))
             for contract in variants:
                 now = datetime.now(UTC)

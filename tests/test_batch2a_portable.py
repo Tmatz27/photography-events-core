@@ -314,3 +314,9 @@ async def test_completed_history_preserves_scope_hash_without_restarting_from_be
     )
     batch = await fetch(client.contract, client, NOW, checkpoint=checkpoint)
     assert batch.complete and not calls and batch.checkpoint == checkpoint
+
+
+def test_nwps_history_uses_accessible_rolling_window_not_invented_archive():
+    start, end, checkpoint = window("nwps", scope(), {}, NOW, None, True)
+    assert start == NOW - timedelta(days=29) and end == start + timedelta(days=1)
+    assert checkpoint["next_start"] == end.isoformat()

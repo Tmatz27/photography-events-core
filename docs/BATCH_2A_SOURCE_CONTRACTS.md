@@ -88,7 +88,7 @@ one-hour correction overlap. Restart catch-up proceeds in bounded day slices;
 receipt clocks never skip an uncollected gap. CDEC daily feeds additionally overlap
 two days. NWPS's bounded current series and forecast cycle are retained as received.
 
-USGS/CDEC history workers have independent `*_history` leases, backoff, quota,
+USGS/CDEC/NWPS history workers have independent `*_history` leases, backoff, quota,
 checkpoint and hourly cadence. One day at one station is collected per attempt,
 then station/time progress advances only after complete persistence. They share
 the **same underlying raw identities** with current workers, preventing duplicated
@@ -96,6 +96,9 @@ observations. Per-record native modification/poll fences serialize revisions;
 failed/cancelled/partial polls leave their frontier unchanged. Unknown native
 modification times are not replaced by receipt times. Older corrections outside
 ongoing overlap require an explicit bounded historical re-verification.
+NWPS history starts within its accessible rolling observed series (29-day safety
+margin inside the investigated approximately 30-day response), checkpoints daily
+slices, and never requests an invented historical archive or reclassifies forecasts.
 
 All six contracts use 1.1-second request spacing, 300 daily reserved requests
 (NPS 150, six-hour alert polls and weekly planning-reference refresh), bounded pages and the existing HTTP size/time limits.

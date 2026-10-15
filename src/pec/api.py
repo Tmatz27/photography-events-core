@@ -51,7 +51,7 @@ def create_app(settings=None, database=None, clock=None):
                     scheduler.add(key,contract.scheduler_policy,
                         lambda contract=contract:collect_owned(db,contract,settings.source_user_agent),
                         lambda key:backoff.load(db,key,clock()),clock=clock)
-                    if settings.source_history and key in ('usgs_water','cdec_river','cdec_rainfall','cdec_snow'):
+                    if settings.source_history and key in ('usgs_water','cdec_river','cdec_rainfall','cdec_snow','nwps'):
                         historical=history_contract(contract)
                         scheduler.add(historical.source_key,historical.scheduler_policy,
                             lambda contract=historical:collect_owned(db,contract,settings.source_user_agent),
