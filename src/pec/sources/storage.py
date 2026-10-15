@@ -460,7 +460,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
             weight = (
                 len(fact.payload.get("pieces", [fact.payload]))
                 if contract.source_key == "wfigs_current"
-                else 0 if fact.metadata.get('collection_membership') is True else 1
+                else 0 if contract.source_key == 'nps' and fact.metadata.get('collection_membership') is True else 1
             )
             old = (
                 (
