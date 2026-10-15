@@ -308,7 +308,7 @@ async def test_completed_history_preserves_scope_hash_without_restarting_from_be
     client.collection_scope = {"history_start": "2026-01-01", "history_end": "2026-02-01"}
     checkpoint = dict(
         scope_hash=fingerprint(scope(client.collection_scope)),
-        next_start="2026-02-01T00:00:00Z",
+        next_start="2026-02-01T00:00:00+00:00",
         station_index=0,
         complete=True,
     )
