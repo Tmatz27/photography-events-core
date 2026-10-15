@@ -206,11 +206,13 @@ async def nwps(client, batch, stations, start, end):
                 raise FetchError("nwps_no_observations")
 
 
-async def nps(client, batch, parks, max_pages):
+async def nps(client, batch, parks, max_pages, now, checkpoint):
     key = getattr(client, "provider_secrets", {}).get("CORE_NPS_API_KEY")
     if not key:
         raise FetchError("credentials_needed", 401)
-    for endpoint in ("alerts", "parks"):
+    checked = timestamp(checkpoint["parks_checked_at"]) if checkpoint.get("parks_checked_at") else None
+    refresh = checked is None or now - checked >= timedelta(days=7) or checked > now
+    for endpoint in ("alerts", "parks") if refresh else ("alerts",):
         start, total, identities = 0, None, set()
         for _ in range(max_pages):
             body = await client.get(
@@ -269,6 +271,7 @@ async def nps(client, batch, parks, max_pages):
                 },
             )
         )
+    return (now if refresh else checked).isoformat()
 
 
 async def collect_environment(contract, client, batch, now, cursor, checkpoint, max_pages):
@@ -296,7 +299,8 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
     elif key == "nwps":
         await nwps(client, batch, stations, start, end)
     else:
-        await nps(client, batch, stations, max_pages)
+        checked = await nps(client, batch, stations, max_pages, now, checkpoint)
+        progress = {**(progress or {}), "parks_checked_at": checked}
     if progress is not None:
         batch.checkpoint = {**progress, "scope_hash": scope_hash}
     # Freshness uses native evidence/issue time. Government publications without

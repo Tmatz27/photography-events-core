@@ -287,3 +287,14 @@ def test_park_information_is_a_versioned_reference_not_season_api():
     fact = m.nps(copy.deepcopy(row), "parks")
     assert fact.evidence_kind == "reference" and fact.numeric_value is None
     assert fact.metadata["current_access_proven"] is False
+
+
+async def test_nps_planning_reference_weekly_refresh_separate_from_alerts():
+    from pec.ingestion import fingerprint
+
+    client, calls = await fake("nps", [dict(data=[], total="0", start="0", limit="50")])
+    client.provider_secrets = {"CORE_NPS_API_KEY": "fixture-only"}
+    checkpoint = dict(scope_hash=fingerprint(scope()), parks_checked_at=(NOW - timedelta(days=1)).isoformat())
+    batch = await fetch(client.contract, client, NOW, checkpoint=checkpoint)
+    assert batch.complete and len(calls) == 1 and "/alerts?" in calls[0]
+    assert batch.checkpoint["parks_checked_at"] == checkpoint["parks_checked_at"]

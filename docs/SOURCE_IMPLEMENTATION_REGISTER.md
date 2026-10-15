@@ -232,3 +232,19 @@ See `IMPLEMENTATION_REVIEW_INGESTION_BATCH_1.md` and `docs/evidence/ingestion-ba
 live test database; WFIGS supplied a valid empty snapshot and persisted run/cursor.
 NWS native issue freshness remains stale. Installed Unraid verification is
 operator-pending, and no remaining adapter/access gate is marked complete.
+
+## Batch 2A continuation
+
+See `BATCH_2A_SOURCE_CONTRACTS.md` and `IMPLEMENTATION_REVIEW_INGESTION_BATCH_2A.md`.
+All 81 keys remain; `cdec` is nonpolling. Six new adapters are implemented;
+implementation is not a source-completion certificate. The user reports the new
+installed Unraid is healthy with 62 iNaturalist raw records, 172 NWS raw records/
+482 historical normalized assertions and successful empty WFIGS snapshots. This
+supersedes the old operator-pending installed status for those three collectors
+as user-provided evidence; development did not inspect or write that database.
+Batch 1/J1 acceptance is supplied by the user's current task. Older matrix entries
+and receipts remain historical evidence rather than fresh installed certification.
+
+Batch 2A NPS real collection is credential-pending by explicit user choice. All
+new installed-source verification, Claude acceptance, expanded station footprints
+and remaining providers stay open. No stable release is authorized by this batch.

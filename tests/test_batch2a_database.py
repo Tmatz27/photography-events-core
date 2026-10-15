@@ -222,3 +222,22 @@ async def test_owned_genuine_failure_and_j1_manual_deferral_unchanged(db):
     assert len(calls) == 1
     state = (await sql(db, "SELECT * FROM source_backoff"))[0]
     assert state["consecutive_failures"] == 1 and state["next_allowed_at"] >= NOW + timedelta(seconds=600)
+
+
+async def test_live_and_history_own_independent_leases_and_recover_persisted_deadlines(db):
+    from pec.sources.ownership import claim, finish
+    from pec.sources.backoff import load
+
+    live = CONTRACTS["usgs_water"]
+    history = history_contract(live)
+    leases = [await claim(db, c, NOW) for c in (live, history)]
+    assert leases[0] and leases[1] and leases[0].token != leases[1].token
+    recovered = await load(db, history.source_key, NOW + timedelta(seconds=1), contract=history)
+    assert recovered.next_allowed_at >= NOW + timedelta(seconds=3600) and recovered.consecutive_failures == 1
+    for contract, lease in zip((live, history), leases):
+        batch = Batch(records=[m.usgs(usgs_row())], received=1, requests=1)
+        await persist(db, contract, batch, NOW, NOW + timedelta(seconds=2), lease=lease)
+        await finish(db, contract, lease, NOW + timedelta(seconds=3), status=200)
+    assert len(await sql(db, "SELECT * FROM raw_observations")) == len(await rows(db)) == 1
+    states = await sql(db, "SELECT * FROM source_backoff")
+    assert len(states) == 2 and all(r["consecutive_failures"] == 0 for r in states)

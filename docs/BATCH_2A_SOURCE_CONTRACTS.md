@@ -96,7 +96,7 @@ modification times are not replaced by receipt times. Older corrections outside
 ongoing overlap require an explicit bounded historical re-verification.
 
 All six contracts use 1.1-second request spacing, 300 daily reserved requests
-(NPS 150, six-hour polls), bounded pages and the existing HTTP size/time limits.
+(NPS 150, six-hour alert polls and weekly planning-reference refresh), bounded pages and the existing HTTP size/time limits.
 USGS unauthenticated access is used at a conservative rate; higher limits are not
 assumed. Existing Retry-After, crash reservation and J1 deferral behavior remain.
 The only backoff change allows an explicit contract for an internal history key;
