@@ -1,0 +1,67 @@
+{
+  "code_freeze": "83f5d3df562b082f5e447ce49753ab8f5ae6d73a",
+  "starting_main": "87fef36dcd8c8685952dc6483134887d6f2ba453",
+  "ci_run": 38688659355,
+  "ci_url": "https://github.com/Tmatz27/photography-events-core/actions/runs/38688659355",
+  "ci_conclusion": "success",
+  "artifact_id": 11952035766,
+  "artifact_zip_sha256": "b89d30c9c937049ea4b3019c1e48cd85f09b255dbad5212525cc255ef0239d7f",
+  "tests_passed": 568,
+  "historical_identities_preserved": {
+    "m3a-h1": 446,
+    "ingestion-batch-1": 471,
+    "ingestion-j1": 491,
+    "release-v0.1.0-rc.2": 501
+  },
+  "new_cases_since_release": 67,
+  "portable_tests_passed": 222,
+  "portable_expected_skips": 346,
+  "ruff": "clean",
+  "genuine_network_and_postgis_verified": [
+    "usgs_water",
+    "usgs_water_history",
+    "cdec_river",
+    "cdec_river_history",
+    "cdec_rainfall",
+    "cdec_rainfall_history",
+    "cdec_snow",
+    "cdec_snow_history",
+    "nwps",
+    "nwps_history"
+  ],
+  "nps_live_verification": "credential-pending by explicit user choice",
+  "installed_database_modified": false,
+  "stable_release_published": false,
+  "ghcr_image_published": false,
+  "independent_review": "pending",
+  "ingestion_phase_complete": false,
+  "source_inventory_keys_preserved": 81,
+  "accepted_source_contract_hashes_preserved": {
+    "inaturalist": "b2215bf156216654623c69f4e558eee64542c74efe344aa70c694985a0ac2841",
+    "wfigs_current": "4dad34fa51df0913b5fb5348da82b674ef5a5afb96e97d66a2289c0b01336443",
+    "nws_live_context": "12abb819b4a19d4cbce2957398b98241108573499b7c953f1ca60ffac6b84e24"
+  },
+  "untouched_accepted_boundaries": [
+    "src/pec/scheduler.py",
+    "src/pec/sources/ownership.py",
+    "src/pec/sources/inaturalist.py",
+    "src/pec/sources/nws.py",
+    "src/pec/sources/wfigs.py",
+    "src/pec/patterns",
+    "src/pec/ingestion.py",
+    "src/pec/phenomena.py",
+    "src/pec/legacy_safety.py",
+    ".github/workflows/release.yml"
+  ],
+  "full_historical_backfill_complete": false,
+  "evidence_sha256": {
+    "acceptance.json": "01fa12a8d7000745b1a65f54811ef3b19713d40b3cadc68442f50a98f78ef87f",
+    "batch2a-live.json": "9725a927567dcfe9a80304bc3dfc0d9612b48f5a7f58ecbf6b0ec376fc3af3cd",
+    "tests.xml": "c8ea0d3fab7415f096bcae9193b2bc84a8e69295b0d155170ad8fc9fb6b8a273",
+    "pytest.log": "0065a978cc84d7c06ed6d622135bc087266dd48c71dee7b59075f670fc05220a",
+    "parity.json": "8c327bbb0a0b7b54e53b74c0be71fe094b2c0c20bdfa1e12ce682a5b9a3daa51",
+    "image-stack.json": "6919f8ee9e45f4553134e3a31a0e9c3354b8e26f5abb228b507059cbc91065fa",
+    "ingestion-live.json": "64a553867220231ceedc50a8aa581e2732c56da369f730356a84849b3feeb932",
+    "collector-operations.json": "924c56b9fc1b1773e12a127e09947f1e092607274023f1a18488389be9f8e390"
+  }
+}

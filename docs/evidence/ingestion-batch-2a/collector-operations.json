@@ -1,0 +1,69 @@
+{
+  "disposable_synthetic_load": true,
+  "retained_reference_barriers": 100000,
+  "samples_seconds": [
+    0.0015941789999942557,
+    0.000619373999995787,
+    0.0005427449999899636,
+    0.0005362299999944753,
+    0.0007109980000166161,
+    0.0006403539999837449,
+    0.0005904239999949823,
+    0.00060292699998854,
+    0.0005844970000055127,
+    0.0005941370000073221
+  ],
+  "median_seconds": 0.000598531999997931,
+  "plan": [
+    {
+      "Plan": {
+        "Node Type": "Index Scan",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Scan Direction": "Forward",
+        "Index Name": "source_reference_barriers_pkey",
+        "Relation Name": "source_reference_barriers",
+        "Alias": "source_reference_barriers",
+        "Startup Cost": 0.42,
+        "Total Cost": 8.44,
+        "Plan Rows": 1,
+        "Plan Width": 8,
+        "Actual Startup Time": 0.011,
+        "Actual Total Time": 0.011,
+        "Actual Rows": 1.0,
+        "Actual Loops": 1,
+        "Disabled": false,
+        "Index Cond": "((source_id = '2'::bigint) AND (external_id = 'benchmark-reference-50000'::text))",
+        "Rows Removed by Index Recheck": 0,
+        "Index Searches": 1,
+        "Shared Hit Blocks": 4,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning": {
+        "Shared Hit Blocks": 0,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.029,
+      "Triggers": [],
+      "Execution Time": 0.017
+    }
+  ],
+  "deadline": 30.0,
+  "production_promotion": false
+}

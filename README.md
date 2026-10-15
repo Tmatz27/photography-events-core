@@ -94,7 +94,7 @@ source stale, API/auth, parity failures).
 ## API and health
 
 Public `GET /health/live` checks process liveness only. Public
-`GET /health/ready` checks DB connectivity, Alembic revision `0009`, PostGIS 3.6,
+`GET /health/ready` checks DB connectivity, Alembic revision `0010`, PostGIS 3.6,
 and application relations; failure is 503. Stale providers do not make the
 database unready. Both return `core_version`, `api_version`, and `schema_version`.
 
@@ -425,3 +425,5 @@ service, machine learning, broker, TimescaleDB, public API or v0.17 release has
 been added. The detailed implementation review packet records actual acceptance
 results and remaining limitations; do not infer operational completion from this
 README alone.
+
+Batch 2A source contracts, real-data scope and credential blockers: [Batch 2A](docs/BATCH_2A_SOURCE_CONTRACTS.md). This development schema is 0010; the separately published rc.2 image remains at 0009 until another release is reviewed and explicitly approved.
