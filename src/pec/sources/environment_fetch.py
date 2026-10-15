@@ -142,9 +142,9 @@ async def cdec(client, batch, key, stations, start, end):
                 raise FetchError("cdec_duplicate_record")
             seen.add(identity)
             valid = models.datetime.strptime(row["obsDate"], "%Y-%m-%d %H:%M").replace(tzinfo=models.PST)
-            if valid > end and (row.get("value") is None or models.number(row["value"]) <= -999):
+            if valid > end:
                 batch.received += 1
-                batch.skipped.append((None, "future_missing_placeholder"))
+                batch.skipped.append((None, "outside_requested_interval"))
                 continue
             if duration == "E" and valid < start:
                 batch.received += 1
@@ -289,7 +289,7 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
         if key not in ("usgs_water", "cdec_river", "cdec_rainfall", "cdec_snow"):
             raise FetchError("provider_has_no_history_interface")
         if start == end:
-            batch.checkpoint = progress
+            batch.checkpoint = {**progress, "scope_hash": scope_hash}
             return
         stations = [stations[checkpoint.get("station_index", 0)]]
     if key == "usgs_water":

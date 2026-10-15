@@ -1,6 +1,7 @@
 """Ingestion inventory diagnostics: counts/status only, no provider secrets or coordinates."""
 from datetime import datetime
 from typing import Literal
+from pydantic import Field
 
 from sqlalchemy import text
 
@@ -32,6 +33,17 @@ class Operational(Contract):
     history_complete: bool = False
 
 
+class EnvironmentalDataset(Contract):
+    quantity: str
+    evidence_kind: str
+    historical_assertions: int
+    current_numeric_values: int
+    current_withdrawals: int
+    native_as_of: datetime | None
+    last_received_at: datetime | None
+    native_freshness: Literal['current','stale','unknown']
+
+
 class ProviderView(Contract):
     key: str
     provider: str
@@ -56,6 +68,7 @@ class ProviderView(Contract):
     operational: Operational | None
     history_operational: Operational | None = None
     native_freshness: Literal['current','stale','unknown'] = 'unknown'
+    datasets: list[EnvironmentalDataset] = Field(default_factory=list)
 
 
 class IngestionResponse(Contract):
@@ -94,6 +107,23 @@ async def read(db, settings, now):
             selected = settings.live_sources and (p.key in settings.source_keys or adapter_key in settings.source_keys)
             row = by_key.get(adapter_key)
             from .debug import freshness
+            datasets=[]
+            if implemented:
+                values=(await c.execute(text("""SELECT quantity,evidence_kind,count(*) AS historical_assertions,
+                    count(*) FILTER(WHERE superseded_at IS NULL AND NOT withdrawn AND numeric_value IS NOT NULL) AS current_numeric_values,
+                    count(*) FILTER(WHERE superseded_at IS NULL AND withdrawn) AS current_withdrawals,
+                    max(CASE WHEN evidence_kind='measurement' THEN valid_at
+                        WHEN evidence_kind='forecast' THEN issued_at ELSE provider_updated_at END)
+                        FILTER(WHERE superseded_at IS NULL AND NOT withdrawn) AS native_as_of,
+                    max(last_received_at) AS last_received_at FROM environmental_assertions
+                    WHERE dataset_key=:key GROUP BY quantity,evidence_kind ORDER BY quantity,evidence_kind"""),
+                    dict(key=adapter_key))).mappings()
+                for value in values:
+                    item=dict(value)
+                    item['native_freshness']=freshness(CONTRACTS[adapter_key],
+                        {**(row or {}),'provider_updated_at':item['native_as_of'],
+                            'completed_at':item['last_received_at']},now) if row else 'unknown'
+                    datasets.append(item)
             state = ('not_implemented' if not implemented else 'not_configured' if not ready
                 else 'disabled' if not selected or (row and not row['enabled']) else 'never_collected' if not row or not row['status']
                 else 'incomplete' if row['incomplete'] else row['status'])
@@ -109,7 +139,7 @@ async def read(db, settings, now):
                 upstream_lineage=p.upstream_lineage,
                 credential_variables=p.credentials, access_requirement=p.access,
                 state=state, operational=row,history_operational=by_key.get(adapter_key+'_history'),
-                native_freshness=freshness(CONTRACTS[adapter_key],row,now) if implemented else 'unknown'))
+                native_freshness=freshness(CONTRACTS[adapter_key],row,now) if implemented else 'unknown',datasets=datasets))
         return dict(generated_at=now, production_promotion=False, phase_complete=False,
             items=items)
     return await db.pattern_transaction(operation)

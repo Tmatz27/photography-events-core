@@ -31,7 +31,7 @@ of a USGS gauge is **not independent confirmation**.
 
 CDEC `date` (scheduled slot) and `obsDate` are retained verbatim and interpreted as
 fixed Pacific Standard Time, UTC−08:00, rather than adding summer daylight time.
-Future missing placeholders and rows outside the requested event interval are
+Future placeholders and rows outside the requested interval are
 counted as skipped. Real future measurements are rejected at persistence.
 CDEC's JSON data endpoint does not supply station geometry; it remains unknown
 rather than borrowing another agency's coordinates or inventing a catchment.

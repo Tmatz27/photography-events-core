@@ -20,7 +20,7 @@ DEFAULT = {
 
 def scope(value=None):
     result = copy.deepcopy(DEFAULT)
-    if value:
+    if value is not None:
         values = json.loads(value) if isinstance(value, str) else value
         if not isinstance(values, dict) or set(values) - set(DEFAULT):
             raise ValueError("Unknown collection scope fields")

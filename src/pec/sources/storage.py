@@ -725,11 +725,16 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
     if not enabled:
         return 503, None
     client = client or Client(contract, user_agent, reserve=lambda: reserve(db, contract))
-    if not hasattr(client, 'collection_scope'):
+    from .environment_contracts import ENVIRONMENT_CONTRACTS, base_key
+    environmental = base_key(contract.source_key) in ENVIRONMENT_CONTRACTS
+    if environmental and not hasattr(client, 'collection_scope'):
         client.collection_scope = getattr(db, 'collection_scope', None)
         client.provider_secrets = getattr(db, 'provider_secrets', {})
     try:
-        batch = await fetch(contract, client, started, cursor=cursor, known=known, checkpoint=checkpoint)
+        options = {'cursor':cursor,'known':known}
+        if environmental:
+            options['checkpoint']=checkpoint
+        batch = await fetch(contract, client, started, **options)
     except asyncio.CancelledError:
         # Scheduler deadline/shutdown remains cancellation, with a truthful
         # failed attempt rather than a success/empty snapshot. No M1 resources.

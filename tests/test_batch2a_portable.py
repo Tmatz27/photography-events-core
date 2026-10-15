@@ -298,3 +298,19 @@ async def test_nps_planning_reference_weekly_refresh_separate_from_alerts():
     batch = await fetch(client.contract, client, NOW, checkpoint=checkpoint)
     assert batch.complete and len(calls) == 1 and "/alerts?" in calls[0]
     assert batch.checkpoint["parks_checked_at"] == checkpoint["parks_checked_at"]
+
+
+async def test_completed_history_preserves_scope_hash_without_restarting_from_beginning():
+    from pec.ingestion import fingerprint
+
+    client, calls = await fake("usgs_water", [])
+    client.contract = history_contract(client.contract)
+    client.collection_scope = {"history_start": "2026-01-01", "history_end": "2026-02-01"}
+    checkpoint = dict(
+        scope_hash=fingerprint(scope(client.collection_scope)),
+        next_start="2026-02-01T00:00:00Z",
+        station_index=0,
+        complete=True,
+    )
+    batch = await fetch(client.contract, client, NOW, checkpoint=checkpoint)
+    assert batch.complete and not calls and batch.checkpoint == checkpoint
