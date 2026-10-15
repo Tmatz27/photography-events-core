@@ -272,13 +272,14 @@ async def nps(client, batch, parks, max_pages, now, checkpoint):
         batch.records.append(
             models.make(
                 "nps",
-                endpoint + ":snapshot",
+                "membership:" + endpoint,
                 "california_parks",
                 endpoint + "_snapshot",
                 {"endpoint": endpoint, "native_ids": sorted(identities), "parks": parks},
                 kind="reference",
                 metadata={
                     "snapshot_complete": True,
+                    "collection_membership": True,
                     "absence_means": "not in this endpoint snapshot, not proven deletion",
                     "native_ids": sorted(identities),
                     "parks": parks,

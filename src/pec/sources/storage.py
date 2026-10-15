@@ -460,7 +460,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
             weight = (
                 len(fact.payload.get("pieces", [fact.payload]))
                 if contract.source_key == "wfigs_current"
-                else 1
+                else 0 if fact.metadata.get('collection_membership') is True else 1
             )
             old = (
                 (
@@ -505,7 +505,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
                     errors[code] += weight
             else:
                 counts["accepted"] += weight
-                counts[disposition] += 1
+                counts[disposition] += int(weight > 0)
                 counts["obscured_records"] += fact.spatial_basis == "obscured_cell"
                 counts["private_records"] += fact.spatial_basis == "private_unavailable"
                 seen.append(fact.external_id)

@@ -274,3 +274,22 @@ async def test_cdec_freshness_uses_evidence_time_without_manufacturing_native_mo
     assert row["provider_updated_at"] is None and row["native_evidence_asof"] == fact.valid_at
     assert freshness(CONTRACTS["cdec_snow"], row, NOW) == "current"
     assert freshness(CONTRACTS["cdec_snow"], row, NOW + timedelta(days=4)) == "stale"
+
+
+async def test_nps_collection_membership_never_inflates_provider_record_counts(db):
+    from pec.sources.fetch import fetch
+    from pec.sources.environment_scope import PARKS
+    from test_batch2a_portable import fake
+
+    parks = [dict(id=p, parkCode=p, fullName=p) for p in PARKS]
+    client, _ = await fake(
+        "nps",
+        [dict(data=[], total="0", start="0", limit="50"), dict(data=parks, total="8", start="0", limit="50")],
+    )
+    client.provider_secrets = {"CORE_NPS_API_KEY": "fixture-only"}
+    batch = await fetch(CONTRACTS["nps"], client, NOW)
+    await persist(db, CONTRACTS["nps"], batch, NOW, NOW)
+    row = (await sql(db, "SELECT * FROM source_runs"))[0]
+    assert row["records_received"] == row["records_accepted"] == row["unique_records"] == 8
+    values = await rows(db)
+    assert len(values) == 10 and sum(r["metadata"].get("collection_membership") is True for r in values) == 2

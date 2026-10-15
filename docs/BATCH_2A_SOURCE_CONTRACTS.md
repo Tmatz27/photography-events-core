@@ -114,6 +114,9 @@ long-term, including structured park hours/context and NWPS flood thresholds in
 local gauge stage, not an invented above-sea-level elevation. Raw JSON blobs are pruned after 90 days only through the existing
 opt-in bounded sweep; required source-run provenance is protected. The installed
 `CORE_RETENTION_ENABLED=false` setting is preserved.
+NPS collection membership uses a separate identity namespace and is explicitly
+transport metadata; storing it does not inflate received/accepted/unique provider
+record counts or create an independent observation.
 
 ## Verification and blockers
 
