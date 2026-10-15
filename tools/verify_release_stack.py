@@ -55,7 +55,7 @@ def main():
             try:
                 with urllib.request.urlopen('http://127.0.0.1:18799/health/ready', timeout=3) as response:
                     data = json.load(response)
-                assert data['status'] == 'ready' and data['schema_version'] == '0009'
+                assert data['status'] == 'ready' and data['schema_version'] == '0010'
                 return data
             except (OSError, AssertionError):
                 time.sleep(2)

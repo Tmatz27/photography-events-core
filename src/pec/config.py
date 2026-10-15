@@ -18,8 +18,12 @@ class Settings:
     source_keys: tuple[str, ...] = ('inaturalist', 'wfigs_current', 'nws_live_context')
     provider_secrets: dict[str, str] = field(default_factory=dict, repr=False, compare=False)
     retention_enabled: bool = False
+    collection_scope: dict = field(default_factory=dict, compare=False)
+    source_history: bool = True
 
     def __post_init__(self):
+        from .sources.environment_scope import scope
+        scope(self.collection_scope)
         from .sources.inventory import CREDENTIAL_NAMES, INVENTORY
         if len(set(self.source_keys)) != len(self.source_keys) or any(k not in INVENTORY for k in self.source_keys):
             raise ValueError('Invalid approved source selection')
@@ -61,5 +65,7 @@ class Settings:
                    os.environ.get('CORE_SOURCE_USER_AGENT',cls.__dataclass_fields__['source_user_agent'].default),
                    selection(os.environ.get('CORE_SOURCE_KEYS', 'inaturalist,wfigs_current,nws_live_context')),
                    {name: os.environ[name] for name in CREDENTIAL_NAMES if os.environ.get(name)},
-                   os.environ.get('CORE_RETENTION_ENABLED','false').lower()=='true')
+                   os.environ.get('CORE_RETENTION_ENABLED','false').lower()=='true',
+                   __import__('json').loads(os.environ.get('CORE_COLLECTION_SCOPE_JSON','{}')),
+                   os.environ.get('CORE_SOURCE_HISTORY','true').lower()=='true')
 

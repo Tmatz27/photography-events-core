@@ -109,7 +109,10 @@ def test_contract_complete_source_controlled(key):
     value = asdict(CONTRACTS[key])
     assert len(value) >= 26 and all(v for v in value.values())
     assert len(CONTRACTS[key].hash) == 64
-    assert "ACCESS" not in value["roles"]
+    if key == 'nps':
+        assert set(value['roles']) == {'PLANNING','ACCESS'}
+    else:
+        assert "ACCESS" not in value["roles"]
 
 
 @pytest.mark.parametrize("key", CONTRACTS)

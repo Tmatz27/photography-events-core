@@ -58,7 +58,7 @@ def main():
     try:
         compose("up", "-d", "--wait", "--wait-timeout", "150")
         results["startup"] = wait_ready()
-        assert results["startup"]["schema_version"] == "0009"
+        assert results["startup"]["schema_version"] == "0010"
         results["fresh_database_to_0009"] = "passed"
         versions = compose("exec", "-T", "photography-events-db", "psql", "-U", "postgres", "-d", "photography_events", "-Atc", "SELECT version(),postgis_full_version()", capture_output=True, text=True).stdout
         results["database_versions"] = versions.strip()
@@ -106,6 +106,9 @@ def main():
         compose(*live_exec,'-m','alembic','upgrade','head')
         compose(*live_exec,'tools/verify_ingestion_live.py')
         compose('cp','photography-events-core:/tmp/ingestion-live.json',str(EVIDENCE/'ingestion-live.json'))
+        compose(*live_exec,'tools/verify_batch2a_live.py','--database','--history')
+        compose('cp','photography-events-core:/tmp/batch2a-live.json',str(EVIDENCE/'batch2a-live.json'))
+        results['batch2a_live_evidence']='real network and disposable PostGIS; inspect per-source gates; NPS credential blocker remains explicit'
         compose(*test_exec,'tools/collector_operations_acceptance.py')
         compose('cp','photography-events-core:/tmp/collector-operations.json',str(EVIDENCE/'collector-operations.json'))
         results["migration_0002_downgrade"] = "forward-only; restore pre-upgrade backup instead of losing history"
@@ -228,7 +231,7 @@ def main():
         # Same Core service image and app user, fresh container pointed at restored DB.
         compose("run", "-d", "--name", "pec-restore-check", "--no-deps", "-p", "127.0.0.1:8100:8099", "-e", "POSTGRES_DB=photography_events_restore_test", "photography-events-core")
         restored_ready=wait_ready(8100)
-        assert restored_ready["schema_version"]=="0009"
+        assert restored_ready["schema_version"]=="0010"
         assert check("/api/v1/opportunities/" + key, port=8100)["occurrence_key"] == key
         restored_debug=check("/api/v1/debug/patterns", port=8100)
         assert restored_debug["items"][0]["episode_key"] == episode_key

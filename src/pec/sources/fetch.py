@@ -192,7 +192,7 @@ async def weather(client, batch, now, max_pages):
     batch.alert_asof = alert_asof
 
 
-async def fetch(contract, client, now, *, cursor=None, known=None, max_pages=20):
+async def fetch(contract, client, now, *, cursor=None, known=None, max_pages=20, checkpoint=None):
     batch = Batch()
     try:
         if contract.source_key == INATURALIST.source_key:
@@ -202,7 +202,8 @@ async def fetch(contract, client, now, *, cursor=None, known=None, max_pages=20)
         elif contract.source_key == NWS.source_key:
             await weather(client, batch, now, max_pages)
         else:
-            raise FetchError("unknown_source_contract")
+            from .environment_fetch import collect_environment
+            await collect_environment(contract, client, batch, now, cursor, checkpoint or {}, max_pages)
     except (FetchError, RecordError) as exc:
         batch.complete = False
         batch.http_status = getattr(exc, "status", 502)
@@ -216,5 +217,5 @@ async def fetch(contract, client, now, *, cursor=None, known=None, max_pages=20)
     batch.bytes_received = client.bytes_received
     batch.rate_limited = client.rate_limited
     if batch.provider_updated_at is None and batch.records:
-        batch.provider_updated_at = max(r.provider_updated_at for r in batch.records)
+        batch.provider_updated_at = max((r.provider_updated_at for r in batch.records if r.provider_updated_at), default=None)
     return batch

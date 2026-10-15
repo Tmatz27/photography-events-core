@@ -62,7 +62,7 @@ class Client:
             await self.session.close()
             self.session = None
 
-    async def get(self, url, *, headers=None):
+    async def get(self, url, *, headers=None, allow_list=False):
         host = urlparse(self.contract.interface.split(";", 1)[0]).hostname
         parsed = urlparse(url)
         if (
@@ -99,6 +99,6 @@ class Client:
             self.rate_limited += 1
         if response.status != 200:
             raise FetchError("provider_http_failure", response.status, response.retry_after)
-        if not isinstance(response.body, dict):
+        if not isinstance(response.body, dict) and not (allow_list and isinstance(response.body, list)):
             raise FetchError("invalid_page")
         return response.body

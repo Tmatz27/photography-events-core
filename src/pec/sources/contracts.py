@@ -171,3 +171,6 @@ NWS = SourceContract(
     RETENTION,
 )
 CONTRACTS = {c.source_key: c for c in (INATURALIST, WFIGS, NWS)}
+
+# Kept separate so the three accepted biological/safety contracts stay unchanged.
+from . import environment_contracts as environment_contracts  # noqa: E402 (contracts must be defined first)

@@ -94,6 +94,8 @@ class Database:
             self.pattern_policies=POLICIES_SHADOW
         self.timeout = settings.database_timeout
         self.pattern_timeout = settings.pattern_timeout
+        self.collection_scope = settings.collection_scope
+        self.provider_secrets = settings.provider_secrets
         self._pattern_tasks = set()
         self.grace = timedelta(seconds=settings.evaluation_grace)
         # Perform readiness/ping SQL after checkout, where the deadline guard owns

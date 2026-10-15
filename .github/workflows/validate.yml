@@ -80,6 +80,7 @@ jobs:
             evidence/h3-performance.json
             evidence/source-fingerprint-performance.json
             evidence/ingestion-live.json
+            evidence/batch2a-live.json
             evidence/collector-operations.json
             evidence/image-stack.json
           if-no-files-found: warn

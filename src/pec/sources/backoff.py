@@ -9,8 +9,8 @@ from .contracts import CONTRACTS
 from .storage import register
 
 
-async def load(db, key, now):
-    contract = CONTRACTS[key]
+async def load(db, key, now, *, contract=None):
+    contract = contract or CONTRACTS[key]
 
     async def operation(c):
         row = (

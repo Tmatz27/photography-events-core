@@ -25,6 +25,11 @@ class Operational(Contract):
     provider_updated_at: datetime | None
     raw_identities: int
     historical_assertions: int
+    records_received: int | None = None
+    records_rejected: int | None = None
+    requests: int | None = None
+    last_success_at: datetime | None = None
+    history_complete: bool = False
 
 
 class ProviderView(Contract):
@@ -49,6 +54,8 @@ class ProviderView(Contract):
     state: Literal['not_implemented','not_configured','disabled','never_collected','incomplete',
         'success','failure','parser_failure']
     operational: Operational | None
+    history_operational: Operational | None = None
+    native_freshness: Literal['current','stale','unknown'] = 'unknown'
 
 
 class IngestionResponse(Contract):
@@ -63,16 +70,21 @@ async def read(db, settings, now):
         await db._check(c)
         rows = (await c.execute(text("""SELECT s.key,s.enabled,p.lease_until,p.cursor_updated_at,
             b.next_allowed_at,b.consecutive_failures,r.status,r.incomplete,r.records_accepted,r.error_code,
+            r.records_received,r.records_rejected,r.requests,
+            (SELECT max(completed_at) FROM source_runs WHERE source_id=s.id AND status='success') AS last_success_at,
+            COALESCE((p.checkpoint->>'complete')::boolean,FALSE) AS history_complete,
             r.completed_at,r.provider_updated_at,
             (SELECT count(*) FROM raw_observations o WHERE o.source_id=s.id) AS raw_identities,
             (SELECT count(*) FROM normalized_observations n JOIN raw_observations o
-                ON o.id=n.raw_observation_id WHERE o.source_id=s.id) AS historical_assertions
+                ON o.id=n.raw_observation_id WHERE o.source_id=s.id)+
+            (SELECT count(*) FROM environmental_assertions e JOIN raw_observations o ON o.id=e.raw_observation_id
+                WHERE o.source_id=s.id OR e.source_run_id IN (SELECT id FROM source_runs WHERE source_id=s.id)) AS historical_assertions
             FROM sources s LEFT JOIN source_poll_state p ON p.source_id=s.id
             LEFT JOIN source_backoff b ON b.source_id=s.id
             LEFT JOIN LATERAL(SELECT * FROM source_runs WHERE source_id=s.id
                 ORDER BY completed_at DESC,id DESC LIMIT 1) r ON TRUE
             WHERE s.key=ANY(CAST(:keys AS text[]))"""),
-            dict(keys=[p.key for p in PROVIDERS]))).mappings()
+            dict(keys=[p.key for p in PROVIDERS]+[p.key+'_history' for p in PROVIDERS]))).mappings()
         by_key = {r['key']: dict(r) for r in rows}
         items = []
         for p in PROVIDERS:
@@ -81,6 +93,7 @@ async def read(db, settings, now):
             ready = configured(p, settings.provider_secrets)
             selected = settings.live_sources and (p.key in settings.source_keys or adapter_key in settings.source_keys)
             row = by_key.get(adapter_key)
+            from .debug import freshness
             state = ('not_implemented' if not implemented else 'not_configured' if not ready
                 else 'disabled' if not selected or (row and not row['enabled']) else 'never_collected' if not row or not row['status']
                 else 'incomplete' if row['incomplete'] else row['status'])
@@ -95,7 +108,8 @@ async def read(db, settings, now):
                 adapter_key=adapter_key if implemented else None,
                 upstream_lineage=p.upstream_lineage,
                 credential_variables=p.credentials, access_requirement=p.access,
-                state=state, operational=row))
+                state=state, operational=row,history_operational=by_key.get(adapter_key+'_history'),
+                native_freshness=freshness(CONTRACTS[adapter_key],row,now) if implemented else 'unknown'))
         return dict(generated_at=now, production_promotion=False, phase_complete=False,
             items=items)
     return await db.pattern_transaction(operation)

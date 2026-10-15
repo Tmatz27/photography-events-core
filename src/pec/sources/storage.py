@@ -184,6 +184,10 @@ async def withdraw(
 
 async def store_fact(c, contract, sid, rid, fact, now, *, started=None, ordered=True):
     started = started or now
+    from .environment_models import EnvironmentalFact
+    if isinstance(fact, EnvironmentalFact):
+        from .environment_storage import store
+        return await store(c, contract, sid, rid, fact, now, started, ordered)
     previous = (
         (
             await c.execute(
@@ -445,7 +449,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
         ).scalar_one()
         counts = Counter()
         errors = Counter(code for _, code in batch.rejected)
-        skips = Counter()
+        skips = Counter(code for _, code in batch.skipped)
         protection_events = []
         invalid_historical_versions = []
         seen = []
@@ -608,7 +612,11 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
                 ),
                 dict(sid=sid, started=started),
             )
-        digest = await source_fingerprint(c, sid)
+        fingerprint_sid = sid
+        if contract.source_key.endswith('_history'):
+            from .environment_contracts import base_key, ENVIRONMENT_CONTRACTS
+            fingerprint_sid = await register(c,ENVIRONMENT_CONTRACTS[base_key(contract.source_key)])
+        digest = await source_fingerprint(c, fingerprint_sid)
         retirement_events = (
             await c.execute(
                 text(
@@ -711,14 +719,17 @@ async def collect(db, contract, user_agent, *, client=None, clock=lambda: dateti
                 .all()
             )
             known = {v["pid"]: v["external_id"] for v in values}
-        return enabled, row["cursor_updated_at"], known
+        return enabled, row["cursor_updated_at"], known, row["checkpoint"]
 
-    enabled, cursor, known = await db.pattern_transaction(state, write=True)
+    enabled, cursor, known, checkpoint = await db.pattern_transaction(state, write=True)
     if not enabled:
         return 503, None
     client = client or Client(contract, user_agent, reserve=lambda: reserve(db, contract))
+    if not hasattr(client, 'collection_scope'):
+        client.collection_scope = getattr(db, 'collection_scope', None)
+        client.provider_secrets = getattr(db, 'provider_secrets', {})
     try:
-        batch = await fetch(contract, client, started, cursor=cursor, known=known)
+        batch = await fetch(contract, client, started, cursor=cursor, known=known, checkpoint=checkpoint)
     except asyncio.CancelledError:
         # Scheduler deadline/shutdown remains cancellation, with a truthful
         # failed attempt rather than a success/empty snapshot. No M1 resources.

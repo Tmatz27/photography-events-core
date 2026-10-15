@@ -32,7 +32,12 @@ async def sweep(connection, now, batch_size=500):
         AND NOT EXISTS(SELECT 1 FROM pattern_generation_sources p WHERE p.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM normalized_observations n WHERE n.source_run_id=r.id)
         AND NOT EXISTS(SELECT 1 FROM source_reference_barriers b WHERE b.source_run_id=r.id)
+        AND NOT EXISTS(SELECT 1 FROM environmental_assertions e WHERE e.source_run_id=r.id)
         ORDER BY completed_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
         {"cutoff": now - timedelta(days=90), "batch": batch_size})
+    await connection.execute(text("""UPDATE environmental_assertions SET raw_payload=NULL WHERE id IN (
+        SELECT id FROM environmental_assertions WHERE last_received_at<:cutoff AND raw_payload IS NOT NULL
+        ORDER BY last_received_at LIMIT :batch FOR UPDATE SKIP LOCKED)"""),
+        {"cutoff":now-timedelta(days=90),"batch":batch_size})
     return {"payloads_redacted": raw.rowcount, "runs_deleted": runs.rowcount}
 

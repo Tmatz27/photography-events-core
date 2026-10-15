@@ -33,7 +33,8 @@ def create_app(settings=None, database=None, clock=None):
         try:
             if settings.live_sources:
                 from .sources.contracts import CONTRACTS
-                from .sources.inventory import INVENTORY
+                from .sources.inventory import INVENTORY, configured
+                from .sources.environment_contracts import history_contract
                 from .sources.storage import register
                 from .sources.ownership import collect_owned
                 from .sources import backoff
@@ -45,9 +46,16 @@ def create_app(settings=None, database=None, clock=None):
                 for key,contract in CONTRACTS.items():
                     if not any((INVENTORY[k].adapter or k)==key for k in settings.source_keys):
                         continue
+                    if not configured(INVENTORY[key],settings.provider_secrets):
+                        continue
                     scheduler.add(key,contract.scheduler_policy,
                         lambda contract=contract:collect_owned(db,contract,settings.source_user_agent),
                         lambda key:backoff.load(db,key,clock()),clock=clock)
+                    if settings.source_history and key in ('usgs_water','cdec_river','cdec_rainfall','cdec_snow'):
+                        historical=history_contract(contract)
+                        scheduler.add(historical.source_key,historical.scheduler_policy,
+                            lambda contract=historical:collect_owned(db,contract,settings.source_user_agent),
+                            lambda key,contract=historical:backoff.load(db,key,clock(),contract=contract),clock=clock)
             if settings.retention_enabled:
                 from .retention import sweep
                 from .scheduler import Policy, State

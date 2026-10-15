@@ -118,7 +118,7 @@ async def main(mode):
         # a complete reconstructed assessment. Preserve it as held context.
         assert result.assessment_state == "incomplete" and result.items[0].held
         async with db.engine.connect() as c:
-            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0009"
+            assert (await c.execute(text("SELECT version_num FROM alembic_version"))).scalar() == "0010"
             barriers=(await c.execute(text("SELECT external_id FROM source_reference_barriers"))).scalars().all()
             assert barriers==['migration-valid']
             assert not (await c.execute(text('SELECT EXISTS(SELECT 1 FROM source_poll_state WHERE lease_token IS NOT NULL OR checkpoint!=\'{}\'::jsonb)'))).scalar()
