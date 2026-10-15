@@ -106,6 +106,9 @@ def freshness(contract, row, now):
     if not row or not row["enabled"] or row["status"] != "success" or row["incomplete"]:
         return "unknown"
     stamp = row["provider_updated_at"]
+    from .environment_contracts import ENVIRONMENT_CONTRACTS
+    if contract.source_key in ENVIRONMENT_CONTRACTS:
+        stamp=row.get('native_evidence_asof',stamp)
     if stamp is None:
         return "unknown"
     return (

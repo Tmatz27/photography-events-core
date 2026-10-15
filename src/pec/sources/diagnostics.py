@@ -31,6 +31,7 @@ class Operational(Contract):
     requests: int | None = None
     last_success_at: datetime | None = None
     history_complete: bool = False
+    native_evidence_asof: datetime | None = None
 
 
 class EnvironmentalDataset(Contract):
@@ -86,7 +87,7 @@ async def read(db, settings, now):
             r.records_received,r.records_rejected,r.requests,
             (SELECT max(completed_at) FROM source_runs WHERE source_id=s.id AND status='success') AS last_success_at,
             COALESCE((p.checkpoint->>'complete')::boolean,FALSE) AS history_complete,
-            r.completed_at,r.provider_updated_at,
+            r.completed_at,r.provider_updated_at,r.native_evidence_asof,
             (SELECT count(*) FROM raw_observations o WHERE o.source_id=s.id) AS raw_identities,
             (SELECT count(*) FROM normalized_observations n JOIN raw_observations o
                 ON o.id=n.raw_observation_id WHERE o.source_id=s.id)+
@@ -121,7 +122,7 @@ async def read(db, settings, now):
                 for value in values:
                     item=dict(value)
                     item['native_freshness']=freshness(CONTRACTS[adapter_key],
-                        {**(row or {}),'provider_updated_at':item['native_as_of'],
+                        {**(row or {}),'provider_updated_at':item['native_as_of'],'native_evidence_asof':item['native_as_of'],
                             'completed_at':item['last_received_at']},now) if row else 'unknown'
                     datasets.append(item)
             state = ('not_implemented' if not implemented else 'not_configured' if not ready

@@ -48,6 +48,9 @@ def project_source(row, now):
     from .sources.contracts import CONTRACTS
     contract=CONTRACTS.get(row['key'])
     stamp = row['provider_updated_at'] if contract else row["provider_updated_at"] or row["last_success_at"]
+    from .sources.environment_contracts import ENVIRONMENT_CONTRACTS
+    if row['key'] in ENVIRONMENT_CONTRACTS:
+        stamp=row.get('native_evidence_asof',stamp)
     ttl=timedelta(seconds=contract.freshness_seconds) if contract else SOURCE_TTL.get(row['key'],timedelta(hours=1))
     state = "DOWN" if row["status"] != "success" or not row["enabled"] else (
         "STALE" if stamp is None or now-stamp>ttl or (contract and stamp>now+timedelta(hours=1)) else "UP")

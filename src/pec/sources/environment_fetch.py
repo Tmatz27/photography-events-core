@@ -319,4 +319,4 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
         for f in batch.records
         if not f.withdrawn
     ]
-    batch.provider_updated_at = max((s for s in stamps if s), default=None)
+    batch.native_evidence_asof = max((s for s in stamps if s), default=None)

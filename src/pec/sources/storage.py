@@ -428,8 +428,8 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
             await c.execute(
                 text("""INSERT INTO source_runs(source_id,cycle_key,attempt_number,started_at,completed_at,
             status,records_received,provider_updated_at,http_status,contract_version,parser_version,requests,bytes_received,
-            rate_limit_count,latency_ms) VALUES(:sid,:cycle,1,:started,:completed,'failure',:received,:updated,:http,
-            :version,:parser,:requests,:bytes,:rates,:latency) RETURNING id"""),
+            rate_limit_count,latency_ms,native_evidence_asof) VALUES(:sid,:cycle,1,:started,:completed,'failure',:received,:updated,:http,
+            :version,:parser,:requests,:bytes,:rates,:latency,:native_asof) RETURNING id"""),
                 dict(
                     sid=sid,
                     cycle=str(uuid.uuid4()),
@@ -437,6 +437,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
                     completed=completed,
                     received=batch.received,
                     updated=batch.provider_updated_at,
+                    native_asof=batch.native_evidence_asof,
                     http=batch.http_status,
                     version=contract.version,
                     parser=contract.parser_version,

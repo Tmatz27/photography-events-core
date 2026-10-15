@@ -59,7 +59,7 @@ async def run(args):
                                 await c.execute(
                                     text("""SELECT r.status,r.incomplete,r.records_received,
                             r.records_accepted,r.records_rejected,r.error_code,r.requests,r.provider_updated_at,
-                            r.completed_at,p.checkpoint FROM source_runs r JOIN sources s ON s.id=r.source_id
+                            r.completed_at,r.native_evidence_asof,p.checkpoint FROM source_runs r JOIN sources s ON s.id=r.source_id
                             JOIN source_poll_state p ON p.source_id=s.id WHERE s.key=:key ORDER BY r.id DESC LIMIT 1"""),
                                     dict(key=contract.source_key),
                                 )

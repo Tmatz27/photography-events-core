@@ -262,3 +262,15 @@ async def test_live_and_history_own_independent_leases_and_recover_persisted_dea
     assert len(await sql(db, "SELECT * FROM raw_observations")) == len(await rows(db)) == 1
     states = await sql(db, "SELECT * FROM source_backoff")
     assert len(states) == 2 and all(r["consecutive_failures"] == 0 for r in states)
+
+
+async def test_cdec_freshness_uses_evidence_time_without_manufacturing_native_modification(db):
+    from pec.sources.debug import freshness
+
+    fact = m.cdec(cdec_row(value=4), "cdec_snow")
+    batch = Batch(records=[fact], received=1, requests=1, native_evidence_asof=fact.valid_at)
+    await persist(db, CONTRACTS["cdec_snow"], batch, NOW, NOW)
+    row = (await sql(db, "SELECT s.enabled,r.* FROM source_runs r JOIN sources s ON s.id=r.source_id"))[0]
+    assert row["provider_updated_at"] is None and row["native_evidence_asof"] == fact.valid_at
+    assert freshness(CONTRACTS["cdec_snow"], row, NOW) == "current"
+    assert freshness(CONTRACTS["cdec_snow"], row, NOW + timedelta(days=4)) == "stale"

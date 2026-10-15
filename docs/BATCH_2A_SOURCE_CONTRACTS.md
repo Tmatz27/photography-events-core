@@ -76,7 +76,9 @@ Migration `0010` adds `environmental_assertions` because the accepted biological
 table cannot honestly represent exact physical quantities, forecast issue cycles,
 or publications with unknown observation time. Each revision has native numeric
 text plus PostgreSQL NUMERIC, unit, evidence kind, valid/issued/native update and
-collection times, quality, provider point, native payload and provenance.
+collection times, quality, provider point, native payload and provenance. Run-level
+`native_evidence_asof` is separate from `provider_updated_at`: CDEC's native
+modification time stays NULL while freshness uses its actual measurement time.
 There is one current revision per raw identity; prior revisions stay queryable.
 Nothing is inserted into biological `normalized_observations` for these sources.
 
