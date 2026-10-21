@@ -1,0 +1,170 @@
+[
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R1_empty_history_receipts_and_checkpoint_survive_process_restart"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R1_failed_history_window_retried_from_same_persisted_checkpoint"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R2_persisted_native_clocks_and_source_health[0-0-False-current-current-UP]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R2_persisted_native_clocks_and_source_health[0-0-True-unknown-current-STALE]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R2_persisted_native_clocks_and_source_health[0-5-False-current-stale-STALE]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R2_persisted_native_clocks_and_source_health[5-0-False-stale-current-STALE]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R3_partial_station_failure_keeps_siblings_and_blocks_checkpoint"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_R3_persisted_silent_coverage_then_independent_station_recovery"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_native_json_precision_and_cdec_corrections_survive_storage"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_persistence_rejection_cannot_certify_station_current"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_scope_quota_interval_is_persisted_in_owned_recovery_and_schedule"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_consecutive_empty_cdec_days_advance_then_measurements_resume"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_invalid_or_failed_empty_lookalike_never_advances[body0]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_invalid_or_failed_empty_lookalike_never_advances[body1]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_invalid_or_failed_empty_lookalike_never_advances[body2]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_invalid_or_failed_empty_lookalike_never_advances[body3]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R1_partial_cdec_station_failure_preserves_later_healthy_sibling"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R2_measurement_and_forecast_freshness_independent[0-0-False-current-current-current]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R2_measurement_and_forecast_freshness_independent[0-0-True-unknown-current-unknown]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R2_measurement_and_forecast_freshness_independent[0-5-False-current-stale-stale]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R2_measurement_and_forecast_freshness_independent[5-0-False-stale-current-stale]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_silent_station_recovers_without_carrying_success_from_sibling"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_station_request_success_and_measurement_coverage[states0-expected0]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_station_request_success_and_measurement_coverage[states1-expected1]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_station_request_success_and_measurement_coverage[states2-expected2]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_station_request_success_and_measurement_coverage[states3-expected3]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_R3_successful_request_for_old_incremental_window_reports_stale"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_RetryAfter_stops_sibling_requests_and_preserves_failure"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_archived_evidence_age_does_not_define_history_worker_health"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_cdec_daily_threshold_remains_truthful[48-current]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_cdec_daily_threshold_remains_truthful[49-stale]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_malformed_sibling_isolated_for_remaining_batch2a_providers[cdec_river]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_malformed_sibling_isolated_for_remaining_batch2a_providers[nps]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_malformed_sibling_isolated_for_remaining_batch2a_providers[nwps]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_malformed_usgs_sibling_retained_without_checkpoint"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_native_json_decimal_token_is_retained_for_cdec_and_nwps[1.200000000000000000e-7]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_native_json_decimal_token_is_retained_for_cdec_and_nwps[1.2345678901234567890123456789]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_real_http_decoder_preserves_numbers_only_when_requested"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_request_budget_stops_before_reserving_or_contacting_provider"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_valid_large_scopes_fit_daily_quota_with_bounded_pagination[cdec_snow-12]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_valid_large_scopes_fit_daily_quota_with_bounded_pagination[nwps-12]"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_portable",
+    "name": "test_valid_large_scopes_fit_daily_quota_with_bounded_pagination[usgs_water-8]"
+  }
+]

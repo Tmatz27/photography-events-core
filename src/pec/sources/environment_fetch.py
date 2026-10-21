@@ -3,11 +3,12 @@
 from datetime import timedelta
 from urllib.parse import urlencode, urlparse, parse_qs
 
-from .environment_contracts import ENVIRONMENT_CONTRACTS, base_key
+from .environment_contracts import ENVIRONMENT_CONTRACTS, base_key, request_budget
 from .environment_scope import scope
 from . import environment_models as models
+from . import environment_health as health
 from .http import FetchError
-from .models import timestamp
+from .models import RecordError, timestamp
 from ..ingestion import fingerprint
 
 
@@ -97,22 +98,25 @@ async def usgs(client, batch, stations, start, end, max_pages):
                     or body.get("numberReturned") != len(values)
                 ):
                     raise FetchError("invalid_usgs_collection")
-                for feature in values:
+
+                def parse_feature(feature):
                     p = feature.get("properties", {})
                     if p.get("monitoring_location_id") != station or p.get("parameter_code") != parameter:
-                        raise FetchError("usgs_record_scope_drift")
+                        raise RecordError("usgs_record_scope_drift")
                     valid = timestamp(p.get("time"))
                     if not start <= valid <= end or feature.get("id") in seen_ids:
-                        raise FetchError("usgs_record_window_or_duplicate")
+                        raise RecordError("usgs_record_window_or_duplicate")
                     seen_ids.add(feature.get("id"))
-                batch.parse(values, models.usgs)
+                    return models.usgs(feature)
+
+                batch.parse(values, parse_feature)
                 links = [v.get("href") for v in body.get("links", []) if v.get("rel") == "next"]
                 if len(links) > 1 or (links and not values):
                     raise FetchError("invalid_usgs_next_link")
                 url = links[0] if links else None
 
 
-async def cdec(client, batch, key, stations, start, end):
+async def cdec(client, batch, key, stations, start, end, *, history=False):
     for station in stations:
         sensors = models.CDEC_PARAMETERS[key]
         duration = "E" if key == "cdec_river" else "D"
@@ -132,32 +136,30 @@ async def cdec(client, batch, key, stations, start, end):
         if not isinstance(body, list) or len(body) > 2000:
             raise FetchError("invalid_cdec_page")
         seen = set()
-        accepted_window = []
-        for row in body:
+
+        def parse_row(row):
             if (
                 row.get("stationId") != station
                 or row.get("SENSOR_NUM") not in sensors
                 or row.get("durCode") != duration
             ):
-                raise FetchError("cdec_scope_drift")
+                raise RecordError("cdec_scope_drift")
             identity = (row.get("SENSOR_NUM"), row.get("date"))
             if identity in seen:
-                raise FetchError("cdec_duplicate_record")
+                raise RecordError("cdec_duplicate_record")
             seen.add(identity)
-            valid = models.datetime.strptime(row["obsDate"], "%Y-%m-%d %H:%M").replace(tzinfo=models.PST)
-            if valid > end:
-                batch.received += 1
-                batch.skipped.append((None, "outside_requested_interval"))
-                continue
-            if duration == "E" and valid < start:
-                batch.received += 1
-                batch.skipped.append((None, "outside_requested_interval"))
-                continue
-            accepted_window.append(row)
-        batch.parse(accepted_window, lambda r: models.cdec(r, key))
-        # A configured station/sensor with no values is not silently operational.
-        if not accepted_window:
-            raise FetchError("cdec_no_measurements_for_station")
+            return models.cdec(row, key)
+
+        for row in body:
+            before = len(batch.records)
+            batch.parse([row], parse_row)
+            if len(batch.records) > before:
+                fact = batch.records[-1]
+                if fact.valid_at > end or ((duration == "E" or history) and fact.valid_at < start):
+                    batch.records.pop()
+                    batch.skipped.append((None, "outside_requested_interval"))
+        # A bounded, fully decoded [] is a completed empty window, not HTTP 502.
+        # Rejected rows remain incomplete; neither an error nor absence deletes data.
 
 
 async def nwps(client, batch, stations, start, end, *, history=False):
@@ -202,20 +204,29 @@ async def nwps(client, batch, stations, start, end, *, history=False):
             ):
                 raise FetchError("invalid_nwps_series")
             seen = set()
-            for row in section["data"]:
+
+            def validate_row(row, dimension):
                 if row.get("validTime") in seen:
-                    raise FetchError("nwps_duplicate_valid_time")
-                seen.add(row.get("validTime"))
-                if product == "observed" and not start <= timestamp(row.get("validTime")) <= end:
-                    continue
+                    raise RecordError("nwps_duplicate_valid_time")
+                return models.nwps(row, section, product, station, dimension, geometry)
+
+            for row in section["data"]:
                 for dimension in ("primary", "secondary"):
                     if section.get(dimension + "Name"):
-                        batch.parse(
-                            [row], lambda r: models.nwps(r, section, product, station, dimension, geometry)
-                        )
-            # Empty forecast can mean no issued forecast; it cannot clear a hazard.
-            if product == "observed" and not section["data"]:
-                raise FetchError("nwps_no_observations")
+                        before = len(batch.records)
+                        batch.parse([row], lambda r: validate_row(r, dimension))
+                        if len(batch.records) > before:
+                            fact = batch.records[-1]
+                            # The returned observed series can reveal a stale last
+                            # measurement outside this persistence window. Record
+                            # its native time without repeatedly storing the series.
+                            if not history:
+                                health.note_fact(batch.environment["stations"][-1], fact)
+                            if product == "observed" and not start <= fact.valid_at <= end:
+                                batch.records.pop()
+                                batch.skipped.append((None, "outside_requested_interval"))
+                if isinstance(row, dict):
+                    seen.add(row.get("validTime"))
 
 
 async def nps(client, batch, parks, max_pages, now, checkpoint):
@@ -251,12 +262,15 @@ async def nps(client, batch, parks, max_pages, now, checkpoint):
             ):
                 raise FetchError("nps_pagination_drift")
             total = count
-            for row in values:
+
+            def parse_row(row):
                 identity = row.get("id")
                 if row.get("parkCode") not in parks or not identity or identity in identities:
-                    raise FetchError("nps_identity_or_scope_drift")
+                    raise RecordError("nps_identity_or_scope_drift")
                 identities.add(identity)
-            batch.parse(values, lambda r: models.nps(r, endpoint))
+                return models.nps(row, endpoint)
+
+            batch.parse(values, parse_row)
             start += len(values)
             if start == total:
                 break
@@ -278,7 +292,7 @@ async def nps(client, batch, parks, max_pages, now, checkpoint):
                 {"endpoint": endpoint, "native_ids": sorted(identities), "parks": parks},
                 kind="reference",
                 metadata={
-                    "snapshot_complete": True,
+                    "snapshot_complete": not batch.rejected,
                     "collection_membership": True,
                     "absence_means": "not in this endpoint snapshot, not proven deletion",
                     "native_ids": sorted(identities),
@@ -294,6 +308,8 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
     if key not in ENVIRONMENT_CONTRACTS:
         raise FetchError("unknown_source_contract")
     options = scope(getattr(client, "collection_scope", None))
+    client.request_limit = request_budget(contract, getattr(client, "collection_scope", None))
+    client.preserve_numbers = True
     scope_hash = fingerprint(options)
     if checkpoint.get("scope_hash") != scope_hash:
         checkpoint = {}
@@ -307,16 +323,70 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
             batch.checkpoint = {**progress, "scope_hash": scope_hash}
             return
         stations = [stations[checkpoint.get("station_index", 0)]]
-    if key == "usgs_water":
-        await usgs(client, batch, stations, start, end, max_pages)
-    elif key.startswith("cdec_"):
-        await cdec(client, batch, key, stations, start, end)
-    elif key == "nwps":
-        await nwps(client, batch, stations, start, end, history=history)
+    if key != "nps":
+        batch.environment = dict(dataset=key, mode="historical" if history else "current", stations=[])
+        for station in stations:
+            outcome = health.start_station(batch, station, start, end)
+            records, rejected, received, requests = (
+                len(batch.records),
+                len(batch.rejected),
+                batch.received,
+                client.requests,
+            )
+            successes = client.successful_requests
+            error = None
+            stop = batch.http_status == 429 or batch.retry_after is not None or batch.failure_code in (
+                "untrusted_pagination_url",
+                "usgs_pagination_scope_drift",
+            )
+            if stop:
+                health.finish_station(
+                    outcome, batch, records, rejected, received, 0, "not_requested_after_provider_failure"
+                )
+                continue
+            try:
+                if key == "usgs_water":
+                    await usgs(client, batch, [station], start, end, max_pages)
+                elif key.startswith("cdec_"):
+                    await cdec(client, batch, key, [station], start, end, history=history)
+                else:
+                    await nwps(client, batch, [station], start, end, history=history)
+            except (
+                FetchError,
+                RecordError,
+                KeyError,
+                TypeError,
+                ValueError,
+                AttributeError,
+                OverflowError,
+            ) as exc:
+                error = getattr(exc, "code", "station_schema_drift")
+                batch.complete = False
+                # Retain real provider status and Retry-After even if a sibling
+                # succeeds; cancellation propagates to the ownership boundary.
+                if batch.failure_code is None or getattr(exc, "retry_after", None):
+                    batch.failure_code = error
+                    batch.http_status = getattr(exc, "status", 502)
+                    batch.retry_after = getattr(exc, "retry_after", None)
+            health.finish_station(
+                outcome,
+                batch,
+                records,
+                rejected,
+                received,
+                client.requests - requests,
+                error,
+                successes=client.successful_requests - successes,
+            )
+        if batch.rejected:
+            batch.complete = False
+        batch.native_evidence_asof = health.required_asof(batch.environment)
     else:
         checked = await nps(client, batch, stations, max_pages, now, checkpoint)
         progress = {**(progress or {}), "parks_checked_at": checked}
-    if progress is not None:
+        if batch.rejected:
+            batch.complete = False
+    if progress is not None and batch.complete and not batch.rejected:
         batch.checkpoint = {**progress, "scope_hash": scope_hash}
     # Freshness uses native evidence/issue time. Government publications without
     # a native timestamp remain unknown, even following a successful HTTP read.
@@ -325,4 +395,5 @@ async def collect_environment(contract, client, batch, now, cursor, checkpoint, 
         for f in batch.records
         if not f.withdrawn
     ]
-    batch.native_evidence_asof = max((s for s in stamps if s), default=None)
+    if key == "nps":
+        batch.native_evidence_asof = max((s for s in stamps if s), default=None)

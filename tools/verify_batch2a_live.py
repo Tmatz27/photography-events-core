@@ -59,7 +59,7 @@ async def run(args):
                                 await c.execute(
                                     text("""SELECT r.status,r.incomplete,r.records_received,
                             r.records_accepted,r.records_rejected,r.error_code,r.requests,r.provider_updated_at,
-                            r.completed_at,r.native_evidence_asof,p.checkpoint FROM source_runs r JOIN sources s ON s.id=r.source_id
+                            r.completed_at,r.native_evidence_asof,r.context_payload,p.checkpoint FROM source_runs r JOIN sources s ON s.id=r.source_id
                             JOIN source_poll_state p ON p.source_id=s.id WHERE s.key=:key ORDER BY r.id DESC LIMIT 1"""),
                                     dict(key=contract.source_key),
                                 )
@@ -84,7 +84,9 @@ async def run(args):
                                 assert assertion["numeric_value"] == Decimal(assertion["native_value"])
                             assert assertion["evidence_kind"] not in ("species", "behavior", "condition")
                             assert assertion["metadata"]["upstream_lineage"] == key
-                        return dict(row), assertions
+                        row=dict(row)
+                        row['station_windows']=(row.pop('context_payload') or {}).get('environment')
+                        return row, assertions
 
                     row, assertions = await database.pattern_transaction(inspect)
                     item.update(
@@ -130,6 +132,7 @@ async def run(args):
                             for r in records[:2]
                         ],
                         collection_verified=batch.complete and batch.requests > 0,
+                        station_windows=batch.environment,
                         persistence_verified=False,
                     )
                 report["items"].append(item)

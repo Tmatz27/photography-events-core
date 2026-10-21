@@ -13,12 +13,16 @@ def number(value):
     try:
         if isinstance(value, bool) or value is None:
             raise ValueError()
-        result = Decimal(str(value))
+        result = Decimal(native_text(value))
         if not result.is_finite():
             raise ValueError()
         return result
     except (InvalidOperation, TypeError, ValueError):
         raise RecordError("invalid_measurement_value") from None
+
+
+def native_text(value):
+    return getattr(value, 'native_text', str(value))
 
 
 def text_id(value):
@@ -84,7 +88,7 @@ def make(
         evidence_kind=kind,
         valid_at=valid,
         issued_at=issued,
-        native_value=str(value) if value is not None else None,
+        native_value=native_text(value) if value is not None else None,
         numeric_value=number(value) if value is not None and not withdrawn else None,
         unit=unit,
         withdrawn=withdrawn,

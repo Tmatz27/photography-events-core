@@ -39,7 +39,7 @@ rather than borrowing another agency's coordinates or inventing a catchment.
 ## Two geographic scopes
 
 The configurable allowlists are collection sites, **not driving-time claims**.
-Defaults collect USGS Santa Maria-area streamflow (`USGS-11109000`) and Yosemite
+Defaults collect USGS Santa Clara River near Piru (`USGS-11109000`) and Yosemite
 Happy Isles/Pohono (`USGS-11264500`, `USGS-11266500`), CDEC Pohono `POH`, CDEC Gin
 Flat `GIN` precipitation/snow, and NWPS Pohono `POHC1`. This is an initial bounded
 station footprint; it is not complete statewide hydrologic coverage, does not
@@ -102,9 +102,12 @@ slices, and never requests an invented historical archive or reclassifies foreca
 
 All six contracts use 1.1-second request spacing, 300 daily reserved requests
 (NPS 150, six-hour alert polls and weekly planning-reference refresh), bounded pages and the existing HTTP size/time limits.
+R1–R3 corrections bound hydrology requests per collection and increase polling
+intervals for larger station lists to fit that daily quota. See
+[correction details and diagnostic semantics](BATCH_2A_CORRECTIONS.md).
 USGS unauthenticated access is used at a conservative rate; higher limits are not
 assumed. Existing Retry-After, crash reservation and J1 deferral behavior remain.
-The only backoff change allows an explicit contract for an internal history key;
+Backoff accepts the effective contract for current and internal history keys;
 deadline/failure/lease algorithms are unchanged. Missing NPS credentials disable
 its scheduler task while keeping its registry/diagnostics entry visible.
 

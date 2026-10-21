@@ -1,0 +1,797 @@
+[
+  {
+    "key": "cdec_help",
+    "url": "https://cdec.water.ca.gov/dynamicapp/wsSensorData",
+    "received_at": "2026-10-21T15:06:21.015025+00:00",
+    "status": 200,
+    "bytes": 79793,
+    "sha256": "f0a0bacf9d67e7ab1e8d6ee1757cae891df645929d3952f3e63329568be548a2",
+    "time_zone_excerpt": [
+      "          Dates, times, and output will always be Pacific Standard Time. \r"
+    ],
+    "station_excerpt": [
+      " property=\"og:description\" content=\"Water in California is a complex topic. Managing water resources sustainably requires an integrated approach, as water flows ac",
+      "<!--- TemplateBeginEditable name=\"SetDefaultNavItem\" --->\r",
+      "        Leave either date field blank for beginning or end of record.</p><br>\r"
+    ]
+  },
+  {
+    "key": "cdec_meta_form",
+    "url": "https://cdec.water.ca.gov/dynamicapp/staMeta",
+    "received_at": "2026-10-21T15:06:21.016072+00:00",
+    "status": 200,
+    "bytes": 71809,
+    "sha256": "5149385a84bcb6176fff1e912a9532149f50540e4740a41dcc8a7c7bb78404fb",
+    "time_zone_excerpt": [],
+    "station_excerpt": [
+      "      <li>Specify one or two letters to retrieve Station IDs that <b>begin</b> with what you specify.\r"
+    ]
+  },
+  {
+    "key": "cdec_gin",
+    "url": "https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=GIN",
+    "received_at": "2026-10-21T15:06:21.016648+00:00",
+    "status": 200,
+    "bytes": 98739,
+    "sha256": "a58f50d557f30aa3c59e17c99f9c7fa0e0c784407a7b0c7f4b0d98622ddcf1ed",
+    "time_zone_excerpt": [],
+    "station_excerpt": [
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      " \t<td width=120> (<a href=\"/dynamicapp/QueryDaily?s=GIN&end=2026-10-21\">daily</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=GIN\">hourly</a>) </td>\r",
+      "              <td valign=\"top\" style=\"padding-bottom:5px\">Latitude and longitude updated from information provided by National Park Service.  Datum is WGS84.</t"
+    ],
+    "verified_station_fields": [
+      "<h2>GIN FLAT</h2>",
+      "<tr><td><b>Station ID</b></td><td>GIN</td><td><b>Elevation</b></td><td>7050 ft</td></tr>",
+      "<tr><td><b>River Basin</b></td><td>MERCED RIVER</td><td><b>County</b></td><td>MARIPOSA</td></tr>",
+      "<tr><td><b>Hydrologic Area</b></td><td>SAN JOAQUIN RIVER</td><td><b>Nearby City</b></td><td>CRANE FLAT</td></tr>",
+      "<tr><td><b>Latitude</b></td><td>37.766887&#176</td><td><b>Longitude</b></td><td>-119.774907&#176</td></tr>"
+    ]
+  },
+  {
+    "key": "cdec_poh",
+    "url": "https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=POH",
+    "received_at": "2026-10-21T15:06:21.543382+00:00",
+    "status": 200,
+    "bytes": 77214,
+    "sha256": "5dd02d44b93d4fe295f74216db4068c1b44b2aa7c1f42d094d7cd1f7e8373fa9",
+    "time_zone_excerpt": [],
+    "station_excerpt": [
+      "    <h2>MERCED R AT POHONO BR NR YOSEMITE</h2>\r",
+      "    <a href=\"https://ferix.water.ca.gov/webgisslm/?appid=cdecstation&sta=POH\">Map</a> of surrounding area<p>\r",
+      "      <tr><td><b>Station ID</b></td><td>POH</td><td><b>Elevation</b></td><td>3862 ft</td></tr>\r",
+      "      <tr><td><b>Latitude</b></td><td>37.716873&#176</td><td><b>Longitude</b></td><td>-119.666275&#176</td></tr>\r",
+      "            <td align=center><a href=\"/guidance_plots/POH_gp.html\">POH_gp</a></td>\r",
+      " \t<td width=120> (<a href=\"/dynamicapp/QueryDaily?s=POH&end=2026-10-21\">daily</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">event</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">hourly</a>) </td>\r",
+      "    <td width=120> (<a href=\"/dynamicapp/QueryF?s=POH\">hourly</a>) </td>\r",
+      "              <td valign=\"top\" style=\"padding-bottom:5px\">Latitude and longitude updated according to information downloaded from USGS website.</td></tr>\r"
+    ],
+    "verified_station_fields": [
+      "<h2>MERCED R AT POHONO BR NR YOSEMITE</h2>",
+      "<tr><td><b>Station ID</b></td><td>POH</td><td><b>Elevation</b></td><td>3862 ft</td></tr>",
+      "<tr><td><b>River Basin</b></td><td>MERCED RIVER</td><td><b>County</b></td><td>MARIPOSA</td></tr>",
+      "<tr><td><b>Hydrologic Area</b></td><td>SAN JOAQUIN RIVER</td><td><b>Nearby City</b></td><td>YOSEMITE</td></tr>",
+      "<tr><td><b>Latitude</b></td><td>37.716873&#176</td><td><b>Longitude</b></td><td>-119.666275&#176</td></tr>"
+    ]
+  },
+  {
+    "key": "nwps_poh",
+    "url": "https://api.water.noaa.gov/nwps/v1/gauges/POHC1",
+    "received_at": "2026-10-21T15:06:21.704445+00:00",
+    "status": 200,
+    "bytes": 13951,
+    "sha256": "85c804440907536f803f3c4f30760ce8312147e04a9caaa3838833ff230b3929",
+    "metadata": {
+      "lid": "POHC1",
+      "usgsId": "11266500",
+      "reachId": "21609641",
+      "name": "Merced River at Pohono Bridge",
+      "description": "",
+      "rfc": {
+        "abbreviation": "CNRFC",
+        "name": "California Nevada River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "HNX",
+        "name": "Hanford"
+      },
+      "state": {
+        "abbreviation": "CA",
+        "name": "California"
+      },
+      "county": "Mariposa",
+      "timeZone": "PST8PDT",
+      "latitude": 37.71687138,
+      "longitude": -119.6662788,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFE"
+      },
+      "status": {
+        "observed": {
+          "primary": 0.93,
+          "primaryUnit": "ft",
+          "secondary": 0.013,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-10-21T14:00:00Z"
+        },
+        "forecast": {
+          "primary": 1.33,
+          "primaryUnit": "ft",
+          "secondary": 0.035,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-10-23T10:00:00Z"
+        }
+      },
+      "flood": {
+        "stageUnits": "ft",
+        "flowUnits": "cfs",
+        "categories": {
+          "major": {
+            "stage": 20,
+            "flow": -9999
+          },
+          "moderate": {
+            "stage": 12.5,
+            "flow": -9999
+          },
+          "minor": {
+            "stage": 10,
+            "flow": -9999
+          },
+          "action": {
+            "stage": -9999,
+            "flow": -9999
+          }
+        },
+        "lro": {
+          "minorCS": "< 0.05",
+          "moderateCS": "< 0.05",
+          "majorCS": "< 0.05",
+          "producedTime": "2024-10-27T19:32:01Z",
+          "interval": "OND"
+        },
+        "crests": {
+          "historic": [
+            {
+              "occurredTime": "1997-01-03T00:00:00Z",
+              "stage": 23.43,
+              "flow": 24600,
+              "preliminary": "R",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1955-12-23T00:00:00Z",
+              "stage": 21.52,
+              "flow": 23400,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1950-11-19T00:00:00Z",
+              "stage": 20.98,
+              "flow": 23000,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1937-12-11T00:00:00Z",
+              "stage": 20.1,
+              "flow": 22000,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1964-12-23T00:00:00Z",
+              "stage": 16.96,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1982-04-11T00:00:00Z",
+              "stage": 13.11,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1980-01-13T00:00:00Z",
+              "stage": 13.01,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2005-05-16T15:30:00Z",
+              "stage": 12.54,
+              "flow": 10200,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1983-05-30T00:00:00Z",
+              "stage": 12.1,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2023-05-22T07:45:00Z",
+              "stage": 12.08,
+              "flow": 9523,
+              "preliminary": "P",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1983-06-18T00:00:00Z",
+              "stage": 11.62,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1995-06-05T00:00:00Z",
+              "stage": 10.7,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1978-06-09T00:00:00Z",
+              "stage": 10.19,
+              "flow": 6450,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1996-06-13T00:00:00Z",
+              "stage": 10.14,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1982-02-16T00:00:00Z",
+              "stage": 9.91,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2003-05-31T03:15:00Z",
+              "stage": 9.56,
+              "flow": 5900,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1984-05-14T00:00:00Z",
+              "stage": 8.94,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2023-01-01T00:15:00Z",
+              "stage": 8.05,
+              "flow": 4245,
+              "preliminary": "O",
+              "olddatum": false
+            }
+          ],
+          "recent": [
+            {
+              "occurredTime": "2023-05-22T07:45:00Z",
+              "stage": 12.08,
+              "flow": 9523,
+              "preliminary": "P",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2023-01-01T00:15:00Z",
+              "stage": 8.05,
+              "flow": 4245,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2005-05-16T15:30:00Z",
+              "stage": 12.54,
+              "flow": 10200,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "2003-05-31T03:15:00Z",
+              "stage": 9.56,
+              "flow": 5900,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1997-01-03T00:00:00Z",
+              "stage": 23.43,
+              "flow": 24600,
+              "preliminary": "R",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1996-06-13T00:00:00Z",
+              "stage": 10.14,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1995-06-05T00:00:00Z",
+              "stage": 10.7,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1984-05-14T00:00:00Z",
+              "stage": 8.94,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1983-06-18T00:00:00Z",
+              "stage": 11.62,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1983-05-30T00:00:00Z",
+              "stage": 12.1,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1982-04-11T00:00:00Z",
+              "stage": 13.11,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1982-02-16T00:00:00Z",
+              "stage": 9.91,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1980-01-13T00:00:00Z",
+              "stage": 13.01,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1978-06-09T00:00:00Z",
+              "stage": 10.19,
+              "flow": 6450,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1964-12-23T00:00:00Z",
+              "stage": 16.96,
+              "flow": 0,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1955-12-23T00:00:00Z",
+              "stage": 21.52,
+              "flow": 23400,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1950-11-19T00:00:00Z",
+              "stage": 20.98,
+              "flow": 23000,
+              "preliminary": "O",
+              "olddatum": false
+            },
+            {
+              "occurredTime": "1937-12-11T00:00:00Z",
+              "stage": 20.1,
+              "flow": 22000,
+              "preliminary": "O",
+              "olddatum": false
+            }
+          ]
+        },
+        "lowWaters": {
+          "historic": []
+        },
+        "impacts": [
+          {
+            "stage": 23.45,
+            "statement": "Flood of record...1/3/97. $178 million damage to Yosemite Valley."
+          },
+          {
+            "stage": 13.6,
+            "statement": "Lift stations at Housekeeping Camp and Yosemite Creek flooded. Southside Drive at Chapel Meadow impassable."
+          },
+          {
+            "stage": 12.5,
+            "statement": "Northside Drive at Wosky Pond, El Capitan crossover, and Sentinel crossover are impassable to vehicles."
+          },
+          {
+            "stage": 12,
+            "statement": "Water on road at Northside Drive, Southside Drive, El Capitan crossover, Sentinel crossover, and Highway 140 near Cookie Cliff."
+          },
+          {
+            "stage": 11.4,
+            "statement": "Water begins to overtop road curbs on Northside Drive. Swinging Bridge overtops. "
+          },
+          {
+            "stage": 10,
+            "statement": "Merced River at Pohono Bridge begins to rise out of its banks. Flood Stage."
+          },
+          {
+            "stage": 9.5,
+            "statement": "Lower Pines and Housekeeping Camp begin flooding."
+          },
+          {
+            "stage": 7,
+            "statement": "RIVER IS CLOSED TO RAFTERS AND FLOATATION DEVICES."
+          }
+        ]
+      },
+      "images": {
+        "probability": {
+          "weekint": {
+            "stage": "https://water.noaa.gov/resources/probabilistic/exceedance/POHC1.SSTG.prob.weekint.gif",
+            "flow": "https://water.noaa.gov/resources/probabilistic/exceedance/POHC1.QINE.prob.weekint.gif",
+            "volume": "https://water.noaa.gov/resources/probabilistic/exceedance/POHC1.volume.prob.weekint.gif"
+          },
+          "entperiod": {
+            "stage": "https://water.noaa.gov/resources/probabilistic/exceedance/POHC1.SSTG.exceed.90day.gif",
+            "flow": "https://water.noaa.gov/resources/probabilistic/exceedance/POHC1.QINE.exceed.90day.gif",
+            "volume": ""
+          },
+          "shortrange": "https://water.noaa.gov/resources/probabilistic/short_term/POHC1.shortrange.hefs.png"
+        },
+        "hydrograph": {
+          "default": "https://water.noaa.gov/resources/hydrographs/pohc1_hg.png",
+          "floodcat": "https://water.noaa.gov/resources/hydrographs/pohc1_record.png"
+        },
+        "photos": [
+          {
+            "id": "5643525191968494062",
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                37.71687138,
+                -119.6662788
+              ]
+            },
+            "properties": {
+              "image": "https://water.noaa.gov/resources/photos/pohc1/5643525191968494062.jpeg",
+              "caption": "Looking downstream."
+            }
+          },
+          {
+            "id": "5675252592125415918",
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                37.71687138,
+                -119.6662788
+              ]
+            },
+            "properties": {
+              "image": "https://water.noaa.gov/resources/photos/pohc1/5675252592125415918.jpeg",
+              "caption": "Gauge house."
+            }
+          },
+          {
+            "id": "5706748231552078318",
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                37.71687138,
+                -119.6662788
+              ]
+            },
+            "properties": {
+              "image": "https://water.noaa.gov/resources/photos/pohc1/5706748231552078318.jpeg",
+              "caption": "Looking upstream."
+            }
+          }
+        ]
+      },
+      "dataAttribution": [
+        {
+          "abbrev": "US Geological Survey",
+          "text": "USGS--Water Resources of the United States",
+          "title": "US Geological Survey",
+          "url": "https://waterdata.usgs.gov/nwis"
+        },
+        {
+          "abbrev": "USGS",
+          "text": "11266500",
+          "title": "Observations courtesy of U.S. Geological Survey",
+          "url": "https://waterdata.usgs.gov/nwis/inventory/?site_no=11266500"
+        },
+        {
+          "abbrev": "COE",
+          "text": "Website",
+          "title": "Observations courtesy of U.S. Army Corps of Engineers",
+          "url": "http://www.spk.usace.army.mil"
+        }
+      ],
+      "impactsLowWaters": [],
+      "normalThreshold": {
+        "value": 0,
+        "units": "ft"
+      },
+      "hydronotes": [],
+      "datums": {
+        "vertical": {
+          "value": [
+            {
+              "label": "National Geodetic Vertical Datum of 1929",
+              "abbrev": "NGVD29",
+              "description": "A fixed reference adopted as a standard geodetic datum for elevations determined by leveling. The datum was derived for surveys from a general adjustment of the first-order leveling nets of both the United States and Canada. In the adjustment, mean sea level was held fixed as observed at 21 tide stations in the United States and 5 in Canada. The year indicates the time of the general adjustment. A synonym for Sea-level Datum of 1929. The geodetic datum is fixed and does not take into account the changing stands of sea level. Because there are many variables affecting sea level, and because the geodetic datum represents a best fit over a broad area, the relationship between the geodetic datum and local mean sea level is not consistent from one location to another in either time or space. For this reason, the National Geodetic Vertical Datum should not be confused with mean sea level. See North American Vertical Datum of 1988 (NAVD 88). NGVD 29 should not be used as Mean Sea Level. NGVD 29 is no longer supported by NGS.",
+              "value": 3861.66
+            }
+          ]
+        },
+        "horizontal": {
+          "value": []
+        },
+        "notes": {
+          "value": []
+        }
+      },
+      "inundation": {
+        "enabled": false,
+        "url": "",
+        "zeroDatum": null,
+        "downloads": null,
+        "siteSpecificInfo": "",
+        "dataAttribution": []
+      },
+      "upstreamLid": "",
+      "downstreamLid": "STVC1",
+      "inService": {
+        "enabled": true,
+        "message": ""
+      },
+      "lowThreshold": null,
+      "forecastReliability": "Forecasts are issued routinely year-round.",
+      "TruncateObs": "-1",
+      "TruncateFcst": "7",
+      "ObservedFloodCategory": "no_flooding",
+      "ForecastFloodCategory": "no_flooding"
+    }
+  },
+  {
+    "key": "USGS-11109000",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-11109000?f=json",
+    "received_at": "2026-10-21T15:06:21.846253+00:00",
+    "status": 200,
+    "bytes": 3533,
+    "sha256": "dd669dece0d0b8051980688572fba3657d09134f833c73e0d7686cd284c7d225",
+    "metadata": {
+      "id": "USGS-11109000",
+      "properties": {
+        "id": "USGS-11109000",
+        "agency_code": "USGS",
+        "agency_name": "U.S. Geological Survey",
+        "monitoring_location_number": "11109000",
+        "monitoring_location_name": "SANTA CLARA R NR PIRU CA",
+        "district_code": "06",
+        "country_code": "US",
+        "country_name": "United States of America",
+        "state_code": "06",
+        "state_name": "California",
+        "county_code": "111",
+        "county_name": "Ventura County",
+        "minor_civil_division_code": null,
+        "site_type_code": "ST",
+        "site_type": "Stream",
+        "hydrologic_unit_code": "180701020403",
+        "basin_code": null,
+        "altitude": 715.23,
+        "altitude_accuracy": 0.16,
+        "altitude_method_code": "X",
+        "altitude_method_name": "GNSS2 - Level 2 Quality Survey Grade Global Navigation Satellite System",
+        "vertical_datum": "NAVD88",
+        "vertical_datum_name": "North American Vertical Datum of 1988",
+        "horizontal_positional_accuracy_code": "S",
+        "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+        "horizontal_position_method_code": "M",
+        "horizontal_position_method_name": "Interpolated from map",
+        "original_horizontal_datum": "NAD27",
+        "original_horizontal_datum_name": "North American Datum of 1927",
+        "drainage_area": 645.0,
+        "contributing_drainage_area": null,
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y",
+        "construction_date": null,
+        "aquifer_code": null,
+        "national_aquifer_code": null,
+        "aquifer_type_code": null,
+        "well_constructed_depth": null,
+        "hole_constructed_depth": null,
+        "depth_source_code": null,
+        "revision_note": "WDR-US 2009: 1997 (maximum discharge).",
+        "revision_created": "2017-11-13T06:00:00+00:00",
+        "revision_modified": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.73924108438321,
+          34.4036060154662
+        ]
+      }
+    }
+  },
+  {
+    "key": "USGS-11264500",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-11264500?f=json",
+    "received_at": "2026-10-21T15:06:22.159449+00:00",
+    "status": 200,
+    "bytes": 3567,
+    "sha256": "cf9ede74a32c20f1ff436b4c2539a7f44586841208614f690901fb9305bcb217",
+    "metadata": {
+      "id": "USGS-11264500",
+      "properties": {
+        "id": "USGS-11264500",
+        "agency_code": "USGS",
+        "agency_name": "U.S. Geological Survey",
+        "monitoring_location_number": "11264500",
+        "monitoring_location_name": "MERCED R A HAPPY ISLES BRIDGE NR YOSEMITE CA",
+        "district_code": "06",
+        "country_code": "US",
+        "country_name": "United States of America",
+        "state_code": "06",
+        "state_name": "California",
+        "county_code": "043",
+        "county_name": "Mariposa County",
+        "minor_civil_division_code": null,
+        "site_type_code": "ST",
+        "site_type": "Stream",
+        "hydrologic_unit_code": "180400080108",
+        "basin_code": null,
+        "altitude": 4020.46,
+        "altitude_accuracy": 0.16,
+        "altitude_method_code": "X",
+        "altitude_method_name": "GNSS2 - Level 2 Quality Survey Grade Global Navigation Satellite System",
+        "vertical_datum": "NAVD88",
+        "vertical_datum_name": "North American Vertical Datum of 1988",
+        "horizontal_positional_accuracy_code": "S",
+        "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+        "horizontal_position_method_code": "M",
+        "horizontal_position_method_name": "Interpolated from map",
+        "original_horizontal_datum": "NAD27",
+        "original_horizontal_datum_name": "North American Datum of 1927",
+        "drainage_area": 181.0,
+        "contributing_drainage_area": null,
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y",
+        "construction_date": null,
+        "aquifer_code": null,
+        "national_aquifer_code": null,
+        "aquifer_type_code": null,
+        "well_constructed_depth": null,
+        "hole_constructed_depth": null,
+        "depth_source_code": null,
+        "revision_note": "WSP 1215: 1938 (instantaneous maximum discharge).",
+        "revision_created": "2017-11-13T06:00:00+00:00",
+        "revision_modified": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.55902427621368,
+          37.73130354223962
+        ]
+      }
+    }
+  },
+  {
+    "key": "USGS-11266500",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-11266500?f=json",
+    "received_at": "2026-10-21T15:06:22.223045+00:00",
+    "status": 200,
+    "bytes": 3575,
+    "sha256": "3992a9a95db51ce86251167c1703604b5e457ad2d24dfed78298057fcf66fde7",
+    "metadata": {
+      "id": "USGS-11266500",
+      "properties": {
+        "id": "USGS-11266500",
+        "agency_code": "USGS",
+        "agency_name": "U.S. Geological Survey",
+        "monitoring_location_number": "11266500",
+        "monitoring_location_name": "MERCED R A POHONO BRIDGE NR YOSEMITE CA",
+        "district_code": "06",
+        "country_code": "US",
+        "country_name": "United States of America",
+        "state_code": "06",
+        "state_name": "California",
+        "county_code": "043",
+        "county_name": "Mariposa County",
+        "minor_civil_division_code": "93804",
+        "site_type_code": "ST",
+        "site_type": "Stream",
+        "hydrologic_unit_code": "180400080304",
+        "basin_code": null,
+        "altitude": 3864.88,
+        "altitude_accuracy": 0.33,
+        "altitude_method_code": "Y",
+        "altitude_method_name": "GNSS3 - Level 3 Quality Survey Grade Global Navigation Satellite System",
+        "vertical_datum": "NAVD88",
+        "vertical_datum_name": "North American Vertical Datum of 1988",
+        "horizontal_positional_accuracy_code": "5",
+        "horizontal_positional_accuracy": "Accurate to + or - .5 sec (PLGR/PPS GPS).",
+        "horizontal_position_method_code": "M",
+        "horizontal_position_method_name": "Interpolated from map",
+        "original_horizontal_datum": "NAD83",
+        "original_horizontal_datum_name": "North American Datum of 1983",
+        "drainage_area": 321.0,
+        "contributing_drainage_area": null,
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y",
+        "construction_date": null,
+        "aquifer_code": null,
+        "national_aquifer_code": null,
+        "aquifer_type_code": null,
+        "well_constructed_depth": null,
+        "hole_constructed_depth": null,
+        "depth_source_code": null,
+        "revision_note": "&nbsp;",
+        "revision_created": "2025-06-05T21:36:59.050000+00:00",
+        "revision_modified": "2025-06-05T21:36:59.050000+00:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.66566666666667,
+          37.71627777777778
+        ]
+      }
+    }
+  }
+]

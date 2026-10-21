@@ -266,10 +266,15 @@ async def test_cancellation_propagates():
 
 
 async def test_cdec_wrong_station_and_empty_feed_remain_failed():
-    for rows in ([{**cdec_row(1), "stationId": "BAD"}], []):
-        client, _ = await fake("cdec_river", [rows])
-        batch = await fetch(client.contract, client, NOW)
-        assert not batch.complete and batch.checkpoint is None
+    # Historical identity retained. R1 supersedes the old empty==failure rule;
+    # malformed scope still fails and can never advance the checkpoint.
+    client, _ = await fake("cdec_river", [[{**cdec_row(1), "stationId": "BAD"}]])
+    batch = await fetch(client.contract, client, NOW)
+    assert not batch.complete and batch.checkpoint is None and batch.rejected
+    client, _ = await fake("cdec_river", [[]])
+    batch = await fetch(client.contract, client, NOW)
+    assert batch.complete and batch.http_status == 200 and batch.checkpoint
+    assert batch.environment['stations'][0]['outcome'] == 'no_observations'
 
 
 async def test_nps_header_secret_and_redirect_do_not_escape_origin():

@@ -127,6 +127,7 @@ class Batch:
     alert_asof: datetime | None = None
     checkpoint: dict | None = None
     native_evidence_asof: datetime | None = None
+    environment: dict | None = None
 
     def parse(self, values, parser):
         for value in values:

@@ -1,6 +1,7 @@
 """Batch 2A contracts. Collection never grants photographic or access clearance."""
 
 from dataclasses import replace
+from math import ceil
 
 from .contracts import INATURALIST, CONTRACTS
 
@@ -31,8 +32,8 @@ _COMMON = dict(
         "Horsetail Fall flow from Merced gauges",
     ),
     retention="Normalized measurements/revisions/provenance long-term; raw JSON 90 days with bounded opt-in pruning; government attribution retained",
-    parser_version="batch2a-1",
-    version="batch2a-1",
+    parser_version="batch2a-2",
+    version="batch2a-2",
 )
 
 ENVIRONMENT_CONTRACTS = {
@@ -72,3 +73,21 @@ def base_key(key):
 
 def history_contract(contract):
     return replace(contract, source_key=contract.source_key + "_history", polling_seconds=3600)
+
+
+def request_budget(contract, configured_scope=None):
+    from .environment_scope import scope
+    key = base_key(contract.source_key)
+    if key not in ENVIRONMENT_CONTRACTS or key == 'nps':
+        return None
+    count = 1 if contract.source_key.endswith('_history') else len(scope(configured_scope)[key])
+    # USGS: two parameter queries per station plus bounded pagination headroom.
+    return max(12, 4 * count) if key == 'usgs_water' else count * (2 if key == 'nwps' else 1)
+
+
+def effective_contract(contract, configured_scope=None):
+    budget = request_budget(contract, configured_scope)
+    if budget is None:
+        return contract
+    interval = max(contract.polling_seconds, ceil(budget * 86400 / contract.requests_per_day))
+    return replace(contract, polling_seconds=interval)

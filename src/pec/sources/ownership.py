@@ -73,6 +73,8 @@ async def release(db, contract, lease):
 
 async def collect_owned(db, contract, user_agent, *, clock=lambda: datetime.now(UTC), client=None):
     from .storage import collect
+    from .environment_contracts import effective_contract
+    contract = effective_contract(contract, getattr(db, 'collection_scope', None))
     lease = await claim(db, contract, clock())
     if lease is None:
         event('source_collection_deferred', source=contract.source_key, code='disabled_leased_or_not_due')

@@ -48,7 +48,15 @@ def project_source(row, now):
     from .sources.contracts import CONTRACTS
     contract=CONTRACTS.get(row['key'])
     stamp = row['provider_updated_at'] if contract else row["provider_updated_at"] or row["last_success_at"]
-    from .sources.environment_contracts import ENVIRONMENT_CONTRACTS
+    from .sources.environment_contracts import ENVIRONMENT_CONTRACTS, base_key, history_contract
+    if row['key'].endswith('_history') and base_key(row['key']) in ENVIRONMENT_CONTRACTS:
+        contract=history_contract(ENVIRONMENT_CONTRACTS[base_key(row['key'])])
+        stamp=row['last_success_at']
+        ttl=timedelta(seconds=2*contract.polling_seconds)
+        state='DOWN' if row['status']!='success' or not row['enabled'] else (
+            'STALE' if stamp is None or now-stamp>ttl or stamp>now+timedelta(hours=1) else 'UP')
+        return SourceHealth(key=row['key'],state=state,last_attempt_at=row['last_attempt_at'],
+            last_success_at=row['last_success_at'],provider_updated_at=row['provider_updated_at'],error_code=row['error_code'])
     if row['key'] in ENVIRONMENT_CONTRACTS:
         stamp=row.get('native_evidence_asof',stamp)
     ttl=timedelta(seconds=contract.freshness_seconds) if contract else SOURCE_TTL.get(row['key'],timedelta(hours=1))

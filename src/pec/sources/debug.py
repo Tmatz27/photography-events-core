@@ -103,6 +103,9 @@ class CalibrationResponse(Contract):
 
 
 def freshness(contract, row, now):
+    if contract.source_key.endswith('_history'):
+        from .environment_health import history_health
+        return history_health(row,now,contract.polling_seconds)
     if not row or not row["enabled"] or row["status"] != "success" or row["incomplete"]:
         return "unknown"
     stamp = row["provider_updated_at"]

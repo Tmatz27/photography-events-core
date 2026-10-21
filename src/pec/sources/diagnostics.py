@@ -9,6 +9,8 @@ from ..schemas import Contract
 
 from .contracts import CONTRACTS
 from .inventory import PROVIDERS, configured
+from .environment_contracts import effective_contract
+from .environment_health import coverage, history_health
 
 
 class Operational(Contract):
@@ -45,6 +47,38 @@ class EnvironmentalDataset(Contract):
     native_freshness: Literal['current','stale','unknown']
 
 
+class StationOutcome(Contract):
+    station: str
+    window_start: datetime
+    window_end: datetime
+    request_complete: bool
+    requests: int
+    successful_requests: int
+    received: int
+    parsed: int
+    rejected: int
+    measurement_asof: datetime | None
+    forecast_asof: datetime | None
+    measurement_values: int
+    forecast_values: int
+    error_code: str | None
+    outcome: str
+    state: str
+    measurement_freshness: str
+    forecast_freshness: str
+
+
+class StationCoverage(Contract):
+    mode: Literal['current','historical']
+    configured_stations: int
+    successful_requests: int
+    successful_stations: int
+    states: dict[str,int]
+    stations: list[StationOutcome]
+    measurement_freshness: str
+    forecast_freshness: str
+
+
 class ProviderView(Contract):
     key: str
     provider: str
@@ -70,6 +104,9 @@ class ProviderView(Contract):
     history_operational: Operational | None = None
     native_freshness: Literal['current','stale','unknown'] = 'unknown'
     datasets: list[EnvironmentalDataset] = Field(default_factory=list)
+    coverage: StationCoverage | None = None
+    history_coverage: StationCoverage | None = None
+    history_worker_health: Literal['current','stale','unknown'] = 'unknown'
 
 
 class IngestionResponse(Contract):
@@ -87,7 +124,7 @@ async def read(db, settings, now):
             r.records_received,r.records_rejected,r.requests,
             (SELECT max(completed_at) FROM source_runs WHERE source_id=s.id AND status='success') AS last_success_at,
             COALESCE((p.checkpoint->>'complete')::boolean,FALSE) AS history_complete,
-            r.completed_at,r.provider_updated_at,r.native_evidence_asof,
+            r.completed_at,r.provider_updated_at,r.native_evidence_asof,r.context_payload,
             (SELECT count(*) FROM raw_observations o WHERE o.source_id=s.id) AS raw_identities,
             (SELECT count(*) FROM normalized_observations n JOIN raw_observations o
                 ON o.id=n.raw_observation_id WHERE o.source_id=s.id)+
@@ -100,10 +137,12 @@ async def read(db, settings, now):
             WHERE s.key=ANY(CAST(:keys AS text[]))"""),
             dict(keys=[p.key for p in PROVIDERS]+[p.key+'_history' for p in PROVIDERS]))).mappings()
         by_key = {r['key']: dict(r) for r in rows}
+        contexts = {key:(row.pop('context_payload') or {}).get('environment') for key,row in by_key.items()}
         items = []
         for p in PROVIDERS:
             adapter_key=p.adapter or p.key
             implemented = adapter_key in CONTRACTS
+            contract=effective_contract(CONTRACTS[adapter_key],settings.collection_scope) if implemented else None
             ready = configured(p, settings.provider_secrets)
             selected = settings.live_sources and (p.key in settings.source_keys or adapter_key in settings.source_keys)
             row = by_key.get(adapter_key)
@@ -135,12 +174,15 @@ async def read(db, settings, now):
                 measurements=p.measurements,evidence_kind=p.evidence_kind,ranked_priority=p.ranked_priority,
                 retention_policy=CONTRACTS[adapter_key].retention if implemented else p.retention,
                 historical_coverage=p.historical_coverage,
-                collection_interval_seconds=CONTRACTS[adapter_key].polling_seconds if implemented else None,
+                collection_interval_seconds=contract.polling_seconds if implemented else None,
                 adapter_key=adapter_key if implemented else None,
                 upstream_lineage=p.upstream_lineage,
                 credential_variables=p.credentials, access_requirement=p.access,
                 state=state, operational=row,history_operational=by_key.get(adapter_key+'_history'),
-                native_freshness=freshness(CONTRACTS[adapter_key],row,now) if implemented else 'unknown',datasets=datasets))
+                native_freshness=freshness(contract,row,now) if implemented else 'unknown',datasets=datasets,
+                coverage=coverage(contexts.get(adapter_key),now,contract) if implemented else None,
+                history_coverage=coverage(contexts.get(adapter_key+'_history'),now,contract) if implemented else None,
+                history_worker_health=history_health(by_key.get(adapter_key+'_history'),now,3600)))
         return dict(generated_at=now, production_promotion=False, phase_complete=False,
             items=items)
     return await db.pattern_transaction(operation)

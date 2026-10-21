@@ -14,6 +14,14 @@ class FetchError(ValueError):
         super().__init__(code)
 
 
+class NativeFloat(float):
+    """Float-compatible geometry/JSON with the original numerical token retained."""
+    def __new__(cls, token):
+        value = super().__new__(cls, token)
+        value.native_text = token
+        return value
+
+
 @dataclass
 class Response:
     status: int
@@ -22,7 +30,7 @@ class Response:
     retry_after: str | None = None
 
 
-async def read(url, user_agent, *, session, headers=None):
+async def read(url, user_agent, *, session, headers=None, preserve_numbers=False):
     try:
         async with session.get(url, allow_redirects=False, headers={
             **(headers or {}), "User-Agent": user_agent,
@@ -35,7 +43,7 @@ async def read(url, user_agent, *, session, headers=None):
                 if len(raw) > 16 * 1024 * 1024:
                     raise FetchError("response_too_large")
             try:
-                body = json.loads(raw)
+                body = json.loads(raw, **({'parse_float':NativeFloat} if preserve_numbers else {}))
             except (ValueError, UnicodeError):
                 raise FetchError("invalid_json") from None
             return Response(response.status, body, len(raw))
@@ -54,8 +62,11 @@ class Client:
         self.contract, self.user_agent, self.reserve = contract, user_agent, reserve
         self.transport = transport
         self.requests = self.bytes_received = self.rate_limited = 0
+        self.successful_requests = 0
         self.last_request = None
         self.session = None
+        self.request_limit = None
+        self.preserve_numbers = False
 
     async def close(self):
         if self.session is not None:
@@ -73,6 +84,8 @@ class Client:
             or parsed.port not in (None, 443)
         ):
             raise FetchError("untrusted_pagination_url")
+        if self.request_limit is not None and self.requests >= self.request_limit:
+            raise FetchError('collection_request_budget_exhausted', 429)
         if self.reserve:
             await self.reserve()
         else:
@@ -93,7 +106,8 @@ class Client:
                 self.session = aiohttp.ClientSession(
                     timeout=aiohttp.ClientTimeout(total=20, connect=10, sock_read=10),
                     connector=aiohttp.TCPConnector(limit=1), trust_env=False)
-            response = await read(url, self.user_agent, session=self.session, headers=headers)
+            response = await read(url, self.user_agent, session=self.session, headers=headers,
+                preserve_numbers=self.preserve_numbers)
         self.bytes_received += response.size
         if response.status == 429:
             self.rate_limited += 1
@@ -101,4 +115,5 @@ class Client:
             raise FetchError("provider_http_failure", response.status, response.retry_after)
         if not isinstance(response.body, dict) and not (allow_list and isinstance(response.body, list)):
             raise FetchError("invalid_page")
+        self.successful_requests += 1
         return response.body

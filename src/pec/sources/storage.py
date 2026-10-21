@@ -503,6 +503,12 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
                 else:
                     batch.rejected.extend((fact.external_id, code) for _ in range(weight))
                     errors[code] += weight
+                    if batch.environment is not None:
+                        for station in batch.environment['stations']:
+                            if station['station'] == fact.station_id:
+                                station['rejected'] += weight
+                                station['outcome'] = 'incomplete'
+                                station['error_code'] = code
             else:
                 counts["accepted"] += weight
                 counts[disposition] += int(weight > 0)
@@ -660,6 +666,7 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
                 invalid_historical_versions=invalid_historical_versions,
                 retirement_events=retirement_events,
                 public_unavailable_ids=sorted(batch.unavailable_ids),
+                **({'environment':batch.environment} if batch.environment is not None else {}),
             )
         )
         await c.execute(
