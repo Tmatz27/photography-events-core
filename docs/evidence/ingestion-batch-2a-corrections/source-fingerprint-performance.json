@@ -1,0 +1,3763 @@
+{
+  "shadow_transaction_budget_seconds": 30.0,
+  "scheduled_poll_budget_seconds": 120,
+  "method": "Three fingerprint trials and three full empty/failed persist trials per source/size, all sources seeded simultaneously; EXPLAIN ANALYZE BUFFERS; no index/partition/retention changes",
+  "measurements": [
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.011240408000020352,
+        0.009192678999994541,
+        0.009303434999992533
+      ],
+      "fingerprint_median_seconds": 0.009303434999992533,
+      "full_persist_seconds": [
+        0.021178072999987307,
+        0.01640515700000833,
+        0.01591166599999383
+      ],
+      "full_persist_median_seconds": 0.01640515700000833,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 33
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.623,
+            "Actual Total Time": 0.67,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 33,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.043,
+                "Actual Total Time": 0.211,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '1'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 26,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 33,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.035,
+                    "Actual Total Time": 0.035,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '1'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.055,
+          "Triggers": [],
+          "Execution Time": 0.715
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009050604999998768,
+        0.009285121000004892,
+        0.009024215000010827
+      ],
+      "fingerprint_median_seconds": 0.009050604999998768,
+      "full_persist_seconds": [
+        0.015599365000014132,
+        0.015356123000003663,
+        0.015281794999992826
+      ],
+      "full_persist_median_seconds": 0.015356123000003663,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 34
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.639,
+            "Actual Total Time": 0.679,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 34,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.071,
+                "Actual Total Time": 0.227,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '2'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 27,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 34,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.064,
+                    "Actual Total Time": 0.064,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '2'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.075,
+          "Triggers": [],
+          "Execution Time": 0.725
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009019036000012193,
+        0.008998317000020961,
+        0.008826116999983924
+      ],
+      "fingerprint_median_seconds": 0.008998317000020961,
+      "full_persist_seconds": [
+        0.01494106100000181,
+        0.01544559600000639,
+        0.015116146999986313
+      ],
+      "full_persist_median_seconds": 0.015116146999986313,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 33
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.723,
+            "Actual Total Time": 0.762,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 33,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.044,
+                "Actual Total Time": 0.251,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '3'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 26,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 33,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.035,
+                    "Actual Total Time": 0.036,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '3'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.072,
+          "Triggers": [],
+          "Execution Time": 0.809
+        }
+      ]
+    },
+    {
+      "source": "usgs_water",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.008913468999992347,
+        0.009346023999995623,
+        0.008998286999997163
+      ],
+      "fingerprint_median_seconds": 0.008998286999997163,
+      "full_persist_seconds": [
+        0.014913960000001225,
+        0.014944837999991023,
+        0.014729538000011644
+      ],
+      "full_persist_median_seconds": 0.014913960000001225,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 34
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.629,
+            "Actual Total Time": 0.669,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 34,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.041,
+                "Actual Total Time": 0.183,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '4'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 27,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 34,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.035,
+                    "Actual Total Time": 0.035,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '4'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.084,
+          "Triggers": [],
+          "Execution Time": 0.715
+        }
+      ]
+    },
+    {
+      "source": "cdec_river",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009135682000021461,
+        0.00907011099999977,
+        0.008897119000010889
+      ],
+      "fingerprint_median_seconds": 0.00907011099999977,
+      "full_persist_seconds": [
+        0.01935919600001057,
+        0.016824984999999515,
+        0.016965500000026168
+      ],
+      "full_persist_median_seconds": 0.016965500000026168,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 34
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.682,
+            "Actual Total Time": 0.723,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 34,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.044,
+                "Actual Total Time": 0.21,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '5'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 27,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 34,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.036,
+                    "Actual Total Time": 0.036,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '5'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.082,
+          "Triggers": [],
+          "Execution Time": 0.772
+        }
+      ]
+    },
+    {
+      "source": "cdec_rainfall",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.010505059999985633,
+        0.013236630999983845,
+        0.009288717000003999
+      ],
+      "fingerprint_median_seconds": 0.010505059999985633,
+      "full_persist_seconds": [
+        0.015280854000025101,
+        0.01537283399997591,
+        0.015388744000006227
+      ],
+      "full_persist_median_seconds": 0.01537283399997591,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 33
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.655,
+            "Actual Total Time": 0.722,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 33,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.046,
+                "Actual Total Time": 0.206,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '6'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 26,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 33,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.038,
+                    "Actual Total Time": 0.038,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '6'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.09,
+          "Triggers": [],
+          "Execution Time": 0.771
+        }
+      ]
+    },
+    {
+      "source": "cdec_snow",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009028212999993457,
+        0.009153426000011677,
+        0.009216754000021865
+      ],
+      "fingerprint_median_seconds": 0.009153426000011677,
+      "full_persist_seconds": [
+        0.015283198000020093,
+        0.015248313000000735,
+        0.01474101899998459
+      ],
+      "full_persist_median_seconds": 0.015248313000000735,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 34
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.686,
+            "Actual Total Time": 0.725,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 34,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.052,
+                "Actual Total Time": 0.249,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '7'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 27,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 34,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.042,
+                    "Actual Total Time": 0.042,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '7'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.106,
+          "Triggers": [],
+          "Execution Time": 0.776
+        }
+      ]
+    },
+    {
+      "source": "nwps",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009119913000006363,
+        0.008919831000014256,
+        0.00901910600001088
+      ],
+      "fingerprint_median_seconds": 0.00901910600001088,
+      "full_persist_seconds": [
+        0.015240758000004462,
+        0.015130513000002566,
+        0.015240457000004426
+      ],
+      "full_persist_median_seconds": 0.015240457000004426,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 34
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.605,
+            "Actual Total Time": 0.645,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 34,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.047,
+                "Actual Total Time": 0.191,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '8'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 27,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 34,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.038,
+                    "Actual Total Time": 0.038,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '8'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.138,
+          "Triggers": [],
+          "Execution Time": 0.693
+        }
+      ]
+    },
+    {
+      "source": "nps",
+      "retained_rows_per_source": 1000,
+      "total_raw_rows": 9000,
+      "fingerprint_seconds": [
+        0.009034646000003477,
+        0.009313945999991802,
+        0.009154459000001225
+      ],
+      "fingerprint_median_seconds": 0.009154459000001225,
+      "full_persist_seconds": [
+        0.0153466869999761,
+        0.015903503000004093,
+        0.01545558000000824
+      ],
+      "full_persist_median_seconds": 0.01545558000000824,
+      "source_rows_returned": 1000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 1000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 33
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 329.36,
+            "Total Cost": 331.86,
+            "Plan Rows": 1000,
+            "Plan Width": 113,
+            "Actual Startup Time": 0.65,
+            "Actual Total Time": 0.689,
+            "Actual Rows": 1000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 142,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 33,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 36.03,
+                "Total Cost": 279.53,
+                "Plan Rows": 1000,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.048,
+                "Actual Total Time": 0.22,
+                "Actual Rows": 1000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '9'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 26,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 33,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 35.78,
+                    "Plan Rows": 1000,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.038,
+                    "Actual Total Time": 0.039,
+                    "Actual Rows": 1000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '9'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 7,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.129,
+          "Triggers": [],
+          "Execution Time": 0.738
+        }
+      ]
+    },
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.09175077400001896,
+        0.10989495499998725,
+        0.09227708299999904
+      ],
+      "fingerprint_median_seconds": 0.09227708299999904,
+      "full_persist_seconds": [
+        0.10795980599999666,
+        0.10219963100001905,
+        0.10225129699998092
+      ],
+      "full_persist_median_seconds": 0.10225129699998092,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3457.39,
+            "Total Cost": 3483.19,
+            "Plan Rows": 10320,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.685,
+            "Actual Total Time": 7.145,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 332.4,
+                "Total Cost": 2769.4,
+                "Plan Rows": 10320,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.452,
+                "Actual Total Time": 2.414,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '1'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 329.82,
+                    "Plan Rows": 10320,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.415,
+                    "Actual Total Time": 0.416,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '1'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.109,
+          "Triggers": [],
+          "Execution Time": 7.516
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08235879299999738,
+        0.10357725299999743,
+        0.08283443699997406
+      ],
+      "fingerprint_median_seconds": 0.08283443699997406,
+      "full_persist_seconds": [
+        0.10116409400001203,
+        0.10039466300000299,
+        0.10006592100000944
+      ],
+      "full_persist_median_seconds": 0.10039466300000299,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3428.28,
+            "Total Cost": 3453.41,
+            "Plan Rows": 10053,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.705,
+            "Actual Total Time": 7.095,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 326.33,
+                "Total Cost": 2759.99,
+                "Plan Rows": 10053,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.446,
+                "Actual Total Time": 2.44,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '2'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 323.81,
+                    "Plan Rows": 10053,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.409,
+                    "Actual Total Time": 0.41,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '2'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.106,
+          "Triggers": [],
+          "Execution Time": 7.463
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08505056999999283,
+        0.08520262400000433,
+        0.11421012299999234
+      ],
+      "fingerprint_median_seconds": 0.08520262400000433,
+      "full_persist_seconds": [
+        0.10283902999998418,
+        0.10199328600000968,
+        0.10161039499999447
+      ],
+      "full_persist_median_seconds": 0.10199328600000968,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 321
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3406.54,
+            "Total Cost": 3431.2,
+            "Plan Rows": 9864,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.701,
+            "Actual Total Time": 7.174,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 321,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 320.86,
+                "Total Cost": 2752.16,
+                "Plan Rows": 9864,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.484,
+                "Actual Total Time": 2.459,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '3'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 258,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 321,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 318.4,
+                    "Plan Rows": 9864,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.447,
+                    "Actual Total Time": 0.447,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '3'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.108,
+          "Triggers": [],
+          "Execution Time": 7.546
+        }
+      ]
+    },
+    {
+      "source": "usgs_water",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.0826720159999752,
+        0.08272400199999197,
+        0.10603312099999584
+      ],
+      "fingerprint_median_seconds": 0.08272400199999197,
+      "full_persist_seconds": [
+        0.10037917500000049,
+        0.10197626500001888,
+        0.10443879799998967
+      ],
+      "full_persist_median_seconds": 0.10197626500001888,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3429.13,
+            "Total Cost": 3454.28,
+            "Plan Rows": 10062,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.767,
+            "Actual Total Time": 7.178,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 326.4,
+                "Total Cost": 2760.17,
+                "Plan Rows": 10062,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.543,
+                "Actual Total Time": 2.506,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '4'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 323.88,
+                    "Plan Rows": 10062,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.505,
+                    "Actual Total Time": 0.505,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '4'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.14,
+          "Triggers": [],
+          "Execution Time": 7.556
+        }
+      ]
+    },
+    {
+      "source": "cdec_river",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08311960899999349,
+        0.08324632399998677,
+        0.10469366999998897
+      ],
+      "fingerprint_median_seconds": 0.08324632399998677,
+      "full_persist_seconds": [
+        0.12351906600000007,
+        0.10138090799998167,
+        0.10175223900000674
+      ],
+      "full_persist_median_seconds": 0.10175223900000674,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 321
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3428.56,
+            "Total Cost": 3453.7,
+            "Plan Rows": 10056,
+            "Plan Width": 113,
+            "Actual Startup Time": 7.251,
+            "Actual Total Time": 7.668,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 321,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 326.35,
+                "Total Cost": 2760.05,
+                "Plan Rows": 10056,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.526,
+                "Actual Total Time": 2.749,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '5'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 258,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 321,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 323.84,
+                    "Plan Rows": 10056,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.489,
+                    "Actual Total Time": 0.49,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '5'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.13,
+          "Triggers": [],
+          "Execution Time": 8.04
+        }
+      ]
+    },
+    {
+      "source": "cdec_rainfall",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08342550699998696,
+        0.0829207179999969,
+        0.0855347909999864
+      ],
+      "fingerprint_median_seconds": 0.08342550699998696,
+      "full_persist_seconds": [
+        0.12358788800000298,
+        0.10025421200001006,
+        0.10138613999998825
+      ],
+      "full_persist_median_seconds": 0.10138613999998825,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3393.54,
+            "Total Cost": 3417.96,
+            "Plan Rows": 9768,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.673,
+            "Actual Total Time": 7.062,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 316.12,
+                "Total Cost": 2746.22,
+                "Plan Rows": 9768,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.483,
+                "Actual Total Time": 2.433,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '6'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 313.68,
+                    "Plan Rows": 9768,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.416,
+                    "Actual Total Time": 0.416,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '6'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.104,
+          "Triggers": [],
+          "Execution Time": 7.433
+        }
+      ]
+    },
+    {
+      "source": "cdec_snow",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08436491500000898,
+        0.08335453599997322,
+        0.08314345300001946
+      ],
+      "fingerprint_median_seconds": 0.08335453599997322,
+      "full_persist_seconds": [
+        0.10302931399999693,
+        0.12958608600001753,
+        0.1015997649999747
+      ],
+      "full_persist_median_seconds": 0.10302931399999693,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3423.49,
+            "Total Cost": 3448.5,
+            "Plan Rows": 10002,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.54,
+            "Actual Total Time": 7.002,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 325.93,
+                "Total Cost": 2758.96,
+                "Plan Rows": 10002,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.394,
+                "Actual Total Time": 2.331,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '7'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 323.43,
+                    "Plan Rows": 10002,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.354,
+                    "Actual Total Time": 0.354,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '7'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.108,
+          "Triggers": [],
+          "Execution Time": 7.374
+        }
+      ]
+    },
+    {
+      "source": "nwps",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08397829599999795,
+        0.08323151899998038,
+        0.08416114600001379
+      ],
+      "fingerprint_median_seconds": 0.08397829599999795,
+      "full_persist_seconds": [
+        0.1020894060000046,
+        0.1294419269999878,
+        0.10036918599999467
+      ],
+      "full_persist_median_seconds": 0.1020894060000046,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 321
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3413.01,
+            "Total Cost": 3437.85,
+            "Plan Rows": 9933,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.743,
+            "Actual Total Time": 7.144,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 321,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 321.4,
+                "Total Cost": 2753.56,
+                "Plan Rows": 9933,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.463,
+                "Actual Total Time": 2.412,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '8'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 258,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 321,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 318.92,
+                    "Plan Rows": 9933,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.427,
+                    "Actual Total Time": 0.428,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '8'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.113,
+          "Triggers": [],
+          "Execution Time": 7.515
+        }
+      ]
+    },
+    {
+      "source": "nps",
+      "retained_rows_per_source": 10000,
+      "total_raw_rows": 90000,
+      "fingerprint_seconds": [
+        0.08280951099999356,
+        0.08331701499997735,
+        0.08351559499999439
+      ],
+      "fingerprint_median_seconds": 0.08331701499997735,
+      "full_persist_seconds": [
+        0.1010553630000004,
+        0.10006365699999265,
+        0.12325810600000864
+      ],
+      "full_persist_median_seconds": 0.1010553630000004,
+      "source_rows_returned": 10000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 10000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 320
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 3413.86,
+            "Total Cost": 3438.71,
+            "Plan Rows": 9942,
+            "Plan Width": 113,
+            "Actual Startup Time": 6.573,
+            "Actual Total Time": 6.978,
+            "Actual Rows": 10000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 1556,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 320,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 321.47,
+                "Total Cost": 2753.74,
+                "Plan Rows": 9942,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.435,
+                "Actual Total Time": 2.352,
+                "Actual Rows": 10000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '9'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 257,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 320,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 318.98,
+                    "Plan Rows": 9942,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.399,
+                    "Actual Total Time": 0.4,
+                    "Actual Rows": 10000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '9'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 63,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.107,
+          "Triggers": [],
+          "Execution Time": 7.351
+        }
+      ]
+    },
+    {
+      "source": "inaturalist",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.2152144829999827,
+        0.20799385899999834,
+        0.2358982349999792
+      ],
+      "fingerprint_median_seconds": 0.2152144829999827,
+      "full_persist_seconds": [
+        0.24999542300000144,
+        0.2570042849999936,
+        0.270466636000009
+      ],
+      "full_persist_median_seconds": 0.2570042849999936,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8749.54,
+            "Total Cost": 8812.81,
+            "Plan Rows": 25305,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.033,
+            "Actual Total Time": 17.015,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 812.53,
+                "Total Cost": 6898.85,
+                "Plan Rows": 25305,
+                "Plan Width": 113,
+                "Actual Startup Time": 0.954,
+                "Actual Total Time": 5.613,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '1'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 795,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 806.21,
+                    "Plan Rows": 25305,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.878,
+                    "Actual Total Time": 0.878,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '1'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 153,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.102,
+          "Triggers": [],
+          "Execution Time": 17.966
+        }
+      ]
+    },
+    {
+      "source": "wfigs_current",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.2152881920000027,
+        0.230679576,
+        0.20693781399998556
+      ],
+      "fingerprint_median_seconds": 0.2152881920000027,
+      "full_persist_seconds": [
+        0.23805791299997736,
+        0.26931823699999313,
+        0.2516882339999995
+      ],
+      "full_persist_median_seconds": 0.2516882339999995,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 796
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8689.29,
+            "Total Cost": 8751.35,
+            "Plan Rows": 24825,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.225,
+            "Actual Total Time": 17.206,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 796,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 796.81,
+                "Total Cost": 6877.13,
+                "Plan Rows": 24825,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.116,
+                "Actual Total Time": 5.856,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '2'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 796,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 790.61,
+                    "Plan Rows": 24825,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 1.039,
+                    "Actual Total Time": 1.039,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '2'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 154,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.108,
+          "Triggers": [],
+          "Execution Time": 18.125
+        }
+      ]
+    },
+    {
+      "source": "nws_live_context",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.2037927930000194,
+        0.22333471999999688,
+        0.20676167700000292
+      ],
+      "fingerprint_median_seconds": 0.20676167700000292,
+      "full_persist_seconds": [
+        0.26239634999998884,
+        0.24086837499999092,
+        0.23857139300000085
+      ],
+      "full_persist_median_seconds": 0.24086837499999092,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8748.84,
+            "Total Cost": 8812.09,
+            "Plan Rows": 25298,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.218,
+            "Actual Total Time": 17.203,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 812.48,
+                "Total Cost": 6898.7,
+                "Plan Rows": 25298,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.072,
+                "Actual Total Time": 5.813,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '3'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 795,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 806.15,
+                    "Plan Rows": 25298,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.996,
+                    "Actual Total Time": 0.997,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '3'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 153,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.115,
+          "Triggers": [],
+          "Execution Time": 18.118
+        }
+      ]
+    },
+    {
+      "source": "usgs_water",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.2298723920000043,
+        0.20935593800001584,
+        0.20532845700000735
+      ],
+      "fingerprint_median_seconds": 0.20935593800001584,
+      "full_persist_seconds": [
+        0.2633318480000071,
+        0.2523316920000127,
+        0.26569905300002006
+      ],
+      "full_persist_median_seconds": 0.2633318480000071,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 796
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8716.89,
+            "Total Cost": 8779.44,
+            "Plan Rows": 25020,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.252,
+            "Actual Total Time": 17.258,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 796,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 806.32,
+                "Total Cost": 6889.07,
+                "Plan Rows": 25020,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.056,
+                "Actual Total Time": 5.784,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '4'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 796,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 800.07,
+                    "Plan Rows": 25020,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.982,
+                    "Actual Total Time": 0.983,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '4'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 154,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.118,
+          "Triggers": [],
+          "Execution Time": 18.16
+        }
+      ]
+    },
+    {
+      "source": "cdec_river",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.20434004899999536,
+        0.20347673200001282,
+        0.22675223999999616
+      ],
+      "fingerprint_median_seconds": 0.20434004899999536,
+      "full_persist_seconds": [
+        0.23867954400000713,
+        0.2401710580000156,
+        0.2663113729999793
+      ],
+      "full_persist_median_seconds": 0.2401710580000156,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8700.12,
+            "Total Cost": 8762.35,
+            "Plan Rows": 24893,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.467,
+            "Actual Total Time": 17.455,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 801.34,
+                "Total Cost": 6882.5,
+                "Plan Rows": 24893,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.191,
+                "Actual Total Time": 6.023,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '5'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 795,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 795.12,
+                    "Plan Rows": 24893,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 1.109,
+                    "Actual Total Time": 1.109,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '5'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 153,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.107,
+          "Triggers": [],
+          "Execution Time": 18.407
+        }
+      ]
+    },
+    {
+      "source": "cdec_rainfall",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.20441988700000024,
+        0.2039706609999996,
+        0.23749241599998072
+      ],
+      "fingerprint_median_seconds": 0.20441988700000024,
+      "full_persist_seconds": [
+        0.24155619499998693,
+        0.2611934910000002,
+        0.23840393099999346
+      ],
+      "full_persist_median_seconds": 0.24155619499998693,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8700.12,
+            "Total Cost": 8762.35,
+            "Plan Rows": 24893,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.842,
+            "Actual Total Time": 17.836,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 801.34,
+                "Total Cost": 6882.5,
+                "Plan Rows": 24893,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.066,
+                "Actual Total Time": 6.175,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '6'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 795,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 795.12,
+                    "Plan Rows": 24893,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.989,
+                    "Actual Total Time": 0.99,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '6'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 153,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.127,
+          "Triggers": [],
+          "Execution Time": 18.732
+        }
+      ]
+    },
+    {
+      "source": "cdec_snow",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.20437400199998024,
+        0.23211887000002207,
+        0.22190680500000326
+      ],
+      "fingerprint_median_seconds": 0.22190680500000326,
+      "full_persist_seconds": [
+        0.25227085600002397,
+        0.26932565899997485,
+        0.23931563700000424
+      ],
+      "full_persist_median_seconds": 0.25227085600002397,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 796
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8697.11,
+            "Total Cost": 8759.27,
+            "Plan Rows": 24863,
+            "Plan Width": 113,
+            "Actual Startup Time": 21.846,
+            "Actual Total Time": 22.828,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 796,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 801.11,
+                "Total Cost": 6881.9,
+                "Plan Rows": 24863,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.54,
+                "Actual Total Time": 8.897,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '7'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 796,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 794.89,
+                    "Plan Rows": 24863,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 1.447,
+                    "Actual Total Time": 1.447,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '7'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 154,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.135,
+          "Triggers": [],
+          "Execution Time": 23.74
+        }
+      ]
+    },
+    {
+      "source": "nwps",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.20535701000000017,
+        0.22530051699999376,
+        0.20471060799999918
+      ],
+      "fingerprint_median_seconds": 0.20535701000000017,
+      "full_persist_seconds": [
+        0.26550280899999734,
+        0.2402620279999894,
+        0.23960247099998355
+      ],
+      "full_persist_median_seconds": 0.2402620279999894,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 795
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8662.69,
+            "Total Cost": 8724.19,
+            "Plan Rows": 24600,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.329,
+            "Actual Total Time": 17.301,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 795,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 791.07,
+                "Total Cost": 6868.57,
+                "Plan Rows": 24600,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.04,
+                "Actual Total Time": 5.849,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '8'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 795,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 784.92,
+                    "Plan Rows": 24600,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.966,
+                    "Actual Total Time": 0.966,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '8'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 153,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.105,
+          "Triggers": [],
+          "Execution Time": 18.228
+        }
+      ]
+    },
+    {
+      "source": "nps",
+      "retained_rows_per_source": 25000,
+      "total_raw_rows": 225000,
+      "fingerprint_seconds": [
+        0.2252839470000083,
+        0.20702946399998723,
+        0.20492113000000245
+      ],
+      "fingerprint_median_seconds": 0.20702946399998723,
+      "full_persist_seconds": [
+        0.2637436229999821,
+        0.23865556199999105,
+        0.24532452899998702
+      ],
+      "full_persist_median_seconds": 0.24532452899998702,
+      "source_rows_returned": 25000,
+      "raw_scan_rows": [
+        {
+          "node_type": "Bitmap Heap Scan",
+          "rows_returned": 25000.0,
+          "rows_filtered": 0,
+          "loops": 1,
+          "shared_hit_blocks": 796
+        }
+      ],
+      "explain": [
+        {
+          "Plan": {
+            "Node Type": "Sort",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 8749.54,
+            "Total Cost": 8812.81,
+            "Plan Rows": 25305,
+            "Plan Width": 113,
+            "Actual Startup Time": 16.211,
+            "Actual Total Time": 17.192,
+            "Actual Rows": 25000.0,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Sort Key": [
+              "external_id"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 3613,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 796,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "raw_observations",
+                "Alias": "raw_observations",
+                "Startup Cost": 812.53,
+                "Total Cost": 6898.85,
+                "Plan Rows": 25305,
+                "Plan Width": 113,
+                "Actual Startup Time": 1.076,
+                "Actual Total Time": 5.846,
+                "Actual Rows": 25000.0,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Recheck Cond": "(source_id = '9'::bigint)",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 642,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 796,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_raw_local_report_identity",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 806.21,
+                    "Plan Rows": 25305,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 1.002,
+                    "Actual Total Time": 1.002,
+                    "Actual Rows": 25000.0,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Index Cond": "(source_id = '9'::bigint)",
+                    "Index Searches": 1,
+                    "Shared Hit Blocks": 154,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 1,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.118,
+          "Triggers": [],
+          "Execution Time": 18.108
+        }
+      ]
+    }
+  ],
+  "max_fingerprint_seconds": 0.23749241599998072,
+  "max_full_persist_seconds": 0.270466636000009,
+  "optimization_required": false
+}

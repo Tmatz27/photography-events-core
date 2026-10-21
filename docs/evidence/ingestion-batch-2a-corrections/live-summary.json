@@ -1,0 +1,853 @@
+[
+  {
+    "source": "usgs_water",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 136,
+    "numeric_values": 136,
+    "error_code": null,
+    "station_windows": {
+      "mode": "current",
+      "dataset": "usgs_water",
+      "stations": [
+        {
+          "parsed": 48,
+          "outcome": "data",
+          "station": "USGS-11109000",
+          "received": 48,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T15:15:00+00:00",
+          "request_complete": true,
+          "measurement_values": 48,
+          "successful_requests": 2
+        },
+        {
+          "parsed": 42,
+          "outcome": "data",
+          "station": "USGS-11264500",
+          "received": 42,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T14:30:00+00:00",
+          "request_complete": true,
+          "measurement_values": 42,
+          "successful_requests": 2
+        },
+        {
+          "parsed": 46,
+          "outcome": "data",
+          "station": "USGS-11266500",
+          "received": 46,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T15:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 46,
+          "successful_requests": 2
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "current",
+      "configured_stations": 3,
+      "successful_stations": 3,
+      "successful_requests": 6,
+      "states": {
+        "current": 3,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 0,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 48,
+          "outcome": "data",
+          "station": "USGS-11109000",
+          "received": 48,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T15:15:00+00:00",
+          "request_complete": true,
+          "measurement_values": 48,
+          "successful_requests": 2,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        },
+        {
+          "parsed": 42,
+          "outcome": "data",
+          "station": "USGS-11264500",
+          "received": 42,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T14:30:00+00:00",
+          "request_complete": true,
+          "measurement_values": 42,
+          "successful_requests": 2,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        },
+        {
+          "parsed": 46,
+          "outcome": "data",
+          "station": "USGS-11266500",
+          "received": 46,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:33.019604+00:00",
+          "window_start": "2026-10-21T09:24:33.019604+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T15:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 46,
+          "successful_requests": 2,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        }
+      ],
+      "measurement_freshness": "current",
+      "forecast_freshness": "unknown"
+    },
+    "native_evidence_asof": "2026-10-21 14:30:00+00:00",
+    "checkpoint": {
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "incremental_end": "2026-10-21T15:24:33.019604+00:00"
+    }
+  },
+  {
+    "source": "usgs_water_history",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 142,
+    "numeric_values": 142,
+    "error_code": null,
+    "station_windows": {
+      "mode": "historical",
+      "dataset": "usgs_water",
+      "stations": [
+        {
+          "parsed": 142,
+          "outcome": "data",
+          "station": "USGS-11109000",
+          "received": 142,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-02T00:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 142,
+          "successful_requests": 2
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "historical",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 2,
+      "states": {
+        "current": 0,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 1,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 142,
+          "outcome": "data",
+          "station": "USGS-11109000",
+          "received": 142,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-02T00:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 142,
+          "successful_requests": 2,
+          "measurement_freshness": "not_applicable",
+          "forecast_freshness": "not_applicable",
+          "state": "data"
+        }
+      ],
+      "measurement_freshness": "not_applicable",
+      "forecast_freshness": "not_applicable"
+    },
+    "native_evidence_asof": "2026-01-02 00:00:00+00:00",
+    "checkpoint": {
+      "complete": false,
+      "next_start": "2026-01-01T00:00:00+00:00",
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "window_end": "2026-01-02T00:00:00+00:00",
+      "station_index": 1
+    }
+  },
+  {
+    "source": "cdec_river",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 40,
+    "numeric_values": 40,
+    "error_code": null,
+    "station_windows": {
+      "mode": "current",
+      "dataset": "cdec_river",
+      "stations": [
+        {
+          "parsed": 40,
+          "outcome": "data",
+          "station": "POH",
+          "received": 48,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:41.067903+00:00",
+          "window_start": "2026-10-21T09:24:41.067903+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T06:15:00-08:00",
+          "request_complete": true,
+          "measurement_values": 40,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "current",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 1,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 0,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 40,
+          "outcome": "data",
+          "station": "POH",
+          "received": 48,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:41.067903+00:00",
+          "window_start": "2026-10-21T09:24:41.067903+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T06:15:00-08:00",
+          "request_complete": true,
+          "measurement_values": 40,
+          "successful_requests": 1,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        }
+      ],
+      "measurement_freshness": "current",
+      "forecast_freshness": "unknown"
+    },
+    "native_evidence_asof": "2026-10-21 14:15:00+00:00",
+    "checkpoint": {
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "incremental_end": "2026-10-21T15:24:41.067903+00:00"
+    }
+  },
+  {
+    "source": "cdec_river_history",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 194,
+    "numeric_values": 194,
+    "error_code": null,
+    "station_windows": {
+      "mode": "historical",
+      "dataset": "cdec_river",
+      "stations": [
+        {
+          "parsed": 194,
+          "outcome": "data",
+          "station": "POH",
+          "received": 194,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T16:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 194,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "historical",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 0,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 1,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 194,
+          "outcome": "data",
+          "station": "POH",
+          "received": 194,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T16:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 194,
+          "successful_requests": 1,
+          "measurement_freshness": "not_applicable",
+          "forecast_freshness": "not_applicable",
+          "state": "data"
+        }
+      ],
+      "measurement_freshness": "not_applicable",
+      "forecast_freshness": "not_applicable"
+    },
+    "native_evidence_asof": "2026-01-02 00:00:00+00:00",
+    "checkpoint": {
+      "complete": false,
+      "next_start": "2026-01-02T00:00:00+00:00",
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "window_end": null,
+      "station_index": 0
+    }
+  },
+  {
+    "source": "cdec_rainfall",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 4,
+    "numeric_values": 1,
+    "error_code": null,
+    "station_windows": {
+      "mode": "current",
+      "dataset": "cdec_rainfall",
+      "stations": [
+        {
+          "parsed": 4,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 4,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:42.950037+00:00",
+          "window_start": "2026-10-21T09:24:42.950037+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-20T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 1,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "current",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 1,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 0,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 4,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 4,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:42.950037+00:00",
+          "window_start": "2026-10-21T09:24:42.950037+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-20T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 1,
+          "successful_requests": 1,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        }
+      ],
+      "measurement_freshness": "current",
+      "forecast_freshness": "unknown"
+    },
+    "native_evidence_asof": "2026-10-20 08:00:00+00:00",
+    "checkpoint": {
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "incremental_end": "2026-10-21T15:24:42.950037+00:00"
+    }
+  },
+  {
+    "source": "cdec_rainfall_history",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 2,
+    "numeric_values": 2,
+    "error_code": null,
+    "station_windows": {
+      "mode": "historical",
+      "dataset": "cdec_rainfall",
+      "stations": [
+        {
+          "parsed": 2,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 6,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 2,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "historical",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 0,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 1,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 2,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 6,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 2,
+          "successful_requests": 1,
+          "measurement_freshness": "not_applicable",
+          "forecast_freshness": "not_applicable",
+          "state": "data"
+        }
+      ],
+      "measurement_freshness": "not_applicable",
+      "forecast_freshness": "not_applicable"
+    },
+    "native_evidence_asof": "2026-01-01 08:00:00+00:00",
+    "checkpoint": {
+      "complete": false,
+      "next_start": "2026-01-02T00:00:00+00:00",
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "window_end": null,
+      "station_index": 0
+    }
+  },
+  {
+    "source": "cdec_snow",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 6,
+    "numeric_values": 4,
+    "error_code": null,
+    "station_windows": {
+      "mode": "current",
+      "dataset": "cdec_snow",
+      "stations": [
+        {
+          "parsed": 6,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 6,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:43.605238+00:00",
+          "window_start": "2026-10-21T09:24:43.605238+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 4,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "current",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 1,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 0,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 6,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 6,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:43.605238+00:00",
+          "window_start": "2026-10-21T09:24:43.605238+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-10-21T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 4,
+          "successful_requests": 1,
+          "measurement_freshness": "current",
+          "forecast_freshness": "unknown",
+          "state": "current"
+        }
+      ],
+      "measurement_freshness": "current",
+      "forecast_freshness": "unknown"
+    },
+    "native_evidence_asof": "2026-10-21 08:00:00+00:00",
+    "checkpoint": {
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "incremental_end": "2026-10-21T15:24:43.605238+00:00"
+    }
+  },
+  {
+    "source": "cdec_snow_history",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 3,
+    "numeric_values": 3,
+    "error_code": null,
+    "station_windows": {
+      "mode": "historical",
+      "dataset": "cdec_snow",
+      "stations": [
+        {
+          "parsed": 3,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 9,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 3,
+          "successful_requests": 1
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "historical",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 1,
+      "states": {
+        "current": 0,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 1,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 3,
+          "outcome": "data",
+          "station": "GIN",
+          "received": 9,
+          "rejected": 0,
+          "requests": 1,
+          "error_code": null,
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "window_start": "2026-01-01T00:00:00+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-01-01T00:00:00-08:00",
+          "request_complete": true,
+          "measurement_values": 3,
+          "successful_requests": 1,
+          "measurement_freshness": "not_applicable",
+          "forecast_freshness": "not_applicable",
+          "state": "data"
+        }
+      ],
+      "measurement_freshness": "not_applicable",
+      "forecast_freshness": "not_applicable"
+    },
+    "native_evidence_asof": "2026-01-01 08:00:00+00:00",
+    "checkpoint": {
+      "complete": false,
+      "next_start": "2026-01-02T00:00:00+00:00",
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "window_end": null,
+      "station_index": 0
+    }
+  },
+  {
+    "source": "nwps",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 283,
+    "numeric_values": 282,
+    "error_code": null,
+    "station_windows": {
+      "mode": "current",
+      "dataset": "nwps",
+      "stations": [
+        {
+          "parsed": 283,
+          "outcome": "data",
+          "station": "POHC1",
+          "received": 5397,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:44.210492+00:00",
+          "window_start": "2026-10-21T09:24:44.210492+00:00",
+          "forecast_asof": "2026-10-21T14:16:00+00:00",
+          "forecast_values": 236,
+          "measurement_asof": "2026-10-21T15:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 46,
+          "successful_requests": 2
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "current",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 2,
+      "states": {
+        "current": 1,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 0,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 283,
+          "outcome": "data",
+          "station": "POHC1",
+          "received": 5397,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-10-21T15:24:44.210492+00:00",
+          "window_start": "2026-10-21T09:24:44.210492+00:00",
+          "forecast_asof": "2026-10-21T14:16:00+00:00",
+          "forecast_values": 236,
+          "measurement_asof": "2026-10-21T15:00:00+00:00",
+          "request_complete": true,
+          "measurement_values": 46,
+          "successful_requests": 2,
+          "measurement_freshness": "current",
+          "forecast_freshness": "current",
+          "state": "current"
+        }
+      ],
+      "measurement_freshness": "current",
+      "forecast_freshness": "current"
+    },
+    "native_evidence_asof": "2026-10-21 14:16:00+00:00",
+    "checkpoint": {
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "incremental_end": "2026-10-21T15:24:44.210492+00:00"
+    }
+  },
+  {
+    "source": "nwps_history",
+    "collection_verified": true,
+    "persistence_verified": true,
+    "assertions": 177,
+    "numeric_values": 176,
+    "error_code": null,
+    "station_windows": {
+      "mode": "historical",
+      "dataset": "nwps",
+      "stations": [
+        {
+          "parsed": 177,
+          "outcome": "data",
+          "station": "POHC1",
+          "received": 5161,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-09-23T15:24:46.434851+00:00",
+          "window_start": "2026-09-22T15:24:46.434851+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-09-23T15:15:00+00:00",
+          "request_complete": true,
+          "measurement_values": 176,
+          "successful_requests": 2
+        }
+      ]
+    },
+    "coverage": {
+      "mode": "historical",
+      "configured_stations": 1,
+      "successful_stations": 1,
+      "successful_requests": 2,
+      "states": {
+        "current": 0,
+        "stale": 0,
+        "no_observations": 0,
+        "failed": 0,
+        "incomplete": 0,
+        "data": 1,
+        "unknown": 0
+      },
+      "stations": [
+        {
+          "parsed": 177,
+          "outcome": "data",
+          "station": "POHC1",
+          "received": 5161,
+          "rejected": 0,
+          "requests": 2,
+          "error_code": null,
+          "window_end": "2026-09-23T15:24:46.434851+00:00",
+          "window_start": "2026-09-22T15:24:46.434851+00:00",
+          "forecast_asof": null,
+          "forecast_values": 0,
+          "measurement_asof": "2026-09-23T15:15:00+00:00",
+          "request_complete": true,
+          "measurement_values": 176,
+          "successful_requests": 2,
+          "measurement_freshness": "not_applicable",
+          "forecast_freshness": "not_applicable",
+          "state": "data"
+        }
+      ],
+      "measurement_freshness": "not_applicable",
+      "forecast_freshness": "not_applicable"
+    },
+    "native_evidence_asof": "2026-09-23 15:15:00+00:00",
+    "checkpoint": {
+      "complete": false,
+      "next_start": "2026-09-23T15:24:46.434851+00:00",
+      "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+      "window_end": null,
+      "station_index": 0
+    }
+  },
+  {
+    "source": "nps",
+    "collection_verified": false,
+    "persistence_verified": false,
+    "assertions": 0,
+    "numeric_values": 0,
+    "error_code": "credentials_needed",
+    "station_windows": null,
+    "coverage": null,
+    "native_evidence_asof": null,
+    "checkpoint": {}
+  }
+]

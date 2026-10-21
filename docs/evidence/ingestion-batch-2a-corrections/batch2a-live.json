@@ -1,0 +1,643 @@
+{
+  "started_at": "2026-10-21T15:24:32.975806+00:00",
+  "genuine_network": true,
+  "disposable_postgis": true,
+  "installed_database_modified": false,
+  "items": [
+    {
+      "source": "usgs_water",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 136,
+        "records_accepted": 136,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 6,
+        "provider_updated_at": "2026-10-21 15:20:18.527400+00:00",
+        "completed_at": "2026-10-21 15:24:38.647243+00:00",
+        "native_evidence_asof": "2026-10-21 14:30:00+00:00",
+        "checkpoint": {
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "incremental_end": "2026-10-21T15:24:33.019604+00:00"
+        },
+        "station_windows": {
+          "mode": "current",
+          "dataset": "usgs_water",
+          "stations": [
+            {
+              "parsed": 48,
+              "outcome": "data",
+              "station": "USGS-11109000",
+              "received": 48,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:33.019604+00:00",
+              "window_start": "2026-10-21T09:24:33.019604+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-21T15:15:00+00:00",
+              "request_complete": true,
+              "measurement_values": 48,
+              "successful_requests": 2
+            },
+            {
+              "parsed": 42,
+              "outcome": "data",
+              "station": "USGS-11264500",
+              "received": 42,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:33.019604+00:00",
+              "window_start": "2026-10-21T09:24:33.019604+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-21T14:30:00+00:00",
+              "request_complete": true,
+              "measurement_values": 42,
+              "successful_requests": 2
+            },
+            {
+              "parsed": 46,
+              "outcome": "data",
+              "station": "USGS-11266500",
+              "received": 46,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:33.019604+00:00",
+              "window_start": "2026-10-21T09:24:33.019604+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-21T15:00:00+00:00",
+              "request_complete": true,
+              "measurement_values": 46,
+              "successful_requests": 2
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 136,
+      "persisted_numeric_values": 136,
+      "native_units": [
+        "ft",
+        "ft^3/s"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "usgs_water_history",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 142,
+        "records_accepted": 142,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 2,
+        "provider_updated_at": "2026-06-18 21:52:08.900570+00:00",
+        "completed_at": "2026-10-21 15:24:40.351388+00:00",
+        "native_evidence_asof": "2026-01-02 00:00:00+00:00",
+        "checkpoint": {
+          "complete": false,
+          "next_start": "2026-01-01T00:00:00+00:00",
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "window_end": "2026-01-02T00:00:00+00:00",
+          "station_index": 1
+        },
+        "station_windows": {
+          "mode": "historical",
+          "dataset": "usgs_water",
+          "stations": [
+            {
+              "parsed": 142,
+              "outcome": "data",
+              "station": "USGS-11109000",
+              "received": 142,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-01-02T00:00:00+00:00",
+              "window_start": "2026-01-01T00:00:00+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-01-02T00:00:00+00:00",
+              "request_complete": true,
+              "measurement_values": 142,
+              "successful_requests": 2
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 142,
+      "persisted_numeric_values": 142,
+      "native_units": [
+        "ft",
+        "ft^3/s"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_river",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 48,
+        "records_accepted": 40,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:41.519584+00:00",
+        "native_evidence_asof": "2026-10-21 14:15:00+00:00",
+        "checkpoint": {
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "incremental_end": "2026-10-21T15:24:41.067903+00:00"
+        },
+        "station_windows": {
+          "mode": "current",
+          "dataset": "cdec_river",
+          "stations": [
+            {
+              "parsed": 40,
+              "outcome": "data",
+              "station": "POH",
+              "received": 48,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:41.067903+00:00",
+              "window_start": "2026-10-21T09:24:41.067903+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-21T06:15:00-08:00",
+              "request_complete": true,
+              "measurement_values": 40,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 40,
+      "persisted_numeric_values": 40,
+      "native_units": [
+        "CFS",
+        "FEET"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_river_history",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 194,
+        "records_accepted": 194,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:42.042431+00:00",
+        "native_evidence_asof": "2026-01-02 00:00:00+00:00",
+        "checkpoint": {
+          "complete": false,
+          "next_start": "2026-01-02T00:00:00+00:00",
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "window_end": null,
+          "station_index": 0
+        },
+        "station_windows": {
+          "mode": "historical",
+          "dataset": "cdec_river",
+          "stations": [
+            {
+              "parsed": 194,
+              "outcome": "data",
+              "station": "POH",
+              "received": 194,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-01-02T00:00:00+00:00",
+              "window_start": "2026-01-01T00:00:00+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-01-01T16:00:00-08:00",
+              "request_complete": true,
+              "measurement_values": 194,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 194,
+      "persisted_numeric_values": 194,
+      "native_units": [
+        "CFS",
+        "FEET"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_rainfall",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 4,
+        "records_accepted": 4,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:43.245555+00:00",
+        "native_evidence_asof": "2026-10-20 08:00:00+00:00",
+        "checkpoint": {
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "incremental_end": "2026-10-21T15:24:42.950037+00:00"
+        },
+        "station_windows": {
+          "mode": "current",
+          "dataset": "cdec_rainfall",
+          "stations": [
+            {
+              "parsed": 4,
+              "outcome": "data",
+              "station": "GIN",
+              "received": 4,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:42.950037+00:00",
+              "window_start": "2026-10-21T09:24:42.950037+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-20T00:00:00-08:00",
+              "request_complete": true,
+              "measurement_values": 1,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 4,
+      "persisted_numeric_values": 1,
+      "native_units": [
+        "INCHES"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_rainfall_history",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 6,
+        "records_accepted": 2,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:43.577449+00:00",
+        "native_evidence_asof": "2026-01-01 08:00:00+00:00",
+        "checkpoint": {
+          "complete": false,
+          "next_start": "2026-01-02T00:00:00+00:00",
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "window_end": null,
+          "station_index": 0
+        },
+        "station_windows": {
+          "mode": "historical",
+          "dataset": "cdec_rainfall",
+          "stations": [
+            {
+              "parsed": 2,
+              "outcome": "data",
+              "station": "GIN",
+              "received": 6,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-01-02T00:00:00+00:00",
+              "window_start": "2026-01-01T00:00:00+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-01-01T00:00:00-08:00",
+              "request_complete": true,
+              "measurement_values": 2,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 2,
+      "persisted_numeric_values": 2,
+      "native_units": [
+        "INCHES"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_snow",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 6,
+        "records_accepted": 6,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:43.901791+00:00",
+        "native_evidence_asof": "2026-10-21 08:00:00+00:00",
+        "checkpoint": {
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "incremental_end": "2026-10-21T15:24:43.605238+00:00"
+        },
+        "station_windows": {
+          "mode": "current",
+          "dataset": "cdec_snow",
+          "stations": [
+            {
+              "parsed": 6,
+              "outcome": "data",
+              "station": "GIN",
+              "received": 6,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:43.605238+00:00",
+              "window_start": "2026-10-21T09:24:43.605238+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-10-21T00:00:00-08:00",
+              "request_complete": true,
+              "measurement_values": 4,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 6,
+      "persisted_numeric_values": 4,
+      "native_units": [
+        "INCHES"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "cdec_snow_history",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 9,
+        "records_accepted": 3,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 1,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:44.167224+00:00",
+        "native_evidence_asof": "2026-01-01 08:00:00+00:00",
+        "checkpoint": {
+          "complete": false,
+          "next_start": "2026-01-02T00:00:00+00:00",
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "window_end": null,
+          "station_index": 0
+        },
+        "station_windows": {
+          "mode": "historical",
+          "dataset": "cdec_snow",
+          "stations": [
+            {
+              "parsed": 3,
+              "outcome": "data",
+              "station": "GIN",
+              "received": 9,
+              "rejected": 0,
+              "requests": 1,
+              "error_code": null,
+              "window_end": "2026-01-02T00:00:00+00:00",
+              "window_start": "2026-01-01T00:00:00+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-01-01T00:00:00-08:00",
+              "request_complete": true,
+              "measurement_values": 3,
+              "successful_requests": 1
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 3,
+      "persisted_numeric_values": 3,
+      "native_units": [
+        "INCHES"
+      ],
+      "evidence_kinds": [
+        "measurement"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "nwps",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 5397,
+        "records_accepted": 283,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 2,
+        "provider_updated_at": "2026-10-21 15:09:28+00:00",
+        "completed_at": "2026-10-21 15:24:45.544689+00:00",
+        "native_evidence_asof": "2026-10-21 14:16:00+00:00",
+        "checkpoint": {
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "incremental_end": "2026-10-21T15:24:44.210492+00:00"
+        },
+        "station_windows": {
+          "mode": "current",
+          "dataset": "nwps",
+          "stations": [
+            {
+              "parsed": 283,
+              "outcome": "data",
+              "station": "POHC1",
+              "received": 5397,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-10-21T15:24:44.210492+00:00",
+              "window_start": "2026-10-21T09:24:44.210492+00:00",
+              "forecast_asof": "2026-10-21T14:16:00+00:00",
+              "forecast_values": 236,
+              "measurement_asof": "2026-10-21T15:00:00+00:00",
+              "request_complete": true,
+              "measurement_values": 46,
+              "successful_requests": 2
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 283,
+      "persisted_numeric_values": 282,
+      "native_units": [
+        "ft",
+        "kcfs"
+      ],
+      "evidence_kinds": [
+        "forecast",
+        "measurement",
+        "reference"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "nwps_history",
+      "http_outcome": 200,
+      "retry_after": null,
+      "database": {
+        "status": "success",
+        "incomplete": false,
+        "records_received": 5161,
+        "records_accepted": 177,
+        "records_rejected": 0,
+        "error_code": null,
+        "requests": 2,
+        "provider_updated_at": "2026-09-23 16:24:23+00:00",
+        "completed_at": "2026-10-21 15:24:47.711857+00:00",
+        "native_evidence_asof": "2026-09-23 15:15:00+00:00",
+        "checkpoint": {
+          "complete": false,
+          "next_start": "2026-09-23T15:24:46.434851+00:00",
+          "scope_hash": "1cbc42648ad3ffd324e86e718b00d4bb0336ca7c1ceb21920fadb745494fb058",
+          "window_end": null,
+          "station_index": 0
+        },
+        "station_windows": {
+          "mode": "historical",
+          "dataset": "nwps",
+          "stations": [
+            {
+              "parsed": 177,
+              "outcome": "data",
+              "station": "POHC1",
+              "received": 5161,
+              "rejected": 0,
+              "requests": 2,
+              "error_code": null,
+              "window_end": "2026-09-23T15:24:46.434851+00:00",
+              "window_start": "2026-09-22T15:24:46.434851+00:00",
+              "forecast_asof": null,
+              "forecast_values": 0,
+              "measurement_asof": "2026-09-23T15:15:00+00:00",
+              "request_complete": true,
+              "measurement_values": 176,
+              "successful_requests": 2
+            }
+          ]
+        }
+      },
+      "persisted_assertions": 177,
+      "persisted_numeric_values": 176,
+      "native_units": [
+        "ft",
+        "kcfs"
+      ],
+      "evidence_kinds": [
+        "measurement",
+        "reference"
+      ],
+      "native_values_verified": true,
+      "collection_verified": true,
+      "persistence_verified": true
+    },
+    {
+      "source": "nps",
+      "http_outcome": 401,
+      "retry_after": null,
+      "database": {
+        "status": "failure",
+        "incomplete": true,
+        "records_received": 0,
+        "records_accepted": 0,
+        "records_rejected": 0,
+        "error_code": "credentials_needed",
+        "requests": 0,
+        "provider_updated_at": null,
+        "completed_at": "2026-10-21 15:24:48.536549+00:00",
+        "native_evidence_asof": null,
+        "checkpoint": {},
+        "station_windows": null
+      },
+      "persisted_assertions": 0,
+      "persisted_numeric_values": 0,
+      "native_units": [],
+      "evidence_kinds": [],
+      "native_values_verified": false,
+      "collection_verified": false,
+      "persistence_verified": false
+    }
+  ],
+  "completed_at": "2026-10-21T15:24:48.551741+00:00"
+}
