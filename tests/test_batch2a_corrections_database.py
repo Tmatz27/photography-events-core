@@ -93,8 +93,22 @@ async def test_R1_failed_history_window_retried_from_same_persisted_checkpoint(d
             clock=lambda: NOW + timedelta(hours=hour),
         )
         assert status == (503 if hour == 0 else 200)
-        progress = (await sql(db, "SELECT checkpoint FROM source_poll_state"))[0]["checkpoint"]
+        progress = (
+            await sql(
+                db,
+                """SELECT checkpoint FROM source_poll_state p JOIN sources s
+            ON s.id=p.source_id WHERE s.key='cdec_snow_history'""",
+            )
+        )[0]["checkpoint"]
         assert bool(progress) == bool(hour)
+        current = (
+            await sql(
+                db,
+                """SELECT checkpoint FROM source_poll_state p JOIN sources s
+            ON s.id=p.source_id WHERE s.key='cdec_snow'""",
+            )
+        )[0]["checkpoint"]
+        assert current == {}  # Historical progress cannot advance the current worker.
     runs = await sql(db, "SELECT * FROM source_runs ORDER BY id")
     assert [r["context_payload"]["environment"]["stations"][0]["window_start"] for r in runs] == [
         "2026-01-01T00:00:00+00:00"
