@@ -84,7 +84,9 @@ def coverage(context, now, contract):
                 "not_applicable"
                 if history
                 else "unknown"
-                if not row["request_complete"] or row["rejected"]
+                if not row["request_complete"]
+                or row["rejected"]
+                or row["outcome"] in ("failed", "incomplete")
                 else age(
                     row[kind + "_asof"], now, contract.freshness_seconds, contract.provider_clock_skew_seconds
                 )

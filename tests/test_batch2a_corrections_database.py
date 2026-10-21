@@ -28,7 +28,7 @@ pytestmark = database_marks
 
 
 async def view(db, key, now=NOW):
-    settings = replace(SETTINGS, patterns_mode='shadow', live_sources=True, source_keys=tuple(CONTRACTS))
+    settings = replace(SETTINGS, patterns_mode="shadow", live_sources=True, source_keys=tuple(CONTRACTS))
     result = IngestionResponse(**await read(db, settings, now))
     assert len(result.items) == 81 and result.production_promotion is False
     return next(p for p in result.items if p.key == key)
@@ -208,3 +208,18 @@ async def test_persistence_rejection_cannot_certify_station_current(db):
     assert diagnostic.coverage.measurement_freshness == "unknown"
     assert diagnostic.operational.records_rejected == 1
     assert not await sql(db, "SELECT * FROM environmental_assertions")
+
+
+async def test_ignored_older_poll_cannot_publish_current_station_coverage(db):
+    newer, _, _ = await usgs_batch(["current"])
+    newer.checkpoint = {"version": 2}
+    await persist(db, CONTRACTS["usgs_water"], newer, NOW + timedelta(hours=2), NOW + timedelta(hours=2))
+    older, _, _ = await usgs_batch(["current"])
+    older.checkpoint = {"version": 1}
+    await persist(db, CONTRACTS["usgs_water"], older, NOW + timedelta(hours=1), NOW + timedelta(hours=3))
+    diagnostic = await view(db, "usgs_water", NOW + timedelta(hours=3))
+    assert diagnostic.coverage.states["incomplete"] == 1
+    assert diagnostic.coverage.measurement_freshness == "unknown"
+    assert diagnostic.coverage.stations[0].error_code == "out_of_order_poll"
+    assert (await sql(db, "SELECT checkpoint FROM source_poll_state"))[0]["checkpoint"] == {"version": 2}
+    assert len(await sql(db, "SELECT * FROM environmental_assertions")) == 1

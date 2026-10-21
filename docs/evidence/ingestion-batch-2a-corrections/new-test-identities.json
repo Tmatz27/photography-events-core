@@ -33,6 +33,10 @@
   },
   {
     "classname": "tests.test_batch2a_corrections_database",
+    "name": "test_ignored_older_poll_cannot_publish_current_station_coverage"
+  },
+  {
+    "classname": "tests.test_batch2a_corrections_database",
     "name": "test_native_json_precision_and_cdec_corrections_survive_storage"
   },
   {

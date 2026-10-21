@@ -413,6 +413,10 @@ async def persist(db, contract, batch, started, completed, *, lease=None):
         if not ordered:
             batch.complete = False
             batch.failure_code = batch.failure_code or "out_of_order_poll"
+            if batch.environment is not None:
+                for station in batch.environment['stations']:
+                    station['outcome'] = 'incomplete'
+                    station['error_code'] = batch.failure_code
         if future_update(contract, batch.provider_updated_at, started):
             batch.complete = False
             batch.failure_code = "future_provider_update"
