@@ -149,6 +149,12 @@ async def main(mode):
                 ).scalar_one()
                 # Remove only this isolated test sentinel after proving its lease,
                 # checkpoint and failure state survived. Legacy checks stay intact.
+                for table in ("source_backoff", "source_poll_state"):
+                    await c.execute(
+                        text(f"""DELETE FROM {table} WHERE source_id=:sid
+                        AND EXISTS(SELECT 1 FROM sources WHERE id=:sid AND key=:key)"""),
+                        dict(sid=report["probe_source_id"], key=PROBE),
+                    )
                 await c.execute(
                     text("DELETE FROM sources WHERE id=:sid AND key=:key"),
                     dict(sid=report["probe_source_id"], key=PROBE),
