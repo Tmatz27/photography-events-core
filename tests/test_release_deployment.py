@@ -63,6 +63,8 @@ def test_image_only_stack_preserves_paths_network_credentials_and_health():
     assert core['environment']['CORE_SOURCE_KEYS'].endswith(':-all}')
     assert core['environment']['CORE_PATTERNS_MODE'].endswith(':-shadow}')
     assert core['environment']['CORE_LIVE_SOURCES'].endswith(':-true}')
+    assert core['environment']['CORE_SOURCE_HISTORY']=='${CORE_SOURCE_HISTORY:-true}'
+    assert core['environment']['CORE_COLLECTION_SCOPE_JSON']=='${CORE_COLLECTION_SCOPE_JSON:-{}}'
     for key in old['services']['photography-events-core']['environment']:
         assert key in core['environment']
     text = (ROOT / 'compose.unraid.yaml').read_text()

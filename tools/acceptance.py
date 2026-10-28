@@ -78,7 +78,14 @@ def main():
         compose(*test_exec, "tools/migration_acceptance.py", "seed-lifecycle")
         compose(*test_exec, "-m", "alembic", "upgrade", "0008")
         compose(*test_exec, "tools/migration_acceptance.py", "seed-collector")
+        compose(*test_exec, "-m", "alembic", "upgrade", "0009")
+        upgrade_exec=('exec','-T','-e','GITHUB_ACTIONS=true','-e','POSTGRES_DB=photography_events_test',
+            'photography-events-core','python','tools/verify_schema0010_upgrade.py')
+        compose(*upgrade_exec,'before')
         compose(*test_exec, "-m", "alembic", "upgrade", "head")
+        compose(*upgrade_exec,'after')
+        compose('cp','photography-events-core:/tmp/schema0010-upgrade.json',str(EVIDENCE/'schema0010-upgrade.json'))
+        results['migration_0009_0010']='All existing table rows/columns, privacy, revisions, leases, checkpoints, backoff and database owner compared exactly'
         compose(*test_exec, "tools/migration_acceptance.py", "verify")
         results["R20_migration_0001_to_0002"] = "identity and provider data preserved; API reads held legacy context"
         results["migration_0001_0002_0003_0004_0005_0006_0007_0008"] = "identity, memberships, behavior and held API verified"

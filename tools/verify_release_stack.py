@@ -74,6 +74,13 @@ def main():
         compose('config', '-q')
         compose('up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '150')
         receipt['fresh_image_stack'] = ready()
+        configured=json.loads(compose('exec','-T','photography-events-core','python','-c',
+            "import json; from pec.config import Settings; s=Settings.from_env(); print(json.dumps(dict(history=s.source_history,scope=s.collection_scope,keys=s.source_keys,mode=s.patterns_mode)))",capture=True))
+        assert configured['history'] is True and configured['scope']=={} and configured['mode']=='shadow'
+        assert len(configured['keys'])==81
+        receipt['history_collection_enabled_by_default']=configured['history']
+        receipt['collection_scope_json_passed_to_runtime']=configured['scope']
+        receipt['source_inventory_keys']=len(configured['keys'])
         roles = json.loads(sql("""SELECT json_build_object('superuser',r.rolsuper,'createdb',r.rolcreatedb,
             'createrole',r.rolcreaterole,'replication',r.rolreplication,'bypassrls',r.rolbypassrls,
             'login',r.rolcanlogin,'owns_database',d.datdba=r.oid,

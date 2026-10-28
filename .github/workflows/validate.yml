@@ -83,4 +83,5 @@ jobs:
             evidence/batch2a-live.json
             evidence/collector-operations.json
             evidence/image-stack.json
+            evidence/schema0010-upgrade.json
           if-no-files-found: warn
