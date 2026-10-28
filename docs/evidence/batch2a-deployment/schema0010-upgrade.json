@@ -1,0 +1,1084 @@
+{
+  "before_revision": "0009",
+  "disposable_database": true,
+  "installed_database_modified": false,
+  "probe_source_id": 5,
+  "database_owner_oid": 19818,
+  "before": {
+    "assessment_current": {
+      "columns": [
+        "id",
+        "assessment_run_id"
+      ],
+      "rows": 1,
+      "sha256": "d9880f88f14ca968cf94dd829e6369000ee29237b926a36d7d9c642e09599e92"
+    },
+    "assessment_opportunities": {
+      "columns": [
+        "opportunity_id",
+        "location_id",
+        "assessment_run_id",
+        "starts_at",
+        "ends_at",
+        "category",
+        "presentation",
+        "eligibility",
+        "significance",
+        "confidence",
+        "urgency",
+        "evidence_state",
+        "access_state",
+        "safety_state",
+        "condition_state",
+        "drive_minutes",
+        "drive_basis",
+        "reason",
+        "awaiting",
+        "definition_key",
+        "definition_version",
+        "definition_hash",
+        "engine_version",
+        "data_as_of",
+        "valid_until",
+        "product",
+        "product_version",
+        "product_sha256",
+        "pattern_episode_id"
+      ],
+      "rows": 1,
+      "sha256": "fefc601adaa10a4461d7713d736e27038053c111a5380858c04240f59beabe6f"
+    },
+    "assessment_runs": {
+      "columns": [
+        "id",
+        "generated_at",
+        "data_as_of",
+        "valid_until",
+        "scope",
+        "state",
+        "status",
+        "input_fingerprint",
+        "engine_version",
+        "definition_hash",
+        "error_code",
+        "expected_items"
+      ],
+      "rows": 1,
+      "sha256": "1459796fd176423ac479d6e2ce349e694ab78123acc2836c2cf70bc9e9d30c7c"
+    },
+    "assessment_sources": {
+      "columns": [
+        "assessment_run_id",
+        "source_id",
+        "source_run_id",
+        "role",
+        "required",
+        "consulted"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cluster_behavior_summaries": {
+      "columns": [
+        "cluster_id",
+        "behavior_code",
+        "observation_count",
+        "independent_report_count",
+        "independent_source_count"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cluster_members": {
+      "columns": [
+        "cluster_id",
+        "normalized_observation_id",
+        "report_group_id",
+        "membership_id",
+        "representative"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "legacy_context_evidence": {
+      "columns": [
+        "opportunity_id",
+        "source_run_id",
+        "disposition"
+      ],
+      "rows": 1,
+      "sha256": "7314e1fdf49a80349aa4c24114fbe315b0648a206ed898dcc0f8fc49cf6f41cd"
+    },
+    "legacy_observation_evidence": {
+      "columns": [
+        "opportunity_id",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 1,
+      "sha256": "c7abb16bbbd5fa2543d99dcbc4b3a3e5a93fa20330cd0e7df5c7a76de5b1747a"
+    },
+    "locations": {
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "geometry",
+        "public_geometry",
+        "location_type",
+        "sensitivity",
+        "timezone"
+      ],
+      "rows": 1,
+      "sha256": "18e991e28381437060813fed270c2fbb7e8f1bd1a1d2813f601ab413f2ff0f17"
+    },
+    "normalized_observation_behaviors": {
+      "columns": [
+        "normalized_observation_id",
+        "behavior_code",
+        "created_at"
+      ],
+      "rows": 4,
+      "sha256": "7026976c0d099e2948c2423029ce6316bac25f97fb2df02d2a7eb40871085288"
+    },
+    "normalized_observations": {
+      "columns": [
+        "id",
+        "raw_observation_id",
+        "subject_type",
+        "subject_key",
+        "observed_at",
+        "analysis_geometry",
+        "public_geometry",
+        "reported_count",
+        "sensitive",
+        "precision_class",
+        "valid_until",
+        "superseded_at",
+        "behavior",
+        "source_run_id",
+        "content_sha256",
+        "coordinate_uncertainty_meters",
+        "spatial_precision",
+        "credible",
+        "origin_identity_status",
+        "observed_date",
+        "observed_time_zone",
+        "time_precision",
+        "provider_updated_at",
+        "source_metadata",
+        "spatial_basis",
+        "analysis_area"
+      ],
+      "rows": 5,
+      "sha256": "85b427f42ec95d4c4918da8fd2ad6d406f3565f34636d8f710d054377ff2e105"
+    },
+    "observation_clusters": {
+      "columns": [
+        "id",
+        "assessment_run_id",
+        "phenomenon_key",
+        "cluster_key",
+        "pattern_episode_id",
+        "policy_version",
+        "policy_hash",
+        "engine_version",
+        "engine_hash",
+        "clustering_crs",
+        "calculated_at",
+        "centroid_internal",
+        "bounding_center_internal",
+        "radius_meters",
+        "provider_record_count",
+        "observation_count",
+        "independent_report_count",
+        "independent_source_count",
+        "max_single_report_count",
+        "window_start",
+        "window_end",
+        "first_observed_at",
+        "last_observed_at",
+        "contains_sensitive_evidence",
+        "qualification_state",
+        "public_location_id"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation_report_group_members": {
+      "columns": [
+        "id",
+        "report_group_id",
+        "normalized_observation_id",
+        "link_basis",
+        "created_at",
+        "superseded_at"
+      ],
+      "rows": 5,
+      "sha256": "502667bb063ccf62af9b96ec57158e6062d64ea7b7bfbe7c4b6a046dda0bc837"
+    },
+    "observation_report_groups": {
+      "columns": [
+        "id",
+        "origin_namespace",
+        "origin_external_id",
+        "created_at"
+      ],
+      "rows": 3,
+      "sha256": "158c2685aa8d4279784db1aea7f38b499394c467831938867c73129925fd49c5"
+    },
+    "opportunities": {
+      "columns": [
+        "id",
+        "occurrence_key",
+        "phenomenon_key",
+        "location_id"
+      ],
+      "rows": 1,
+      "sha256": "45db5237d4b807cbfcf8937716fd99a9396d7f7b77b72eaae39f64fab9e81dbd"
+    },
+    "opportunity_context_evidence": {
+      "columns": [
+        "assessment_run_id",
+        "opportunity_id",
+        "source_run_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "opportunity_observation_evidence": {
+      "columns": [
+        "assessment_run_id",
+        "opportunity_id",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "opportunity_revisions": {
+      "columns": [
+        "id",
+        "opportunity_id",
+        "recorded_at",
+        "presentation",
+        "eligibility",
+        "significance",
+        "confidence",
+        "urgency",
+        "evidence_state",
+        "access_state",
+        "safety_state",
+        "condition_state",
+        "reason",
+        "definition_version",
+        "definition_hash",
+        "engine_version",
+        "assessment_run_id",
+        "provenance_status"
+      ],
+      "rows": 1,
+      "sha256": "5ec8f3f642eed9b56201c1bcf9e231f963589acee93c76f4d1c66cde61f2ce37"
+    },
+    "pattern_coherence_rejections": {
+      "columns": [
+        "assessment_run_id",
+        "phenomenon_key",
+        "candidate_key",
+        "policy_version",
+        "policy_hash",
+        "candidate_observation_count",
+        "independent_report_count",
+        "primary_eps_meters",
+        "candidate_radius_meters",
+        "candidate_diameter_meters",
+        "maximum_diameter_meters",
+        "fallback_eps_meters",
+        "fallback_attempted",
+        "fallback_result",
+        "recovered_cluster_count",
+        "contains_sensitive_evidence"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episode_revisions": {
+      "columns": [
+        "id",
+        "assessment_run_id",
+        "pattern_episode_id",
+        "recorded_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episode_snapshots": {
+      "columns": [
+        "assessment_run_id",
+        "pattern_episode_id",
+        "cluster_id",
+        "status",
+        "started_at",
+        "last_supported_at",
+        "ended_at",
+        "public_location_id",
+        "contains_sensitive_evidence",
+        "policy_version",
+        "policy_hash",
+        "parent_episode_id",
+        "merged_into_episode_id",
+        "transition_code",
+        "material_fingerprint"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episodes": {
+      "columns": [
+        "id",
+        "episode_key",
+        "phenomenon_key",
+        "subject_key",
+        "compatibility_key",
+        "status",
+        "started_at",
+        "last_supported_at",
+        "ended_at",
+        "public_location_id",
+        "contains_sensitive_evidence",
+        "policy_version",
+        "policy_hash",
+        "continuation_gap_seconds",
+        "parent_episode_id",
+        "merged_into_episode_id",
+        "created_at",
+        "updated_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_generation_runs": {
+      "columns": [
+        "assessment_run_id",
+        "policy_hash",
+        "engine_hash",
+        "mode",
+        "calculated_at",
+        "expected_clusters",
+        "expected_episodes",
+        "status",
+        "started_at",
+        "completed_at",
+        "input_fingerprint",
+        "error_code",
+        "identity_rejected_count"
+      ],
+      "rows": 1,
+      "sha256": "4dd150701040f05d3040d2d8b226adc8d67b0ac345a002416bcfe0f18f37a7b0"
+    },
+    "pattern_generation_sources": {
+      "columns": [
+        "assessment_run_id",
+        "source_id",
+        "source_run_id",
+        "content_sha256"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_observation_dispositions": {
+      "columns": [
+        "assessment_run_id",
+        "phenomenon_key",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "phenomenon_locations": {
+      "columns": [
+        "definition_key",
+        "location_id",
+        "role"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw_observations": {
+      "columns": [
+        "id",
+        "source_id",
+        "source_run_id",
+        "external_id",
+        "observed_at",
+        "fetched_at",
+        "exact_geometry",
+        "raw_payload",
+        "parser_version",
+        "content_sha256",
+        "sensitive",
+        "provider_geometry",
+        "spatial_basis",
+        "provider_updated_at",
+        "state_poll_started_at",
+        "retired_at",
+        "retirement_reason",
+        "retirement_provider_updated_at",
+        "retired_source_run_id",
+        "privacy_source_run_id"
+      ],
+      "rows": 7,
+      "sha256": "6abb364f92ae00acbae99e8ec06b33fe3c0a9ee624378e2456baac357eace81a"
+    },
+    "route_baselines": {
+      "columns": [
+        "id",
+        "origin_key",
+        "location_id",
+        "routing_profile",
+        "distance_miles",
+        "drive_minutes",
+        "provider",
+        "calculated_at",
+        "invalidated_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_backoff": {
+      "columns": [
+        "source_id",
+        "next_allowed_at",
+        "consecutive_failures"
+      ],
+      "rows": 1,
+      "sha256": "29d42e566046ae1d2c9d7e52b1fa27456abc0d0ed0c9517865e8a630e0013c81"
+    },
+    "source_poll_state": {
+      "columns": [
+        "source_id",
+        "cursor_updated_at",
+        "refresh_after_id",
+        "quota_day",
+        "requests_today",
+        "last_request_at",
+        "last_applied_poll_started_at",
+        "lease_token",
+        "lease_until",
+        "checkpoint"
+      ],
+      "rows": 3,
+      "sha256": "684a4cfb3e60bef5c7e12f973675d3a47457c8588799bc8a90ef58d7b48766f9"
+    },
+    "source_reference_barriers": {
+      "columns": [
+        "source_id",
+        "external_id",
+        "provider_updated_at",
+        "source_run_id"
+      ],
+      "rows": 1,
+      "sha256": "adab927b88fb7c2f1e1ddda5d51150ad2cdca8647653ee6ba6d9b6a5339b1f69"
+    },
+    "source_roles": {
+      "columns": [
+        "source_id",
+        "role"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_runs": {
+      "columns": [
+        "id",
+        "source_id",
+        "cycle_key",
+        "attempt_number",
+        "started_at",
+        "completed_at",
+        "status",
+        "http_status",
+        "records_received",
+        "records_accepted",
+        "records_rejected",
+        "provider_updated_at",
+        "latency_ms",
+        "error_code",
+        "content_sha256",
+        "context_payload",
+        "contract_version",
+        "parser_version",
+        "requests",
+        "bytes_received",
+        "unique_records",
+        "corrections",
+        "duplicates",
+        "obscured_records",
+        "private_records",
+        "rate_limit_count",
+        "parser_error_counts",
+        "incomplete",
+        "reinstated"
+      ],
+      "rows": 3,
+      "sha256": "93d2efea6c159c308794314c4cda162963944b64f75c09d00738e2d37071742e"
+    },
+    "sources": {
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "source_type",
+        "enabled",
+        "created_at",
+        "requires_stable_ids"
+      ],
+      "rows": 5,
+      "sha256": "8bed7fe2e8464e5d622903e6f6e67e5b227a43c561573ad9d0081ee76430fe28"
+    }
+  },
+  "after_revision": "0010",
+  "after": {
+    "assessment_current": {
+      "columns": [
+        "id",
+        "assessment_run_id"
+      ],
+      "rows": 1,
+      "sha256": "d9880f88f14ca968cf94dd829e6369000ee29237b926a36d7d9c642e09599e92"
+    },
+    "assessment_opportunities": {
+      "columns": [
+        "opportunity_id",
+        "location_id",
+        "assessment_run_id",
+        "starts_at",
+        "ends_at",
+        "category",
+        "presentation",
+        "eligibility",
+        "significance",
+        "confidence",
+        "urgency",
+        "evidence_state",
+        "access_state",
+        "safety_state",
+        "condition_state",
+        "drive_minutes",
+        "drive_basis",
+        "reason",
+        "awaiting",
+        "definition_key",
+        "definition_version",
+        "definition_hash",
+        "engine_version",
+        "data_as_of",
+        "valid_until",
+        "product",
+        "product_version",
+        "product_sha256",
+        "pattern_episode_id"
+      ],
+      "rows": 1,
+      "sha256": "fefc601adaa10a4461d7713d736e27038053c111a5380858c04240f59beabe6f"
+    },
+    "assessment_runs": {
+      "columns": [
+        "id",
+        "generated_at",
+        "data_as_of",
+        "valid_until",
+        "scope",
+        "state",
+        "status",
+        "input_fingerprint",
+        "engine_version",
+        "definition_hash",
+        "error_code",
+        "expected_items"
+      ],
+      "rows": 1,
+      "sha256": "1459796fd176423ac479d6e2ce349e694ab78123acc2836c2cf70bc9e9d30c7c"
+    },
+    "assessment_sources": {
+      "columns": [
+        "assessment_run_id",
+        "source_id",
+        "source_run_id",
+        "role",
+        "required",
+        "consulted"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cluster_behavior_summaries": {
+      "columns": [
+        "cluster_id",
+        "behavior_code",
+        "observation_count",
+        "independent_report_count",
+        "independent_source_count"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cluster_members": {
+      "columns": [
+        "cluster_id",
+        "normalized_observation_id",
+        "report_group_id",
+        "membership_id",
+        "representative"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "legacy_context_evidence": {
+      "columns": [
+        "opportunity_id",
+        "source_run_id",
+        "disposition"
+      ],
+      "rows": 1,
+      "sha256": "7314e1fdf49a80349aa4c24114fbe315b0648a206ed898dcc0f8fc49cf6f41cd"
+    },
+    "legacy_observation_evidence": {
+      "columns": [
+        "opportunity_id",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 1,
+      "sha256": "c7abb16bbbd5fa2543d99dcbc4b3a3e5a93fa20330cd0e7df5c7a76de5b1747a"
+    },
+    "locations": {
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "geometry",
+        "public_geometry",
+        "location_type",
+        "sensitivity",
+        "timezone"
+      ],
+      "rows": 1,
+      "sha256": "18e991e28381437060813fed270c2fbb7e8f1bd1a1d2813f601ab413f2ff0f17"
+    },
+    "normalized_observation_behaviors": {
+      "columns": [
+        "normalized_observation_id",
+        "behavior_code",
+        "created_at"
+      ],
+      "rows": 4,
+      "sha256": "7026976c0d099e2948c2423029ce6316bac25f97fb2df02d2a7eb40871085288"
+    },
+    "normalized_observations": {
+      "columns": [
+        "id",
+        "raw_observation_id",
+        "subject_type",
+        "subject_key",
+        "observed_at",
+        "analysis_geometry",
+        "public_geometry",
+        "reported_count",
+        "sensitive",
+        "precision_class",
+        "valid_until",
+        "superseded_at",
+        "behavior",
+        "source_run_id",
+        "content_sha256",
+        "coordinate_uncertainty_meters",
+        "spatial_precision",
+        "credible",
+        "origin_identity_status",
+        "observed_date",
+        "observed_time_zone",
+        "time_precision",
+        "provider_updated_at",
+        "source_metadata",
+        "spatial_basis",
+        "analysis_area"
+      ],
+      "rows": 5,
+      "sha256": "85b427f42ec95d4c4918da8fd2ad6d406f3565f34636d8f710d054377ff2e105"
+    },
+    "observation_clusters": {
+      "columns": [
+        "id",
+        "assessment_run_id",
+        "phenomenon_key",
+        "cluster_key",
+        "pattern_episode_id",
+        "policy_version",
+        "policy_hash",
+        "engine_version",
+        "engine_hash",
+        "clustering_crs",
+        "calculated_at",
+        "centroid_internal",
+        "bounding_center_internal",
+        "radius_meters",
+        "provider_record_count",
+        "observation_count",
+        "independent_report_count",
+        "independent_source_count",
+        "max_single_report_count",
+        "window_start",
+        "window_end",
+        "first_observed_at",
+        "last_observed_at",
+        "contains_sensitive_evidence",
+        "qualification_state",
+        "public_location_id"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation_report_group_members": {
+      "columns": [
+        "id",
+        "report_group_id",
+        "normalized_observation_id",
+        "link_basis",
+        "created_at",
+        "superseded_at"
+      ],
+      "rows": 5,
+      "sha256": "502667bb063ccf62af9b96ec57158e6062d64ea7b7bfbe7c4b6a046dda0bc837"
+    },
+    "observation_report_groups": {
+      "columns": [
+        "id",
+        "origin_namespace",
+        "origin_external_id",
+        "created_at"
+      ],
+      "rows": 3,
+      "sha256": "158c2685aa8d4279784db1aea7f38b499394c467831938867c73129925fd49c5"
+    },
+    "opportunities": {
+      "columns": [
+        "id",
+        "occurrence_key",
+        "phenomenon_key",
+        "location_id"
+      ],
+      "rows": 1,
+      "sha256": "45db5237d4b807cbfcf8937716fd99a9396d7f7b77b72eaae39f64fab9e81dbd"
+    },
+    "opportunity_context_evidence": {
+      "columns": [
+        "assessment_run_id",
+        "opportunity_id",
+        "source_run_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "opportunity_observation_evidence": {
+      "columns": [
+        "assessment_run_id",
+        "opportunity_id",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "opportunity_revisions": {
+      "columns": [
+        "id",
+        "opportunity_id",
+        "recorded_at",
+        "presentation",
+        "eligibility",
+        "significance",
+        "confidence",
+        "urgency",
+        "evidence_state",
+        "access_state",
+        "safety_state",
+        "condition_state",
+        "reason",
+        "definition_version",
+        "definition_hash",
+        "engine_version",
+        "assessment_run_id",
+        "provenance_status"
+      ],
+      "rows": 1,
+      "sha256": "5ec8f3f642eed9b56201c1bcf9e231f963589acee93c76f4d1c66cde61f2ce37"
+    },
+    "pattern_coherence_rejections": {
+      "columns": [
+        "assessment_run_id",
+        "phenomenon_key",
+        "candidate_key",
+        "policy_version",
+        "policy_hash",
+        "candidate_observation_count",
+        "independent_report_count",
+        "primary_eps_meters",
+        "candidate_radius_meters",
+        "candidate_diameter_meters",
+        "maximum_diameter_meters",
+        "fallback_eps_meters",
+        "fallback_attempted",
+        "fallback_result",
+        "recovered_cluster_count",
+        "contains_sensitive_evidence"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episode_revisions": {
+      "columns": [
+        "id",
+        "assessment_run_id",
+        "pattern_episode_id",
+        "recorded_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episode_snapshots": {
+      "columns": [
+        "assessment_run_id",
+        "pattern_episode_id",
+        "cluster_id",
+        "status",
+        "started_at",
+        "last_supported_at",
+        "ended_at",
+        "public_location_id",
+        "contains_sensitive_evidence",
+        "policy_version",
+        "policy_hash",
+        "parent_episode_id",
+        "merged_into_episode_id",
+        "transition_code",
+        "material_fingerprint"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_episodes": {
+      "columns": [
+        "id",
+        "episode_key",
+        "phenomenon_key",
+        "subject_key",
+        "compatibility_key",
+        "status",
+        "started_at",
+        "last_supported_at",
+        "ended_at",
+        "public_location_id",
+        "contains_sensitive_evidence",
+        "policy_version",
+        "policy_hash",
+        "continuation_gap_seconds",
+        "parent_episode_id",
+        "merged_into_episode_id",
+        "created_at",
+        "updated_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_generation_runs": {
+      "columns": [
+        "assessment_run_id",
+        "policy_hash",
+        "engine_hash",
+        "mode",
+        "calculated_at",
+        "expected_clusters",
+        "expected_episodes",
+        "status",
+        "started_at",
+        "completed_at",
+        "input_fingerprint",
+        "error_code",
+        "identity_rejected_count"
+      ],
+      "rows": 1,
+      "sha256": "4dd150701040f05d3040d2d8b226adc8d67b0ac345a002416bcfe0f18f37a7b0"
+    },
+    "pattern_generation_sources": {
+      "columns": [
+        "assessment_run_id",
+        "source_id",
+        "source_run_id",
+        "content_sha256"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pattern_observation_dispositions": {
+      "columns": [
+        "assessment_run_id",
+        "phenomenon_key",
+        "normalized_observation_id",
+        "disposition"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "phenomenon_locations": {
+      "columns": [
+        "definition_key",
+        "location_id",
+        "role"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw_observations": {
+      "columns": [
+        "id",
+        "source_id",
+        "source_run_id",
+        "external_id",
+        "observed_at",
+        "fetched_at",
+        "exact_geometry",
+        "raw_payload",
+        "parser_version",
+        "content_sha256",
+        "sensitive",
+        "provider_geometry",
+        "spatial_basis",
+        "provider_updated_at",
+        "state_poll_started_at",
+        "retired_at",
+        "retirement_reason",
+        "retirement_provider_updated_at",
+        "retired_source_run_id",
+        "privacy_source_run_id"
+      ],
+      "rows": 7,
+      "sha256": "6abb364f92ae00acbae99e8ec06b33fe3c0a9ee624378e2456baac357eace81a"
+    },
+    "route_baselines": {
+      "columns": [
+        "id",
+        "origin_key",
+        "location_id",
+        "routing_profile",
+        "distance_miles",
+        "drive_minutes",
+        "provider",
+        "calculated_at",
+        "invalidated_at"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_backoff": {
+      "columns": [
+        "source_id",
+        "next_allowed_at",
+        "consecutive_failures"
+      ],
+      "rows": 1,
+      "sha256": "29d42e566046ae1d2c9d7e52b1fa27456abc0d0ed0c9517865e8a630e0013c81"
+    },
+    "source_poll_state": {
+      "columns": [
+        "source_id",
+        "cursor_updated_at",
+        "refresh_after_id",
+        "quota_day",
+        "requests_today",
+        "last_request_at",
+        "last_applied_poll_started_at",
+        "lease_token",
+        "lease_until",
+        "checkpoint"
+      ],
+      "rows": 3,
+      "sha256": "684a4cfb3e60bef5c7e12f973675d3a47457c8588799bc8a90ef58d7b48766f9"
+    },
+    "source_reference_barriers": {
+      "columns": [
+        "source_id",
+        "external_id",
+        "provider_updated_at",
+        "source_run_id"
+      ],
+      "rows": 1,
+      "sha256": "adab927b88fb7c2f1e1ddda5d51150ad2cdca8647653ee6ba6d9b6a5339b1f69"
+    },
+    "source_roles": {
+      "columns": [
+        "source_id",
+        "role"
+      ],
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_runs": {
+      "columns": [
+        "id",
+        "source_id",
+        "cycle_key",
+        "attempt_number",
+        "started_at",
+        "completed_at",
+        "status",
+        "http_status",
+        "records_received",
+        "records_accepted",
+        "records_rejected",
+        "provider_updated_at",
+        "latency_ms",
+        "error_code",
+        "content_sha256",
+        "context_payload",
+        "contract_version",
+        "parser_version",
+        "requests",
+        "bytes_received",
+        "unique_records",
+        "corrections",
+        "duplicates",
+        "obscured_records",
+        "private_records",
+        "rate_limit_count",
+        "parser_error_counts",
+        "incomplete",
+        "reinstated"
+      ],
+      "rows": 3,
+      "sha256": "93d2efea6c159c308794314c4cda162963944b64f75c09d00738e2d37071742e"
+    },
+    "sources": {
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "source_type",
+        "enabled",
+        "created_at",
+        "requires_stable_ids"
+      ],
+      "rows": 5,
+      "sha256": "8bed7fe2e8464e5d622903e6f6e67e5b227a43c561573ad9d0081ee76430fe28"
+    }
+  },
+  "existing_rows_identical": true,
+  "collector_state_preserved": true,
+  "database_owner_preserved": true,
+  "new_environment_history_empty": true,
+  "migration_0010_metadata_nullable": true,
+  "probe_removed_after_verification": true
+}

@@ -1,0 +1,43 @@
+{
+  "image": "photography-events-runtime:validation",
+  "release_commit": "7d5f2432e0a4fa797b78d298e954d4d07fe1f754",
+  "production_modified": false,
+  "synthetic_observations_imported": false,
+  "installed_unraid_verified": false,
+  "image_id": "sha256:69c3cb74b4aee7d526b744461457aa977af3a1da0ac49081935a680bfd4bc359",
+  "platform": "linux/amd64",
+  "labels": {
+    "org.opencontainers.image.revision": "7d5f2432e0a4fa797b78d298e954d4d07fe1f754"
+  },
+  "registry_digests": [],
+  "fresh_image_stack": {
+    "core_version": "0.1.0-dev",
+    "api_version": "v1",
+    "schema_version": "0010",
+    "status": "ready"
+  },
+  "history_collection_enabled_by_default": true,
+  "collection_scope_json_passed_to_runtime": {},
+  "source_inventory_keys": 81,
+  "role_separation": {
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "replication": false,
+    "bypassrls": false,
+    "login": true,
+    "owns_database": true,
+    "postgres_major": 18,
+    "postgis": "3.6.4"
+  },
+  "existing_volume_recreated": {
+    "core_version": "0.1.0-dev",
+    "api_version": "v1",
+    "schema_version": "0010",
+    "status": "ready"
+  },
+  "data_and_role_preserved": true,
+  "init_password_did_not_rotate_existing_role": true,
+  "provider_collection_enabled_for_unraid_template": true,
+  "provider_collection_disabled_for_disposable_smoke_test": true
+}
